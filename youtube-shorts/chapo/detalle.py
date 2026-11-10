@@ -395,7 +395,7 @@ def main():
     if mode == 'seg':
         f0, f1 = int(sys.argv[2]), int(sys.argv[3])
         cmd = ['ffmpeg', '-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-',
-               '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-pix_fmt', 'yuv420p', f'{OUT}/zseg_{f0:04d}.mp4']
+               '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-pix_fmt', 'yuv420p', f'{OUT}/{os.environ.get("SEGP", "zseg")}_{f0:04d}.mp4']
         p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
         for i in range(f0, f1): p.stdin.write(np.ascontiguousarray(frame(i / FPS)).tobytes())
         p.stdin.close(); p.wait(); print('SEG', f0, f1, flush=True); return
