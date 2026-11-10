@@ -34,9 +34,9 @@ class Shot:
 
 # ---------------------------------------------------------------- corte federal (aprobada / rechazada)
 class Court(Shot):
-    def __init__(s, text, col, gavel_t=.5):
+    def __init__(s, text, col, gavel_t=.5, mx=False):
         wf = wood_wall(); i8 = to8(wf)
-        flag_us(i8, 140, 260); cv2.circle(i8, (540, 290), 110, (170, 140, 60), -1, cv2.LINE_AA); cv2.circle(i8, (540, 290), 84, (40, 46, 90), -1, cv2.LINE_AA)
+        (flag_mx if mx else flag_us)(i8, 140, 260); cv2.circle(i8, (540, 290), 110, (170, 140, 60), -1, cv2.LINE_AA); cv2.circle(i8, (540, 290), 84, (40, 46, 90), -1, cv2.LINE_AA)
         poly(i8, [(490, 300), (540, 240), (590, 300), (540, 330)], (200, 170, 90))
         cv2.line(i8, (900, 220), (900, 1100), (200, 170, 90), 6); flag_mx(i8, 905, 240, 150, 92) if False else None
         wf = i8.astype(np.float32); beam(wf, (540, 0), (540, 1300), 80, 360, (255, 220, 160), .1, 40)
@@ -46,7 +46,7 @@ class Court(Shot):
         for k in range(3): cv2.rectangle(gal, (-40, 1700 + k * 80), (W + 40, 1730 + k * 80), (60, 32, 16, 255), -1)
         s.front = [(dof(gal, 10), 1.5), (bokeh_layer(8, (255, 210, 140), 41, ymin=200, ymax=1200), 1.7)]
         s.stamp = N.stamp(text, col, w=820, h=124, px=70, fill=tuple(int(c * .18) for c in col) + (210,))
-        s.lbl = N.holo_panel(640, 120, 'CORTE FEDERAL', None) if False else N.text_sprite('CORTE FEDERAL · BROOKLYN, NY', 30, (230, 220, 200, 255), stroke=3, stroke_col=(0, 0, 0, 220), spacing=4)
+        s.lbl = N.text_sprite('JUZGADO FEDERAL · MÉXICO' if mx else 'CORTE FEDERAL · BROOKLYN, NY', 30, (230, 220, 200, 255), stroke=3, stroke_col=(0, 0, 0, 220), spacing=4)
         s.gavel_t = gavel_t; s.stamp_at = gavel_t + .25
     def draw(s, fr, t, d):
         # juez detrás del estrado golpeando el mazo
@@ -358,7 +358,7 @@ def tl():
         (S[1], T('Antes') - .2, Vault(), 1),
         (T('Antes') - .2, T('intentarían') - .2, Bullet(), 1),
         (T('intentarían') - .2, S[2], Bribe(), 1),
-        (S[2], T('desatarían') - .2, Court('RECHAZADO', (255, 59, 42), gavel_t=1.4), 2),
+        (S[2], T('desatarían') - .2, Court('LIBERACIÓN NEGADA', (255, 59, 42), gavel_t=1.4, mx=True), 2),
         (T('desatarían') - .2, T('bloqueos') - .2, FireMap(), 2),
         (T('bloqueos') - .2, T('obligar') - .2, Blockade('ESTADO DE SITIO', cta=True), 2),
         (T('obligar') - .2, S[3], Presser(), 2),
