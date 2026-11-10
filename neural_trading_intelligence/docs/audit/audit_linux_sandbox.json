@@ -1,0 +1,65 @@
+{
+  "timestamp_utc": "2026-11-10T20:15:52.227132+00:00",
+  "checks": {
+    "runtime": {
+      "ok": true,
+      "detail": "python=3.13.18 os=Linux 6.18.44-fc-v338 arch=x86_64"
+    },
+    "mt5_python_bridge": {
+      "ok": false,
+      "detail": "MetaTrader5 package not installed (only win_amd64 wheels exist on PyPI)"
+    },
+    "fred_DGS10_10y_yield": {
+      "ok": false,
+      "detail": "http=0"
+    },
+    "fred_DFII10_real_yield": {
+      "ok": false,
+      "detail": "http=0"
+    },
+    "fred_DTWEXBGS_broad_usd": {
+      "ok": false,
+      "detail": "http=0"
+    },
+    "fred_T10YIE_breakeven": {
+      "ok": false,
+      "detail": "http=0"
+    },
+    "forexfactory_calendar_json": {
+      "ok": true,
+      "detail": "events=105 high_usd=4 sample=[{'title': 'Core CPI m/m', 'country': 'USD', 'date': '2026-11-10T08:30:00-05:00', 'impact': 'High', 'forecast': '0.2%', 'previous': '0.3%'}]"
+    },
+    "fed_press_rss": {
+      "ok": true,
+      "detail": "http=200 items=20"
+    },
+    "bls_rss": {
+      "ok": false,
+      "detail": "http=403 items=0"
+    },
+    "treasury_yield_curve_xml": {
+      "ok": true,
+      "detail": "http=200 entries=215"
+    },
+    "yahoo_DXY_DX-Y.NYB": {
+      "ok": true,
+      "detail": "price=102.259 tz=America/New_York"
+    },
+    "yahoo_gold_futures_GC=F": {
+      "ok": true,
+      "detail": "price=4038.3 tz=America/New_York"
+    },
+    "dukascopy_xauusd_ticks": {
+      "ok": false,
+      "detail": "http=503"
+    },
+    "stooq_xauusd_daily": {
+      "ok": false,
+      "detail": "http=0 no CSV, body starts: b'<urlopen error [Errno 104] Connection reset by peer>'"
+    },
+    "gdelt_news_api": {
+      "ok": false,
+      "detail": "http=429 (rate limit 1 req/5s)"
+    }
+  }
+}
