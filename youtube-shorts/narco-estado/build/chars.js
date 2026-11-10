@@ -18,6 +18,42 @@ function camoTex(cols, seed = 3) {
 const fabric = (base, lines = 'rgba(255,255,255,.05)', step = 6) => tex(128, 128, (g, w, h) => { g.fillStyle = base; g.fillRect(0, 0, w, h); g.strokeStyle = lines;
   for (let x = 0; x < w; x += step) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); } }, 4);
 
+// fabric normal map: fine weave + soft irregular rumples (computed from a heightfield)
+const _nCache = {};
+function fabricNormal(kind = 'wool') {
+  if (_nCache[kind]) return _nCache[kind];
+  const N = 256, hgt = new Float32Array(N * N); let sd = 11; const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+  const blobs = Array.from({ length: 40 }, () => [r() * N, r() * N, 8 + r() * 30, r() - .5]);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    let h = kind === 'wool' ? Math.sin(x * 1.6) * Math.sin(y * 1.6) * .25 + Math.sin((x + y) * .9) * .15 : Math.sin(x * 2.2) * .3 * (Math.sin(y * 2.2) > 0 ? 1 : -1);
+    for (const [bx, by, br, bs] of blobs) { const dx = Math.min(Math.abs(x - bx), N - Math.abs(x - bx)), dy = Math.min(Math.abs(y - by), N - Math.abs(y - by)); h += bs * 2.2 * Math.exp(-(dx * dx + dy * dy) / (br * br)); }
+    hgt[y * N + x] = h + (r() - .5) * .25;
+  }
+  const c = document.createElement('canvas'); c.width = c.height = N; const g = c.getContext('2d'), im = g.createImageData(N, N);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const hx = hgt[y * N + (x + 1) % N] - hgt[y * N + (x + N - 1) % N], hy = hgt[((y + 1) % N) * N + x] - hgt[((y + N - 1) % N) * N + x];
+    const v = new THREE.Vector3(-hx, -hy, 2).normalize(), i = (y * N + x) * 4;
+    im.data[i] = (v.x * .5 + .5) * 255; im.data[i + 1] = (v.y * .5 + .5) * 255; im.data[i + 2] = (v.z * .5 + .5) * 255; im.data[i + 3] = 255; }
+  g.putImageData(im, 0, 0); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(3, 3); return _nCache[kind] = t;
+}
+const cloth = (o, kind = 'wool') => new THREE.MeshPhysicalMaterial({ roughness: .78, sheen: .5, sheenRoughness: .7, sheenColor: new THREE.Color(0x777777),
+  normalMap: fabricNormal(kind), normalScale: new THREE.Vector2(.55, .55), ...o });
+
+const clamp01 = x => Math.min(1, Math.max(0, x));
+// tapered garment tube from a [radius, y] profile, with fabric folds pushed into the surface
+function garment(profile, folds = [], seed = 1, segs = 40) {
+  const curve = new THREE.SplineCurve(profile.map(([r, y]) => new THREE.Vector2(r, y)));
+  const pts = curve.getSpacedPoints(Math.max(24, Math.round(curve.getLength() / .006))); pts[0].x = profile[0][0]; pts[pts.length - 1].x = profile[profile.length - 1][0];
+  const geo = new THREE.LatheGeometry(pts, segs), p = geo.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i), rad = Math.hypot(x, z); if (rad < .004) continue;
+    const th = Math.atan2(z, x); let d = (Math.sin(th * 5 + y * 40 + seed) + Math.sin(th * 9 - y * 70 + seed * 2)) * .0012;
+    for (const [yc, w, amp, k] of folds) { const f = Math.exp(-Math.pow((y - yc) / w, 2)); d += amp * f * (Math.sin(th * k + Math.sin(y * 60 + seed) * 1.5) * .7 + Math.sin(y * 90 + th * 2) * .3); }
+    const fade = clamp01(rad / .03); const sc = (rad + d * fade) / rad; p.setX(i, x * sc); p.setZ(i, z * sc);
+  }
+  geo.computeVertexNormals(); return geo;
+}
+
 // --- outfits & personalities ---
 const LOOKS = {
   president: { suit: 0x101014, tex: fabric('#16161b', 'rgba(255,255,255,.04)'), shirt: 0xf4f4f4, tie: 0x0c0c0c, shoes: 0x060606,
@@ -103,13 +139,15 @@ function hand(L, mat, side, pose = 'relaxed') {
 export function stickman(kind) {
   const L = LOOKS[kind], rig = { root: new THREE.Group(), kind }, root = rig.root;
   const skin = skinMat();
-  const top = L.camo ? new THREE.MeshStandardMaterial({ map: camoTex(L.camo), roughness: .92 })
-            : L.solid ? std(L.solid, { roughness: .85, map: fabric('#181818', 'rgba(255,255,255,.035)', 5) })
-            : std(0xffffff, { map: L.tex, roughness: .55 });
+  const top = L.camo ? cloth({ map: camoTex(L.camo), roughness: .92, sheenColor: new THREE.Color(0x3a4030) }, 'ripstop')
+            : L.solid ? cloth({ color: L.solid, roughness: .9, sheenColor: new THREE.Color(0x3a3a3a) }, 'ripstop')
+            : cloth({ map: L.tex, roughness: .7, sheenColor: new THREE.Color(L.suit).offsetHSL(0, 0, .25) });
   const legsM = top, shoeM = std(L.shoes, { roughness: L.suit ? .2 : .75, metalness: L.suit ? .1 : 0 });
   // sculpted torso (lathe profile: hips → waist → chest → shoulders), jacket hem flares below the belt
-  const prof = [[.001, .80], [.15, .82], [.155, .9], [.145, 1.0], [.16, 1.1], [.18, 1.22], [.19, 1.32], [.185, 1.38], [.15, 1.44], [.07, 1.48], [.001, 1.49]].map(([r, y]) => new THREE.Vector2(r, y));
-  const torso = add(root, new THREE.LatheGeometry(prof, 40), top); torso.scale.z = .66;
+  const prof = (L.suit ? [[.001, .76], [.168, .762], [.165, .8], [.155, .9], [.145, 1.0]] : [[.001, .8], [.15, .82], [.155, .9], [.143, 1.0]])
+    .concat([[.16, 1.1], [.182, 1.22], [.192, 1.32], [.188, 1.38], [.155, 1.44], [.07, 1.48], [.001, 1.49]]).map(([r, y]) => [r, y]);
+  const torso = add(root, garment(prof, [[1.0, .05, .004, 7], [1.36, .05, .003, 4]], 3, 48), top); torso.scale.z = .66;
+  if (L.suit) for (const sx of [-1, 1]) { const vent = add(root, new THREE.BoxGeometry(.004, .14, .004), std(0x000000), sx * .02, .83, .113); }
   // shoulders: a continuous yoke so arms grow out of the body
   const yoke = add(root, cap(.075, .3, 16), top, 0, 1.385, 0); yoke.rotation.z = Math.PI / 2; yoke.scale.set(1, 1, .82);
   add(root, cap(.05, .03), skin, 0, 1.5, 0);                                     // neck
@@ -150,10 +188,9 @@ export function stickman(kind) {
   const handMat = L.gloves ? std(0x111111, { roughness: .7 }) : skin;
   for (const s of [-1, 1]) {
     const a = new THREE.Group(); a.position.set(s * .2, 1.39, 0); root.add(a); a.rotation.z = s * .08;
-    add(a, cap(.06, .25), top, 0, -.13, 0);
+    add(a, garment([[.001, .06], [.04, .055], [.062, .02], [.064, -.06], [.06, -.17], [.057, -.26], [.056, -.3], [.03, -.315], [.001, -.316]], [[-.24, .04, .006, 5], [-.04, .03, .003, 3]], s * 5), top);
     const b = new THREE.Group(); b.position.y = -.27; a.add(b);
-    add(b, new THREE.SphereGeometry(.057, 16, 12), top);                                  // elbow fold (covered by fabric)
-    add(b, cap(.052, .2), top, 0, -.12, 0);
+    add(b, garment([[.001, .03], [.04, .025], [.053, .0], [.053, -.06], [.049, -.16], [.046, -.23], [.05, -.255], [.042, -.262], [.03, -.258]], [[-.03, .04, .006, 5], [-.2, .05, .003, 6]], s * 7), top);
     if (L.suit) add(b, new THREE.CylinderGeometry(.044, .044, .03, 16), std(L.shirt), 0, -.255, 0);   // shirt cuff
     if (L.pads) { add(b, new THREE.SphereGeometry(.062, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), std(0x0a0a0a, { roughness: .6 }), 0, 0, -.01).rotation.x = -Math.PI / 2; }
     if (L.watch && s < 0) add(b, new THREE.CylinderGeometry(.047, .047, .02, 16), std(0xd4a537, { metalness: 1, roughness: .2 }), 0, -.24, 0);
@@ -164,16 +201,23 @@ export function stickman(kind) {
   // legs
   for (const s of [-1, 1]) {
     const a = new THREE.Group(); a.position.set(s * .085, .9, 0); root.add(a);
-    add(a, cap(.075, .36), legsM, 0, -.2, 0);
+    add(a, garment([[.001, .07], [.07, .06], [.088, .0], [.082, -.12], [.074, -.28], [.07, -.4], [.068, -.47], [.001, -.472]], [[-.04, .05, .005, 4], [-.38, .04, .006, 6]], s * 3), legsM);
     const b = new THREE.Group(); b.position.y = -.42; a.add(b);
-    add(b, new THREE.SphereGeometry(.07, 16, 12), legsM);
-    add(b, cap(.065, .34), legsM, 0, -.2, 0);
+    const hem = L.suit ? [[.066, -.39], [.071, -.415], [.068, -.43], [.001, -.432]] : [[.062, -.36], [.001, -.365]];
+    add(b, garment([[.001, .03], [.05, .025], [.064, .0], [.063, -.1], [.058, -.25], [.06, -.33]].concat(hem), [[.0, .04, .006, 5], [-.39, .03, .007, 7]], s * 9), legsM);
     if (L.pads) add(b, new THREE.SphereGeometry(.072, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), std(0x0a0a0a, { roughness: .6 }), 0, -.02, .01).rotation.x = Math.PI / 2;
     const shoe = add(b, cap(.05, .14, 12), shoeM, 0, -.43, .045); shoe.rotation.x = Math.PI / 2; shoe.scale.set(1.05, 1, .75);
     add(b, new THREE.BoxGeometry(.105, .015, .25), std(0x050505, { roughness: .9 }), 0, -.468, .045);
     if (!L.suit) add(b, new THREE.CylinderGeometry(.068, .062, .12, 16), shoeM, 0, -.37, 0);  // boot shaft
     rig[s < 0 ? 'lLeg' : 'rLeg'] = { a, b };
   }
+  rig.relax = () => {
+    rig.lArm.a.rotation.set(.04, 0, -.1); rig.rArm.a.rotation.set(-.03, 0, .12); rig.lArm.b.rotation.x = -.28; rig.rArm.b.rotation.x = -.2;
+    rig.lArm.end.rotation.y = .3; rig.rArm.end.rotation.y = -.3;
+    rig.lLeg.a.rotation.set(0, 0, -.025); rig.rLeg.a.rotation.set(-.1, 0, .06); rig.rLeg.b.rotation.x = .17; rig.rLeg.a.position.y = .89;
+    head.rotation.set(.04, -.08, .05); torso.rotation.y = .04; root.rotation.y = .05;
+  };
+  rig.relax();
   const blinkPh = kind.length * .73;
   rig.tick = t => { const q = (t + blinkPh) % 3.4; const k = q < .13 ? Math.abs(Math.cos(q / .13 * Math.PI)) * .9 + .1 : 1;
     rig.eyes.forEach(e => e.scale.y = k); torso.scale.x = 1 + Math.sin(t * 2.2) * .008; };
