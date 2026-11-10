@@ -61,7 +61,7 @@ const FACES = {
   executive: { iris: '#4f7396', lid: .22, tilt: 0, brow: 'smug', browC: '#9c9c9c', bw: 13, mouth: 'grin', wrinkles: true, blush: .12, mx: -10 },
   soldier:   { iris: '#3a2a1a', lid: .32, tilt: .18, brow: 'stern', browC: '#2a1f16', bw: 15, mouth: 'frown', stubble: .8, paint: 'rgba(40,55,25,.75)' },
   tactical:  { iris: '#6a4a22', lid: .34, tilt: .38, brow: 'angry', browC: '#120d0a', bw: 16, mouth: null, paint: 'rgba(10,10,10,.85)' },
-  narrator:  { iris: '#3c7a4a', lid: .04, tilt: 0, brow: 'raised', browC: '#3a2414', bw: 13, mouth: 'grin', blush: .22, freckles: true },
+  narrator:  { iris: '#4a3020', lid: .16, tilt: .04, brow: 'pro', browC: '#2e1d12', bw: 14, mouth: 'smile', nasalSoft: true, mx: 0 },
 };
 function faceTex(kind, closed) {
   const F = FACES[kind], U = 326, CX = 512, CY = 512, ink = '#22140e';
@@ -105,7 +105,7 @@ function faceTex(kind, closed) {
       if (F.wrinkles) { g.lineWidth = 2; g.strokeStyle = 'rgba(80,60,50,.4)'; for (let k = -1; k <= 1; k++) { g.beginPath(); g.moveTo(ox + sx * 10, ey + k * 9); g.lineTo(ox + sx * 26, ey + k * 14); g.stroke(); }
         g.beginPath(); g.ellipse(ex, ey + 30, 22, 6, 0, .2, Math.PI - .2); g.stroke(); }
       // eyebrow: tapered, slightly hairy
-      const shapes = { smug: sx < 0 ? [-16, -30, -8] : [2, -4, 4], angry: [16, -2, -14], stern: [8, -2, -4], raised: [-14, -22, -6] }[F.brow];
+      const shapes = { smug: sx < 0 ? [-16, -30, -8] : [2, -4, 4], angry: [16, -2, -14], stern: [8, -2, -4], raised: [-14, -22, -6], pro: [-2, -12, -2] }[F.brow];
       const by = ey - 50, ix = ex - sx * 26, ox2 = ex + sx * 40, pts = [];
       for (let t = 0; t <= 1; t += .05) { const x = ix + (ox2 - ix) * t, y = by + (1 - t) * (1 - t) * shapes[0] + 2 * (1 - t) * t * shapes[1] + t * t * shapes[2]; pts.push([x, y, F.bw * (1 - t * .65)]); }
       g.fillStyle = F.browC; g.beginPath(); pts.forEach(([x, y, w]) => g.lineTo(x, y - w / 2)); [...pts].reverse().forEach(([x, y, w]) => g.lineTo(x, y + w / 2)); g.closePath(); g.fill();
@@ -117,12 +117,16 @@ function faceTex(kind, closed) {
       g.beginPath(); g.moveTo(CX - 4, CY - 20); g.quadraticCurveTo(CX - 18, CY + 30, CX - 6, CY + 44); g.stroke();
       g.beginPath(); g.moveTo(CX - 18, CY + 44); g.quadraticCurveTo(CX, CY + 54, CX + 18, CY + 44); g.stroke();
       soft(CX + 4, CY + 30, 26, 'rgba(255,255,255,.5)'); }
+    if (F.nasalSoft) { g.strokeStyle = 'rgba(110,85,70,.18)'; g.lineWidth = 2.5; for (const sx of [-1, 1]) { g.beginPath(); g.moveTo(CX + sx * 36, CY + 54); g.quadraticCurveTo(CX + sx * 54, CY + 90, CX + sx * 50, my + 8); g.stroke(); } }
     if (F.nasal) { g.strokeStyle = 'rgba(110,85,70,.3)'; g.lineWidth = 3; for (const sx of [-1, 1]) { g.beginPath(); g.moveTo(CX + sx * 36, CY + 52); g.quadraticCurveTo(CX + sx * 58, CY + 95, CX + sx * 52, my + 18); g.stroke(); } }
     // mouth
     g.lineCap = 'round';
     if (F.mouth === 'smirk') { g.strokeStyle = '#3a1a14'; g.lineWidth = 7; g.beginPath(); g.moveTo(mx - 42, my + 4); g.quadraticCurveTo(mx + 2, my + 18, mx + 44, my - 14); g.stroke();
       g.lineWidth = 3; g.beginPath(); g.moveTo(mx + 46, my - 22); g.quadraticCurveTo(mx + 54, my - 12, mx + 48, my - 4); g.stroke();
       g.strokeStyle = 'rgba(120,80,70,.35)'; g.lineWidth = 5; g.beginPath(); g.moveTo(mx - 16, my + 30); g.quadraticCurveTo(mx + 4, my + 36, mx + 22, my + 26); g.stroke(); }
+    if (F.mouth === 'smile') { g.strokeStyle = '#3a1a14'; g.lineWidth = 6.5; g.beginPath(); g.moveTo(mx - 40, my - 6); g.quadraticCurveTo(mx, my + 14, mx + 40, my - 6); g.stroke();
+      g.lineWidth = 2.5; for (const sx of [-1, 1]) { g.beginPath(); g.moveTo(mx + sx * 42, my - 12); g.quadraticCurveTo(mx + sx * 48, my - 5, mx + sx * 43, my + 1); g.stroke(); }
+      g.strokeStyle = 'rgba(120,80,70,.3)'; g.lineWidth = 5; g.beginPath(); g.moveTo(mx - 14, my + 26); g.quadraticCurveTo(mx, my + 31, mx + 14, my + 26); g.stroke(); }
     if (F.mouth === 'frown') { g.strokeStyle = '#3a1a14'; g.lineWidth = 7; g.beginPath(); g.moveTo(mx - 36, my + 12); g.quadraticCurveTo(mx, my - 8, mx + 36, my + 12); g.stroke();
       g.strokeStyle = 'rgba(120,80,70,.35)'; g.lineWidth = 4; g.beginPath(); g.moveTo(mx - 14, my + 30); g.quadraticCurveTo(mx, my + 25, mx + 14, my + 30); g.stroke(); }
     if (F.mouth === 'grin') { const w = 48;
@@ -228,7 +232,7 @@ export function stickman(kind) {
     // open-front V: shirt + tie with knot
     const vee = new THREE.PlaneGeometry(1, 1, 12, 30), vp = vee.attributes.position;
     for (let i = 0; i < vp.count; i++) { const t = .5 - vp.getY(i), y = 1.48 - t * .27; vp.setXYZ(i, vp.getX(i) * .14 * (1 - t), y, 0); }
-    add(root, conform(vee, .007), shirt);
+    add(root, conform(vee, .015), shirt);
     // tie: knot + blade that widens and ends in a point, with a woven diagonal stripe
     const tieTex = tex(64, 256, (g, w, h) => { g.fillStyle = '#' + new THREE.Color(L.tie).getHexString(); g.fillRect(0, 0, w, h);
       g.strokeStyle = 'rgba(255,255,255,.10)'; g.lineWidth = 4; for (let i = -h; i < h; i += 18) { g.beginPath(); g.moveTo(0, i); g.lineTo(w, i + w * .7); g.stroke(); } });
@@ -237,7 +241,7 @@ export function stickman(kind) {
     const tw = t => t < .1 ? lerpN(.034, .024, t / .1) : t < .92 ? lerpN(.02, .05, (t - .1) / .82) : .05 * (1 - (t - .92) / .08);
     for (let i = 0; i < tp.count; i++) { const u = tp.getX(i), t = .5 - tp.getY(i), w = tw(t), x = u * w + (L.loose ? t * .012 : 0);
       tp.setXYZ(i, x, 1.465 - drop - t * .3, (t < .1 ? .007 : .0025) * (1 - Math.abs(u) * 1.6)); }
-    add(root, conform(tg, .01), std(0xffffff, { map: tieTex, roughness: .35, side: THREE.DoubleSide }));
+    add(root, conform(tg, .018), std(0xffffff, { map: tieTex, roughness: .35, side: THREE.DoubleSide }));
     // lapels (peaked), buttons, breast pocket
     for (const s of [-1, 1]) { const lap = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(s * .075, .02), new THREE.Vector2(s * .06, -.09), new THREE.Vector2(s * .01, -.24)]);
       const lm = add(root, new THREE.ExtrudeGeometry(lap, { depth: .012, bevelEnabled: true, bevelSize: .004, bevelThickness: .003, bevelSegments: 2 }), top, s * .055, 1.47, .11); lm.rotation.x = -.1; }
