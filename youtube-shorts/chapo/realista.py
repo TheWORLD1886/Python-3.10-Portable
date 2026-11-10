@@ -187,8 +187,10 @@ class Q5(RS.R5):
         super().__init__()
         s.cta = N.holo_panel(620, 200, '¿PODER REAL?', 'COMENTA ABAJO')
 
-VOZ = os.path.join(OUT, 'silencio.mp3')
-subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'lavfi', '-i', f'anullsrc=r=44100:cl=mono', '-t', str(DUR), VOZ], check=True)
+VOZ = os.path.join(HERE_, 'voz_realista.mp3')
+if not os.path.exists(VOZ):
+    VOZ = os.path.join(OUT, 'silencio.mp3')
+    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'lavfi', '-i', f'anullsrc=r=44100:cl=mono', '-t', str(DUR), VOZ], check=True)
 _s = CH._src.replace("secs = [(0, 'tension', 1), (9.9, 'misterio', 2), (24.1, 'tension', 2), (37.2, 'epico', 2), (50.2, 'tension', 1)]",
      f"secs = [(0, 'tension', 1), ({SC_T[1]:.2f}, 'misterio', 2), ({SC_T[2]:.2f}, 'epico', 2), ({SC_T[3]:.2f}, 'tension', 2), ({SC_T[4]:.2f}, 'epico', 1)]")
 _a = _s.index('    EF = ['); _b = _s.index(']]', _a) + 2

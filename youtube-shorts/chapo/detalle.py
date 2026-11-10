@@ -350,8 +350,8 @@ class Chess(Shot):
 def tl():
     T = RL.at; S = RL.SC_T
     return [
-        (0, T('Estados') - .25, Court('EXTRADICIÓN APROBADA', (70, 230, 120), gavel_t=T('extradición') - .1), 0),
-        (T('Estados') - .25, T('Olvida') - .2, Plane(), 0),
+        (0, T('México') - .2, Court('EXTRADICIÓN APROBADA', (70, 230, 120), gavel_t=T('extradición') - .1), 0),
+        (T('México') - .2, T('Olvida') - .2, Plane(), 0),
         (T('Olvida') - .2, T('organización') - .25, Hollywood(), 0),
         (T('organización') - .25, T('Culiacanazo') - .15, RL.Q1(), 0),
         (T('Culiacanazo') - .15, S[1], Blockade(), 0),
