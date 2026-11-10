@@ -16,7 +16,9 @@ const rigs = kinds.map((k, i) => { const m = stickman(k); m.root.position.x = (i
 rigs[4].rArm.a.rotation.set(-1.4, 0, -.1); rigs[4].setHand('r', 'point');
 rigs[1].rArm.a.rotation.set(-.5, 0, .1); rigs[1].rArm.b.rotation.x = -1.1; rigs[1].setHand('r', 'fist');
 const cam = new THREE.PerspectiveCamera(30, W / H, .1, 50);
-window.shot = mode => { if (mode === 'full') { cam.position.set(0, 1.15, 7.2); cam.lookAt(0, .95, 0); } else { cam.position.set(0, 1.55, 5.2); cam.lookAt(0, 1.45, 0); cam.fov = 30; cam.updateProjectionMatrix(); }
+window.shot = mode => { if (mode === 'heads') { r.setScissorTest(true); const c2 = new THREE.PerspectiveCamera(22, (W / 5) / H * 2, .1, 20);
+    rigs.forEach((m, i) => { const x = m.root.position.x; c2.position.set(x + .05, 1.66, .95); c2.lookAt(x, 1.6, 0); r.setViewport(i * W / 5, H / 4, W / 5, H / 2); r.setScissor(i * W / 5, H / 4, W / 5, H / 2); r.render(s, c2); });
+    r.setScissorTest(false); return; } else if (mode === 'full') { cam.position.set(0, 1.15, 7.2); cam.lookAt(0, .95, 0); } else { cam.position.set(0, 1.55, 5.2); cam.lookAt(0, 1.45, 0); cam.fov = 30; cam.updateProjectionMatrix(); }
   if (new URLSearchParams(location.search).get('ao')) { const c = new EffectComposer(r); c.addPass(new RenderPass(s, cam)); const ao = new GTAOPass(s, cam, W, H); ao.blendIntensity = 1; c.addPass(ao); c.addPass(new OutputPass()); c.render(); } else r.render(s, cam); };
 window.ready = true;
 </script></body></html>

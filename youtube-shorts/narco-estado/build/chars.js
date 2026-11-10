@@ -54,6 +54,90 @@ function garment(profile, folds = [], seed = 1, segs = 40) {
   geo.computeVertexNormals(); return geo;
 }
 
+// --- illustrated faces: drawn on an equirectangular texture (front of head = u .25) ---
+const FACES = {
+  president: { iris: '#3b2414', lid: .36, tilt: .05, brow: 'smug', browC: '#17110c', bw: 15, mouth: 'smirk', mustache: true, stubble: .55, nasal: true },
+  executive: { iris: '#4f7396', lid: .22, tilt: 0, brow: 'smug', browC: '#9c9c9c', bw: 13, mouth: 'grin', wrinkles: true, blush: .12, mx: -10 },
+  soldier:   { iris: '#3a2a1a', lid: .32, tilt: .18, brow: 'stern', browC: '#2a1f16', bw: 15, mouth: 'frown', stubble: .8, paint: 'rgba(40,55,25,.75)' },
+  tactical:  { iris: '#6a4a22', lid: .34, tilt: .38, brow: 'angry', browC: '#120d0a', bw: 16, mouth: null, paint: 'rgba(10,10,10,.85)' },
+  narrator:  { iris: '#3c7a4a', lid: .04, tilt: 0, brow: 'raised', browC: '#3a2414', bw: 13, mouth: 'grin', blush: .22, freckles: true },
+};
+function faceTex(kind, closed) {
+  const F = FACES[kind], U = 326, CX = 512, CY = 512, ink = '#22140e';
+  return tex(2048, 1024, (g) => {
+    g.fillStyle = '#f4f1ea'; g.fillRect(0, 0, 2048, 1024); g.translate(CX, CY); g.scale(1.55, 1.55); g.translate(-CX, -CY);
+    let q = kind.length * 97; const rnd = () => (q = (q * 16807) % 2147483647) / 2147483647;
+    const ey = CY - 34, mx = CX + (F.mx ?? 6), my = CY + 122;
+    // soft facial shading: cheeks, under-brow, chin
+    const soft = (x, y, r, col) => { const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, col); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(x - r, y - r, 2 * r, 2 * r); };
+    for (const sx of [-1, 1]) soft(CX + sx * 110, ey - 10, 60, 'rgba(150,130,115,.16)');
+    soft(CX, my + 70, 60, 'rgba(150,130,115,.12)');
+    if (F.blush) for (const sx of [-1, 1]) soft(CX + sx * 118, CY + 62, 50, `rgba(235,120,110,${F.blush})`);
+    if (F.paint) for (const sx of [-1, 1]) { g.save(); g.filter = 'blur(6px)'; g.fillStyle = F.paint; g.beginPath(); g.ellipse(CX + sx * 108, ey + 38, 46, 14, sx * .12, 0, 7); g.fill(); g.restore(); }
+    if (F.stubble) { for (let i = 0; i < 2600; i++) { const a = rnd() * 6.28, rr = Math.sqrt(rnd()), x = CX + Math.cos(a) * rr * 150, y = my + 30 + Math.sin(a) * rr * 95;
+        if (y < my - 20) continue; g.fillStyle = `rgba(55,45,40,${F.stubble * (.15 + rnd() * .3)})`; g.fillRect(x, y, 1.6, 1.6); } }
+    if (F.freckles) for (let i = 0; i < 40; i++) { const sx = rnd() < .5 ? -1 : 1; g.fillStyle = 'rgba(170,110,80,.4)'; g.beginPath(); g.arc(CX + sx * (55 + rnd() * 80), CY + 20 + rnd() * 50, 1.5 + rnd() * 1.6, 0, 7); g.fill(); }
+    // eyes
+    for (const sx of [-1, 1]) {
+      const ex = CX + sx * 106, rx = 31, ry = 25;
+      if (closed) { g.strokeStyle = ink; g.lineWidth = 6; g.lineCap = 'round'; g.beginPath(); g.moveTo(ex - rx, ey + 2); g.quadraticCurveTo(ex, ey + 14, ex + rx, ey + 2); g.stroke();
+        g.lineWidth = 3; g.beginPath(); g.moveTo(ex + sx * rx, ey + 2); g.lineTo(ex + sx * (rx + 9), ey - 5); g.stroke(); continue; }
+      const yl = x => ey - ry + F.lid * 2 * ry + F.tilt * ry * ((x - ex) / rx) * -sx;
+      g.save(); g.beginPath(); g.ellipse(ex, ey, rx, ry, 0, 0, 7); g.clip();
+      const sg = g.createLinearGradient(0, ey - ry, 0, ey + ry); sg.addColorStop(0, '#cfc9c0'); sg.addColorStop(.45, '#ffffff'); sg.addColorStop(1, '#ece8e2');
+      g.fillStyle = sg; g.fillRect(ex - rx, ey - ry, 2 * rx, 2 * ry);
+      const iy = ey + 3, ig = g.createRadialGradient(ex, iy, 2, ex, iy, 17); ig.addColorStop(0, '#000'); ig.addColorStop(.35, F.iris); ig.addColorStop(.8, F.iris); ig.addColorStop(1, '#120a06');
+      g.fillStyle = ig; g.beginPath(); g.arc(ex, iy, 17, 0, 7); g.fill();
+      g.fillStyle = '#060606'; g.beginPath(); g.arc(ex, iy, 7.5, 0, 7); g.fill();
+      g.fillStyle = '#fff'; g.beginPath(); g.arc(ex - 6, iy - 7, 5.5, 0, 7); g.fill(); g.beginPath(); g.arc(ex + 6, iy + 6, 2.4, 0, 7); g.fill();
+      // upper lid (skin) with soft shadow line
+      g.fillStyle = '#f0ece4'; g.beginPath(); g.moveTo(ex - rx - 2, yl(ex - rx)); g.lineTo(ex + rx + 2, yl(ex + rx)); g.lineTo(ex + rx + 2, ey - ry - 4); g.lineTo(ex - rx - 2, ey - ry - 4); g.fill();
+      g.strokeStyle = 'rgba(60,40,30,.25)'; g.lineWidth = 9; g.beginPath(); g.moveTo(ex - rx, yl(ex - rx) + 4); g.lineTo(ex + rx, yl(ex + rx) + 4); g.stroke();
+      g.restore();
+      // outlines: thick upper lash line, thin lower lid, outer lash flick
+      g.strokeStyle = ink; g.lineCap = 'round'; g.lineWidth = 2.5; g.globalAlpha = .55; g.beginPath(); g.ellipse(ex, ey, rx, ry, 0, .15, Math.PI - .15); g.stroke(); g.globalAlpha = 1;
+      g.lineWidth = 6; g.beginPath();
+      if (F.lid > .06) { const hw = rx * Math.sqrt(Math.max(0, 1 - Math.pow((yl(ex) - ey) / ry, 2))); g.moveTo(ex - hw - 2, yl(ex - hw)); g.lineTo(ex + hw + 2, yl(ex + hw)); }
+      else g.ellipse(ex, ey, rx, ry, 0, Math.PI + .1, -.1);
+      g.stroke();
+      const ox = ex + sx * rx;
+      if (F.wrinkles) { g.lineWidth = 2; g.strokeStyle = 'rgba(80,60,50,.4)'; for (let k = -1; k <= 1; k++) { g.beginPath(); g.moveTo(ox + sx * 10, ey + k * 9); g.lineTo(ox + sx * 26, ey + k * 14); g.stroke(); }
+        g.beginPath(); g.ellipse(ex, ey + 30, 22, 6, 0, .2, Math.PI - .2); g.stroke(); }
+      // eyebrow: tapered, slightly hairy
+      const shapes = { smug: sx < 0 ? [-16, -30, -8] : [2, -4, 4], angry: [16, -2, -14], stern: [8, -2, -4], raised: [-14, -22, -6] }[F.brow];
+      const by = ey - 50, ix = ex - sx * 26, ox2 = ex + sx * 40, pts = [];
+      for (let t = 0; t <= 1; t += .05) { const x = ix + (ox2 - ix) * t, y = by + (1 - t) * (1 - t) * shapes[0] + 2 * (1 - t) * t * shapes[1] + t * t * shapes[2]; pts.push([x, y, F.bw * (1 - t * .65)]); }
+      g.fillStyle = F.browC; g.beginPath(); pts.forEach(([x, y, w]) => g.lineTo(x, y - w / 2)); [...pts].reverse().forEach(([x, y, w]) => g.lineTo(x, y + w / 2)); g.closePath(); g.fill();
+      g.strokeStyle = F.browC; g.lineWidth = 1.5; for (let i = 0; i < 40; i++) { const [x, y, w] = pts[Math.floor(rnd() * (pts.length - 1))]; g.beginPath(); g.moveTo(x, y + w / 2); g.lineTo(x + sx * 7, y - w / 2 - 2); g.stroke(); }
+    }
+    if (F.wrinkles) { g.strokeStyle = 'rgba(80,60,50,.3)'; g.lineWidth = 2.5; for (let k = 0; k < 3; k++) { g.beginPath(); g.moveTo(CX - 90, CY - 150 + k * 18); g.bezierCurveTo(CX - 30, CY - 158 + k * 18, CX + 30, CY - 142 + k * 18, CX + 90, CY - 150 + k * 18); g.stroke(); } }
+    // nose
+    if (F.mouth !== null) { g.strokeStyle = 'rgba(110,85,70,.5)'; g.lineWidth = 4; g.lineCap = 'round';
+      g.beginPath(); g.moveTo(CX - 4, CY - 20); g.quadraticCurveTo(CX - 18, CY + 30, CX - 6, CY + 44); g.stroke();
+      g.beginPath(); g.moveTo(CX - 18, CY + 44); g.quadraticCurveTo(CX, CY + 54, CX + 18, CY + 44); g.stroke();
+      soft(CX + 4, CY + 30, 26, 'rgba(255,255,255,.5)'); }
+    if (F.nasal) { g.strokeStyle = 'rgba(110,85,70,.3)'; g.lineWidth = 3; for (const sx of [-1, 1]) { g.beginPath(); g.moveTo(CX + sx * 36, CY + 52); g.quadraticCurveTo(CX + sx * 58, CY + 95, CX + sx * 52, my + 18); g.stroke(); } }
+    // mouth
+    g.lineCap = 'round';
+    if (F.mouth === 'smirk') { g.strokeStyle = '#3a1a14'; g.lineWidth = 7; g.beginPath(); g.moveTo(mx - 42, my + 4); g.quadraticCurveTo(mx + 2, my + 18, mx + 44, my - 14); g.stroke();
+      g.lineWidth = 3; g.beginPath(); g.moveTo(mx + 46, my - 22); g.quadraticCurveTo(mx + 54, my - 12, mx + 48, my - 4); g.stroke();
+      g.strokeStyle = 'rgba(120,80,70,.35)'; g.lineWidth = 5; g.beginPath(); g.moveTo(mx - 16, my + 30); g.quadraticCurveTo(mx + 4, my + 36, mx + 22, my + 26); g.stroke(); }
+    if (F.mouth === 'frown') { g.strokeStyle = '#3a1a14'; g.lineWidth = 7; g.beginPath(); g.moveTo(mx - 36, my + 12); g.quadraticCurveTo(mx, my - 8, mx + 36, my + 12); g.stroke();
+      g.strokeStyle = 'rgba(120,80,70,.35)'; g.lineWidth = 4; g.beginPath(); g.moveTo(mx - 14, my + 30); g.quadraticCurveTo(mx, my + 25, mx + 14, my + 30); g.stroke(); }
+    if (F.mouth === 'grin') { const w = 48;
+      g.beginPath(); g.moveTo(mx - w, my - 10); g.quadraticCurveTo(mx, my + 2, mx + w, my - 10); g.quadraticCurveTo(mx, my + 56, mx - w, my - 10); g.closePath();
+      g.save(); g.clip(); g.fillStyle = '#5a1418'; g.fillRect(mx - w, my - 20, 2 * w, 80);
+      g.fillStyle = '#fbfaf6'; g.beginPath(); g.moveTo(mx - w, my - 14); g.quadraticCurveTo(mx, my - 2, mx + w, my - 14); g.lineTo(mx + w, my + 6); g.quadraticCurveTo(mx, my + 20, mx - w, my + 6); g.fill();
+      g.strokeStyle = 'rgba(0,0,0,.15)'; g.lineWidth = 1.5; for (let k = -3; k <= 3; k++) { g.beginPath(); g.moveTo(mx + k * 12, my - 6); g.lineTo(mx + k * 12, my + 12); g.stroke(); }
+      g.fillStyle = '#d0606a'; g.beginPath(); g.ellipse(mx, my + 38, 24, 12, 0, 0, 7); g.fill(); g.restore();
+      g.strokeStyle = '#3a1a14'; g.lineWidth = 4.5; g.beginPath(); g.moveTo(mx - w, my - 10); g.quadraticCurveTo(mx, my + 2, mx + w, my - 10); g.quadraticCurveTo(mx, my + 56, mx - w, my - 10); g.stroke();
+      g.lineWidth = 3; for (const sx of [-1, 1]) { g.beginPath(); g.moveTo(mx + sx * (w + 2), my - 18); g.quadraticCurveTo(mx + sx * (w + 9), my - 9, mx + sx * (w + 3), my - 1); g.stroke(); } }
+    if (F.mustache) { const y = my - 18; g.fillStyle = '#17110c'; g.beginPath(); g.moveTo(CX - 66, y + 14);
+      g.quadraticCurveTo(CX - 40, y - 26, CX, y - 18); g.quadraticCurveTo(CX + 40, y - 26, CX + 66, y + 14); g.quadraticCurveTo(CX + 36, y - 2, CX, y + 2); g.quadraticCurveTo(CX - 36, y - 2, CX - 66, y + 14); g.fill();
+      g.strokeStyle = 'rgba(255,255,255,.12)'; g.lineWidth = 1.5; for (let i = 0; i < 70; i++) { const x = CX + (rnd() - .5) * 110; g.beginPath(); g.moveTo(x, y - 12 + rnd() * 6); g.lineTo(x + (x - CX) * .15, y + 4); g.stroke(); } }
+  });
+}
+
 // --- outfits & personalities ---
 const LOOKS = {
   president: { suit: 0x101014, tex: fabric('#16161b', 'rgba(255,255,255,.04)'), shirt: 0xf4f4f4, tie: 0x0c0c0c, shoes: 0x060606,
@@ -75,52 +159,33 @@ function onHead(head, R, obj, u, v, push = 0, rz = 0) {
 }
 
 function face(head, R, L, rig) {
-  const ink = std(0x111111, { roughness: .15 }), browM = std(L.hairColor ?? 0x1a1a1a, { roughness: .8 });
-  rig.eyes = [];
-  for (const s of [-1, 1]) {
-    const eye = new THREE.Group();
-    const ball = add(eye, new THREE.SphereGeometry(R * .15, 24, 16), ink); ball.scale.set(1, 1.3, .45);
-    add(eye, new THREE.SphereGeometry(R * .045, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }), R * .05, R * .07, R * .06);
-    onHead(head, R, eye, s * .32, .1, -.004); rig.eyes.push(eye);
-    if (!L.balaclava || true) {
-      const moods = { smug: s < 0 ? [.42, -.2] : [.3, .05], angry: [.25, s * .42], stern: [.27, s * .18], raised: [.4, -s * .12] };
-      const [bv, rz] = moods[L.brows];
-      const brow = new THREE.Group(); const b = add(brow, cap(R * .05, R * .26, 8), browM); b.rotation.z = Math.PI / 2; b.scale.set(1, 1, .6);
-      onHead(head, R, brow, s * .33, bv, .004, rz); (rig.brows ??= []).push(brow);
-    }
-  }
-  // nose
-  if (!L.balaclava) add(head, new THREE.SphereGeometry(R * .08, 16, 12), head.material, 0, -R * .08, R * .97).scale.set(1, 1.2, .8);
-  // mouth
-  const mouth = new THREE.Group(), lip = std(0x2a1414, { roughness: .4 });
-  if (L.mouth === 'smirk') { const a = add(mouth, new THREE.TorusGeometry(R * .2, R * .03, 8, 24, 1.6), lip); a.rotation.z = -Math.PI / 2 - .5; onHead(head, R, mouth, .08, -.38, 0, .12); }
-  if (L.mouth === 'frown') { const a = add(mouth, new THREE.TorusGeometry(R * .2, R * .03, 8, 24, 1.5), lip); a.rotation.z = Math.PI / 2 - .75; onHead(head, R, mouth, 0, -.5); }
-  if (L.mouth === 'grin') {
-    add(mouth, new THREE.CircleGeometry(R * .22, 24, Math.PI, Math.PI), std(0x3a0d0d, { side: THREE.DoubleSide }));
-    add(mouth, new THREE.PlaneGeometry(R * .38, R * .07), std(0xffffff, { roughness: .3 }), 0, -R * .035, .001);
-    onHead(head, R, mouth, .03, -.33, .002, .05);
-  }
-  if (L.mustache) for (const s of [-1, 1]) { const m = new THREE.Group(); const c = add(m, cap(R * .06, R * .2, 8), std(0x15110e, { roughness: .9 })); c.rotation.z = Math.PI / 2 + s * .35; c.scale.z = .6; onHead(head, R, m, s * .12, -.24, .01); }
+  // painted, illustrated face (open + blink textures) on the porcelain head
+  const open = faceTex(rig.kind, false), shut = faceTex(rig.kind, true);
+  head.material = new THREE.MeshPhysicalMaterial({ map: open, roughness: .45, clearcoat: .3, clearcoatRoughness: .45 });
+  rig.faceTex = { open, shut };
   if (L.cigar) { const g = new THREE.Group(); const c = add(g, new THREE.CylinderGeometry(R * .05, R * .055, R * .9, 12), std(0x5a3418, { roughness: .9 })); c.rotation.x = Math.PI / 2; c.position.z = R * .4;
     add(g, new THREE.CylinderGeometry(R * .052, R * .052, R * .06, 12), new THREE.MeshBasicMaterial({ color: 0xff5a10 }), 0, 0, R * .86).rotation.x = Math.PI / 2;
-    onHead(head, R, g, .2, -.36, -.01, 0); g.rotateY(.5); rig.cigar = g; }
+    onHead(head, R, g, .2, -.5, -.01, 0); g.rotateY(.5); rig.cigar = g; }
   if (L.glasses) { const gold = std(0xd4a537, { metalness: 1, roughness: .25 }), gl = new THREE.Group();
-    for (const s of [-1, 1]) { add(gl, new THREE.TorusGeometry(R * .2, R * .022, 8, 28), gold, s * R * .33, 0, 0);
-      add(gl, new THREE.CircleGeometry(R * .19, 24), new THREE.MeshPhysicalMaterial({ color: 0x88aacc, transparent: true, opacity: .25, roughness: 0, metalness: .2 }), s * R * .33, 0, 0); }
+    for (const s of [-1, 1]) { add(gl, new THREE.TorusGeometry(R * .27, R * .025, 8, 32), gold, s * R * .47, 0, 0);
+      add(gl, new THREE.CircleGeometry(R * .26, 24), new THREE.MeshPhysicalMaterial({ color: 0x88aacc, transparent: true, opacity: .25, roughness: 0, metalness: .2 }), s * R * .47, 0, 0); }
     add(gl, new THREE.BoxGeometry(R * .2, R * .03, R * .03), gold);
-    onHead(head, R, gl, 0, .08, R * .12); }
-  if (L.hair) { const hm = std(L.hairColor, { roughness: .55 });
+    onHead(head, R, gl, 0, .16, R * .2); }
+  if (L.hair) { const base = '#' + new THREE.Color(L.hairColor).getHexString();
+    const hm = std(0xffffff, { roughness: .45, map: tex(512, 256, (g, w, h) => { g.fillStyle = base; g.fillRect(0, 0, w, h); let q = 7; const r = () => (q = (q * 16807) % 2147483647) / 2147483647;
+      for (let i = 0; i < 900; i++) { const x = r() * w, l = 40 + r() * 140; g.strokeStyle = r() < .5 ? 'rgba(255,255,255,' + (.04 + r() * .1) + ')' : 'rgba(0,0,0,' + (.1 + r() * .2) + ')'; g.lineWidth = 1 + r() * 2;
+        g.beginPath(); g.moveTo(x, r() * h * .3); g.quadraticCurveTo(x + (r() - .5) * 20, h * .5, x + (r() - .5) * 30, l + h * .3); g.stroke(); } }) });
     const h = add(head, new THREE.SphereGeometry(R * 1.06, 40, 20, 0, Math.PI * 2, 0, Math.PI * .4), hm); h.rotation.x = -.5; h.scale.set(1, 1, 1.04);
-    if (L.hair === 'side') { const q = add(head, new THREE.SphereGeometry(R * .5, 20, 12), hm, -R * .35, R * .78, R * .3); q.scale.set(1.3, .45, 1); q.rotation.z = .3; }
-    if (L.hair === 'slick') for (let i = -2; i <= 2; i++) { const st = add(head, new THREE.TorusGeometry(R * 1.04, R * .012, 4, 30, 1.6), std(0x2a221c)); st.rotation.set(0, Math.PI / 2, 0); st.position.x = i * R * .15; st.rotation.z = 1.0; } }
+    if (L.hair === 'side') { h.rotation.z = .12; h.scale.set(1.02, 1.03, 1.05); }
+    if (L.hair === 'slick') { h.scale.set(1.01, 1.02, 1.05); for (const sx of [-1, 1]) { const sb = add(head, cap(R * .07, R * .25, 8), hm, sx * R * .96, R * .05, -R * .08); sb.scale.z = .5; sb.rotation.z = sx * .1; } } }
   if (L.helmet) { const hm = new THREE.MeshStandardMaterial({ map: camoTex(['#4b5532', '#2f3520', '#6b6a45']), roughness: .9 });
-    const h = add(head, new THREE.SphereGeometry(R * 1.14, 36, 18, 0, Math.PI * 2, 0, Math.PI * .5), hm, 0, R * .08, 0);
-    add(head, new THREE.TorusGeometry(R * 1.12, R * .07, 8, 40), std(0x2f3520, { roughness: .9 }), 0, R * .08, 0).rotation.x = Math.PI / 2;
+    const h = add(head, new THREE.SphereGeometry(R * 1.14, 36, 18, 0, Math.PI * 2, 0, Math.PI * .5), hm, 0, R * .36, 0);
+    add(head, new THREE.TorusGeometry(R * 1.12, R * .07, 8, 40), std(0x2f3520, { roughness: .9 }), 0, R * .36, 0).rotation.x = Math.PI / 2;
     if (L.strap) for (const s of [-1, 1]) { const st = add(head, cap(R * .03, R * .9, 6), std(0x1d1d14)); st.position.set(s * R * .9, -R * .35, R * .2); st.rotation.z = s * .25; } }
   if (L.balaclava) { const bm = std(0x0f0f0f, { roughness: 1, map: fabric('#111111', 'rgba(255,255,255,.04)', 4) });
-    add(head, new THREE.SphereGeometry(R * 1.04, 36, 18, 0, Math.PI * 2, 0, Math.PI * .4), bm).rotation.x = -.05;          // top
-    const low = add(head, new THREE.SphereGeometry(R * 1.04, 36, 18, 0, Math.PI * 2, Math.PI * .55, Math.PI * .45), bm); low.rotation.x = .12; // lower face
-    for (const s of [-1, 1]) add(head, new THREE.SphereGeometry(R * 1.035, 20, 6, Math.PI / 2 + s * 1.15 - .35, .7, Math.PI * .38, Math.PI * .2), bm); // side band
+    add(head, new THREE.SphereGeometry(R * 1.04, 36, 18, 0, Math.PI * 2, 0, Math.PI * .33), bm).rotation.x = -.05;          // top
+    const low = add(head, new THREE.SphereGeometry(R * 1.04, 36, 18, 0, Math.PI * 2, Math.PI * .56, Math.PI * .44), bm); low.rotation.x = .1; // lower face
+    for (const s of [-1, 1]) add(head, new THREE.SphereGeometry(R * 1.035, 20, 6, Math.PI / 2 + s * 1.3 - .3, .6, Math.PI * .3, Math.PI * .3), bm); // side band
   }
 }
 
@@ -181,9 +246,16 @@ export function stickman(kind) {
     if (L.radio) { add(root, new THREE.BoxGeometry(.05, .09, .04), std(0x0a0a0a), .12, 1.3, .14); add(root, new THREE.CylinderGeometry(.004, .004, .3), std(0x050505), .14, 1.48, .13); }
     if (L.patch) { const p = add(root, new THREE.PlaneGeometry(.06, .04), new THREE.MeshStandardMaterial({ map: tex(60, 40, g => { ['#006847', '#eee', '#ce1126'].forEach((c, i) => { g.fillStyle = c; g.fillRect(i * 20, 0, 20, 40); }); g.fillStyle = '#7b4b1f'; g.beginPath(); g.arc(30, 20, 6, 0, 7); g.fill(); }) }), -.1, 1.3, .127); }
   }
-  if (L.sash) { const cols = [0x0b6b3a, 0xf2f2f2, 0xb3121b];
-    cols.forEach((c, i) => { const b = add(root, new THREE.BoxGeometry(.05, .66, .02), std(c, { roughness: .45 }), -.015 + (i - 1) * .046, 1.2, .132); b.rotation.z = .62; });
-    const med = add(root, new THREE.CylinderGeometry(.035, .035, .01, 24), std(0xd4a537, { metalness: 1, roughness: .2 }), .12, .98, .13); med.rotation.x = Math.PI / 2; }
+  if (L.sash) {
+    const st = tex(16, 120, (g, w, h) => { [['#c9a040', 0, 4], ['#0b6b3a', 4, 38], ['#f2f2f2', 42, 36], ['#b3121b', 78, 38], ['#c9a040', 116, 4]].forEach(([c, y, hh]) => { g.fillStyle = c; g.fillRect(0, y, w, hh); }); });
+    st.repeat.set(1, 1);
+    const geo = new THREE.CylinderGeometry(.2, .2, .1, 96, 1, true).rotateZ(-.95).translate(0, 1.17, 0), pp = geo.attributes.position;
+    const rAt = y => { for (let i = 1; i < prof.length; i++) { const [r0, y0] = prof[i - 1], [r1, y1] = prof[i]; if (y <= y1 && y >= y0) return r0 + (r1 - r0) * (y - y0) / (y1 - y0); } return .15; };
+    for (let i = 0; i < pp.count; i++) { const x = pp.getX(i), y = pp.getY(i), z = pp.getZ(i), a = Math.atan2(z, x), r = rAt(y) + .016; pp.setX(i, Math.cos(a) * r); pp.setZ(i, Math.sin(a) * r); }
+    geo.computeVertexNormals();
+    const band = new THREE.Mesh(geo, std(0xffffff, { map: st, roughness: .5, side: THREE.DoubleSide })); band.castShadow = true; torso.add(band);
+    const med = add(root, new THREE.CylinderGeometry(.03, .03, .012, 24), std(0xd4a537, { metalness: 1, roughness: .2 }), .105, 1.02, .118); med.rotation.x = Math.PI / 2;
+    add(root, new THREE.TorusGeometry(.03, .005, 6, 24), std(0xb08020, { metalness: 1, roughness: .3 }), .105, 1.02, .125); }
   // arms
   const handMat = L.gloves ? std(0x111111, { roughness: .7 }) : skin;
   for (const s of [-1, 1]) {
@@ -220,7 +292,7 @@ export function stickman(kind) {
   rig.relax();
   const blinkPh = kind.length * .73;
   rig.tick = t => { const q = (t + blinkPh) % 3.4; const k = q < .13 ? Math.abs(Math.cos(q / .13 * Math.PI)) * .9 + .1 : 1;
-    rig.eyes.forEach(e => e.scale.y = k); torso.scale.x = 1 + Math.sin(t * 2.2) * .008; };
+    head.material.map = k < .5 ? rig.faceTex.shut : rig.faceTex.open; torso.scale.x = 1 + Math.sin(t * 2.2) * .008; };
   rig.setHand = (side, pose) => rig[side === 'r' ? 'rArm' : 'lArm'].end.userData.setPose(pose);
   root.traverse(o => { if (o.isMesh) o.castShadow = true; });
   return rig;
