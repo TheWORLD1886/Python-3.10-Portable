@@ -199,7 +199,7 @@ _EF = (f"    EF = [[0, 'boom', .9], [{at('Olvida') - .3:.2f}, 'whoosh', .5], [{a
        f" [{SC_T[4]:.2f}, 'boom', .5], [{at('like') + .1:.2f}, 'ding', .3], [{at('sígueme') + .1:.2f}, 'ding', .25]]")
 _s = _s[:_a] + _EF + _s[_b:]
 # mezcla: música y efectos más bajos; la música baja aún más cuando habla la voz
-_s = _s.replace("duck = 1 - .55 * env", "duck = 1 - .7 * env").replace(
+_s = _s.replace("env / (env.max() * .25)", "env / (env.max() * .25 + 1e-9)").replace("duck = 1 - .55 * env", "duck = 1 - .7 * env").replace(
     "out = np.tanh((mus * .75 * duck + fx * .6 * (1 - .35 * env)) * 1.1) * .8 + vv * .92",
     "out = np.tanh((mus * .5 * duck + fx * .32 * (1 - .5 * env)) * 1.1) * .7 + vv * .95")
 exec(_s)
