@@ -352,6 +352,26 @@ def character(fr, kind, x, fy, hgt, t, armR=('reposo',), armL=('reposo',), look=
         cv2.ellipse(fr, P8(head + A(-.1 * u, -.74 * u)), (int(1.08 * u * 8), int(.44 * u * 8)), -12, 0, 360, (40, 66, 44), -1, cv2.LINE_AA, 3)
         cv2.ellipse(fr, P8(head + A(.05 * u, -.52 * u)), (int(.98 * u * 8), int(.16 * u * 8)), -6, 0, 360, (26, 44, 30), -1, cv2.LINE_AA, 3)
         circ(fr, head + A(.5 * u, -.84 * u), .13 * u, (220, 180, 70))
+    return hands
+
+def rifle(fr, hands, u, mag=True):
+    # fusil de asalto estilizado sostenido con las dos manos (culata atrás, cañón hacia la mano delantera)
+    (hR, eR), (hL, eL) = hands[1], hands[-1]; hR, hL = A(*hR), A(*hL)
+    v = hR - hL; L_ = np.linalg.norm(v)
+    if L_ < 1e-3: return
+    v /= L_; n = A(-v[1], v[0])
+    if n[1] < 0: n = -n                                      # n apunta hacia abajo
+    gun, dk = (64, 68, 64), (30, 32, 30)
+    def q(p0, p1, w0, w1, col):
+        poly(fr, [tuple(p0 - n * w0), tuple(p1 - n * w1), tuple(p1 + n * w1), tuple(p0 + n * w0)], col)
+    q(hL - v * .9 * u, hL - v * .1 * u, .26 * u, .16 * u, dk)                  # culata
+    q(hL - v * .15 * u, hR + v * .25 * u, .17 * u, .15 * u, gun)               # cuerpo
+    q(hR + v * .2 * u, hR + v * 1.5 * u, .06 * u, .06 * u, dk)                 # cañón
+    line(fr, hL - v * .1 * u - n * .12 * u, hR + v * .2 * u - n * .1 * u, (110, 116, 110), 2)
+    q(hL + v * .25 * u - n * .2 * u, hL + v * .75 * u - n * .2 * u, .07 * u, .07 * u, dk)  # mira
+    if mag:
+        m0 = hL + v * .45 * u; poly(fr, [tuple(m0), tuple(m0 + v * .3 * u), tuple(m0 + v * .42 * u + n * .7 * u), tuple(m0 + v * .12 * u + n * .75 * u)], dk)
+    circ(fr, hL, .27 * u, SKIN); circ(fr, hR, .27 * u, SKIN)                  # manos encima del arma
 
 class Dust:
     def __init__(s, n, box, color, r=5, op=.5):

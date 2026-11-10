@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # Short: ¿Y si el Cártel de Sinaloa lo sacara de máxima seguridad? (60 s, 1080x1920) · estilo plantilla + profundidad 3D
 import chapo as CH
+import lib
 from chapo import *
 import json
 
@@ -113,13 +114,21 @@ class R2:
         sy = s.by + ((t * .6) % 1) * 4 * s.ch; cv2.line(fr, (s.bx - 10, int(sy)), (s.bx + 6 * s.cw + 10, int(sy)), (255, 80, 60), 4)
         lbl = N.text_sprite('PLANO · PENAL FEDERAL', 30, (150, 255, 200, 255), spacing=4, pad=10); blit(fr, lbl, 540, s.by - 30)
         a = ss(1.0, 1.6, t) * (1 - ss(7.0, 7.4, t))
-        if a > 0: blit(fr, s.codes, 540, 520 + math.sin(t * 1.5) * 5, a)
+        if a > 0: blit(fr, s.codes, 540, 580 + math.sin(t * 1.5) * 5, a)
         # helicópteros tácticos con láser hacia abajo
         for i, (dx, dy) in enumerate([(0, 0), (260, -90)]):
-            x = lerp(1300, -300, (t - 2 + i * .4) / 9.); y = 470 + dy + math.sin(t * 1.2 + i) * 10
+            x = lerp(1300, -300, (t - 2 + i * .4) / 9.); y = 300 + dy + math.sin(t * 1.2 + i) * 10
             for k in (-1, 1): line(fr, (x - 10, y + 28), (x + k * 140 + 60, 1250), (255, 40, 40), 2)
             CH.heli(fr, x, y, 1.7 - .4 * i, t + i, col=(70, 78, 72))
         s.dust.draw(fr, t)
+        ka = ss(5.5, 6.2, t)
+        if ka > 0:   # "un comando de élite con tecnología militar"
+            for i, x in enumerate((300, 540, 780)):
+                fy = 1620 + (i == 1) * 30; xx = x + (1 - eOut(ka)) * 200 * (1 if i == 2 else -1)
+                cv2.ellipse(fr, (int(xx), fy + 4), (120, 16), 0, 0, 360, (4, 10, 8), -1, cv2.LINE_AA)
+                hs = character(fr, 'comando', xx, fy, 380, t + i, armR=('apunta', (xx + 220, fy - 180), .8), armL=('apunta', (xx + 220, fy - 180), .4),
+                               look=(.3, 0), frown=.3, mask=True)
+                lib.rifle(fr, hs, 380 / 8.)
         k = ss(9.6, 9.9, t)
         if k > 0: blit(fr, s.stamp, 540, 520, k, lerp(1.6, 1., eOut(k)))
     def cam(s, t, d):
@@ -186,6 +195,8 @@ class R4(D.S4D):
         poly(fr, [(x, y - h * .2), (x + w * .1, y - h), (x + w * .7, y - h), (x + w * .8, y - h * .7), (x + w, y - h * .6), (x + w, y), (x, y)], (58, 64, 50))
         poly(fr, [(x + w * .55, y - h * .92), (x + w * .68, y - h * .92), (x + w * .76, y - h * .66), (x + w * .55, y - h * .66)], (30, 40, 46))
         for wx in (x + w * .2, x + w * .78): circ(fr, (wx, y), 32 * sc, (14, 14, 16)); circ(fr, (wx, y), 14 * sc, (80, 84, 74))
+        cv2.rectangle(fr, (int(x + w * .25), int(y - h * 1.18)), (int(x + w * .45), int(y - h)), (48, 54, 42), -1)
+        line(fr, (x + w * .42, y - h * 1.1), (x + w * .78, y - h * 1.16), (20, 22, 20), 7 * sc)
         blit(fr, glow_sprite(30, (255, 240, 200)), x + w, y - h * .45, .8, sc, add=True)
     def draw(s, fr, t, d):
         super().draw(fr, t, d)     # humo, fuego, sirenas y el panel de territorios del original
@@ -210,8 +221,9 @@ def r4_draw(s, fr, t, d):
     # soldados en posición táctica
     for i, (x, fy) in enumerate([(220, 1600), (520, 1640), (830, 1600)]):
         cv2.ellipse(fr, (x, fy + 4), (130, 18), 0, 0, 360, (8, 6, 6), -1, cv2.LINE_AA)
-        character(fr, 'militar', x, fy, 400, t + i, armR=('apunta', (x + 300, fy - 330), .85), armL=('apunta', (x + 260, fy - 300), .8),
+        hs = character(fr, 'militar', x, fy, 400, t + i, armR=('apunta', (x + 300, fy - 330), .85), armL=('apunta', (x + 300, fy - 330), .42),
                   look=(.6, -.2), frown=.5, beret=True)
+        lib.rifle(fr, hs, 400 / 8.)
     # drones con visor infrarrojo
     for i in range(2):
         x = lerp(-150, 1250, ((t * .07) + i * .5) % 1); s.drone(fr, x, 420 + i * 160 + math.sin(t * 2 + i) * 12, 1.2 - .3 * i, t)
