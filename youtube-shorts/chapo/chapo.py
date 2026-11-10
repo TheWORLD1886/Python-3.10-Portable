@@ -15,8 +15,8 @@ SUBS = [
  (16.55, 19.40, 1500, "obligaría a *Washington* a revisar su caso."), (19.75, 21.60, 1500, "Las cortes *estallarían*"), (21.60, 23.90, 1500, "en un debate *sin precedentes*."),
  (24.30, 25.70, 1440, "Segundo…"), (25.72, 27.50, 1440, "el *caos penitenciario*."), (27.60, 29.20, 1440, "¿Dónde lo *meterían*?"),
  (29.35, 31.00, 1440, "*El Altiplano* o *Puente Grande*"), (31.00, 33.40, 1440, "revivirían los *fantasmas* de sus fugas."), (33.55, 36.80, 1440, "La *alerta roja* se activaría al instante."),
- (37.40, 38.95, 1480, "Tercero…"), (39.00, 40.70, 1480, "el *gran escape*."), (40.90, 43.00, 1480, "En un traslado *nocturno*,"), (43.00, 44.40, 1480, "la *seguridad se rompe*…"),
- (44.40, 45.75, 1480, "y *desaparece de nuevo*,"), (45.78, 47.40, 1480, "con su ropa de siempre:"), (47.40, 49.90, 1480, "*camisa sencilla* y *vaqueros*."),
+ (37.40, 38.95, 960, "Tercero…"), (39.00, 40.70, 960, "el *gran escape*."), (40.90, 43.00, 960, "En un traslado *nocturno*,"), (43.00, 44.40, 960, "la *seguridad se rompe*…"),
+ (44.40, 45.75, 960, "y *desaparece de nuevo*,"), (45.78, 47.40, 960, "con su ropa de siempre:"), (47.40, 49.90, 960, "*camisa sencilla* y *vaqueros*."),
  (50.40, 53.60, 1480, "Una *pesadilla diplomática* para dos naciones…"), (53.70, 56.30, 1480, "¿Volvería a mandar desde las *sombras*?"),
  (56.40, 58.40, 1480, "¡*Dale like* y *sígueme*"), (58.40, 61.00, 1480, "para más historias!"),
 ]
@@ -24,7 +24,7 @@ EMOJIS = [
  (2.6, 4.6, '🇲🇽', 860, 900, 150, 'pop'), (7.3, 9.6, '⚠️', 200, 900, 150, 'late'),
  (14.4, 17.0, '📄', 860, 1180, 140, 'sacude'), (19.8, 23.8, '⚖️', 200, 1180, 150, 'flota'),
  (25.8, 28.2, '🏛️', 880, 1250, 140, 'pop'), (33.7, 36.8, '🚨', 200, 1250, 150, 'late'),
- (43.3, 45.6, '🔥', 860, 1250, 150, 'late'), (44.6, 47.3, '🏃', 200, 1250, 150, 'cae'),
+ (43.3, 45.6, '🔥', 880, 760, 150, 'late'), (44.6, 47.3, '🏃', 200, 760, 150, 'cae'),
  (53.8, 61, '💬', 180, 380, 140, 'late'), (56.5, 61, '👍', 540, 300, 150, 'pop'), (57.7, 61, '🔔', 900, 380, 140, 'sacude'),
 ]
 
@@ -220,28 +220,82 @@ class C4:
         s.puff = glow_sprite(140, (110, 96, 90)); s.flame = glow_sprite(90, (255, 150, 50))
         s.stamp = N.stamp('LIBRE', (255, 59, 42), w=480, px=110)
         s.dust = Dust(40, (40, 300, 1040, 1600), (255, 170, 90), 4, .5)
+    def suv(s, fr, x, y, sc, t, door=0., lights=True):
+        # camioneta negra (vista lateral, frente a la derecha)
+        w, h = 420 * sc, 150 * sc
+        if lights:
+            lay = np.zeros((H // 4, W // 4, 3), np.float32); hx, hy = (x + w) / 4, (y - h * .45) / 4
+            cv2.fillPoly(lay, [np.array([(hx, hy), (hx + 260 * sc, hy - 40 * sc), (hx + 260 * sc, hy + 50 * sc)], np.int32)], (255, 240, 200))
+            fr[:] = np.clip(fr + cv2.resize(cv2.GaussianBlur(lay, (0, 0), 5), (W, H)) * .35, 0, 255).astype(np.uint8)
+        poly(fr, [(x, y - h * .25), (x + w * .06, y - h), (x + w * .72, y - h), (x + w * .86, y - h * .62), (x + w, y - h * .55), (x + w, y - h * .05), (x, y - h * .05)], (16, 17, 20))
+        poly(fr, [(x + w * .1, y - h * .92), (x + w * .38, y - h * .92), (x + w * .38, y - h * .62), (x + w * .1, y - h * .62)], (40, 56, 72))
+        poly(fr, [(x + w * .42, y - h * .92), (x + w * .68, y - h * .92), (x + w * .8, y - h * .62), (x + w * .42, y - h * .62)], (40, 56, 72))
+        line(fr, (x + w * .02, y - h * .4), (x + w, y - h * .4), (44, 46, 52), 3)
+        if door > 0:  # puerta trasera abierta
+            dx_ = door * w * .22
+            poly(fr, [(x + w * .4, y - h * .92), (x + w * .4 - dx_, y - h * 1.0), (x + w * .4 - dx_, y - h * .12), (x + w * .4, y - h * .05)], (30, 32, 36))
+            poly(fr, [(x + w * .2, y - h * .9), (x + w * .4, y - h * .9), (x + w * .4, y - h * .1), (x + w * .2, y - h * .1)], (6, 6, 8))
+        for wx in (x + w * .2, x + w * .8):
+            circ(fr, (wx, y), 46 * sc, (8, 8, 10)); circ(fr, (wx, y), 22 * sc, (90, 94, 100))
+        blit(fr, glow_sprite(40, (255, 240, 200)), x + w, y - h * .45, .9 if lights else 0, sc, add=True)
+        blit(fr, glow_sprite(30, (255, 30, 20)), x + 4, y - h * .45, .8, sc, add=True)
+    def truck_fire(s, fr, t, k):
+        # narcobloqueo: tráiler atravesado e incendiado cerrando la carretera
+        x, y = 560, 1235
+        poly(fr, [(x - 330, y), (x - 330, y - 120), (x + 140, y - 120), (x + 140, y)], (34, 28, 28))
+        poly(fr, [(x + 150, y), (x + 150, y - 100), (x + 230, y - 100), (x + 270, y - 60), (x + 270, y)], (30, 26, 26))
+        for wx in (x - 280, x - 200, x + 80, x + 210): circ(fr, (wx, y), 26, (10, 10, 12))
+        for i in range(7):
+            fl = .7 + .3 * math.sin(t * 13 + i * 1.7)
+            blit(fr, s.flame, x - 300 + i * 70, y - 110, k * fl, 1.0 + .5 * fl, add=True)
+        for i in range(10):
+            f = (i / 10. + t * .07) % 1; blit(fr, s.puff, x - 250 + (i % 5) * 110 + f * 120, y - 120 - f * 700, k * min(1, f * 5) * (1 - f) * .55, 1 + f * 2.6)
     def draw(s, fr, t, d):
-        for i in range(18):
-            f = (i / 18. + t * .05) % 1; blit(fr, s.puff, 300 + (i % 3) * 220 + f * 160, 1080 - f * 800, min(1, f * 5) * (1 - f) * .4, .9 + f * 2.4)
+        for i in range(12):
+            f = (i / 12. + t * .05) % 1; blit(fr, s.puff, 300 + (i % 3) * 220 + f * 160, 1080 - f * 800, min(1, f * 5) * (1 - f) * .3, .9 + f * 2.4)
         on = (t * 2.5) % 1 < .5
         for i, (x, y) in enumerate(s.lights): blit(fr, glow_sprite(70, (255, 40, 40) if on ^ (i % 2) else (40, 90, 255)), x, y, .9, add=True)
-        brk = ss(6.0, 6.4, t)
-        if brk > 0 and t < 8: blit(fr, s.flame, 600, 1150, brk * (1 - ss(6.6, 8, t)), 2.4, add=True)
+        T1, T2, T3, T4, T5, TC = 3.6, 4.6, 6.2, 7.3, 8.0, d - 2.6   # bloqueo · llegan camionetas · corre · sube · arrancan · ropa nueva
+        kb = ss(T1, T1 + .5, t)
+        if kb > 0 and t < TC: s.truck_fire(fr, t, kb)
+        if T1 <= t < T1 + .4: fr[:] = np.clip(fr.astype(np.float32) + 90 * (1 - (t - T1) / .4), 0, 255).astype(np.uint8)   # destello
         s.dust.draw(fr, t)
-        if t < 6.3:   # traslado: con uniforme y esposas
-            cv2.ellipse(fr, (560, 1494), (150, 20), 0, 0, 360, (16, 12, 10), -1, cv2.LINE_AA)
-            character(fr, 'reo', 560, 1490, 440, t, armR=('apunta', (600, 1290), .75), armL=('apunta', (520, 1290), .75), look=(-.6, -.1), frown=-.2, mustache=True, cuffs=True)
-        else:         # escape: camisa a cuadros y vaqueros, corriendo hacia la oscuridad
-            u = ss(6.3, 12.5, t); x = lerp(620, 180, u); sc = lerp(1, .62, u); fy = lerp(1500, 1250, u)
+        # tres camionetas negras llegan desde la izquierda, se detienen y luego arrancan juntas
+        if T2 <= t < T5 + 1.8:
+            for j, (stop, yy, sc) in enumerate([(30, 1450, 1.1), (-330, 1380, .85), (-610, 1330, .7)][::-1]):
+                tin = T2 + (2 - j) * .25
+                xin = lerp(-900, stop, eOut((t - tin) / 1.0)) if t >= tin else -2000
+                xout = lerp(0, 1800, ss(T5, T5 + 1.6, t) ** 2)
+                door = ss(T2 + 1.2, T2 + 1.5, t) * (1 - ss(T4 - .2, T4 + .2, t)) if j == 2 else 0
+                s.suv(fr, xin + xout, yy, sc, t, door)
+            # comando encapuchado junto a la puerta
+            if T2 + 1.3 <= t < T4 + .1:
+                kk = ss(T2 + 1.3, T2 + 1.7, t); cx_ = lerp(-100, 120, kk)
+                character(fr, 'comando', cx_, 1520, 420, t, armR=('palma',), armL=('reposo',), look=(.6, 0), frown=.3, mask=True)
+        # guardias federales: se sorprenden y retroceden con las manos arriba
+        if t < T5 + 1.8:
+            up = ss(T2 + 1.0, T2 + 1.5, t); back = ss(T2 + 1.0, T3, t)
+            for gx, side in ((780, 1), (960, 1)):
+                pose = ('palma',) if up > .5 else ('reposo',)
+                character(fr, 'militar', gx + back * 70 * side, 1530, 430, t, armR=pose, armL=pose, look=(-.5 * ss(T1, T1 + .4, t), 0), frown=.2 + .5 * ss(T1, T1 + .4, t), beret=True)
+        if t < T4:   # el reo: escoltado, luego corre hacia la camioneta
+            run_k = ss(T3, T4 - .1, t); x = lerp(600, 260, run_k)
+            cv2.ellipse(fr, (int(x), 1534), (150, 20), 0, 0, 360, (16, 12, 10), -1, cv2.LINE_AA)
+            kw = dict(armR=('apunta', (x + 40, 1330), .75), armL=('apunta', (x - 40, 1330), .75), frown=-.2, mustache=True, cuffs=True)
+            if run_k <= 0: character(fr, 'reo', x, 1530, 440, t, look=(-.6 * ss(T1, T1 + .4, t), -.1), **kw)
+            else: character(fr, 'reo', x, 1530, 440, t, look=(-.8, 0), run=12, **kw)
+        if t >= TC:  # casi al final: libre, con su ropa de siempre y gorra, se aleja por la carretera
+            u = ss(TC, d, t); x = lerp(560, 470, u); sc = lerp(.95, .55, u); fy = lerp(1540, 1240, u)
+            op = ss(TC, TC + .35, t)
+            if op < 1: fr[:] = (fr * (.35 + .65 * op)).astype(np.uint8)
             cv2.ellipse(fr, (int(x), int(fy + 4)), (int(130 * sc), int(18 * sc)), 0, 0, 360, (16, 12, 10), -1, cv2.LINE_AA)
-            sw = math.sin(t * 11)
-            character(fr, 'civil', x, fy, 440 * sc, t, armR=('apunta', (x + 260 * sw, fy - 330 * sc), .9), armL=('apunta', (x - 260 * sw, fy - 330 * sc), .9),
-                      look=(-.8, 0), frown=-.3, smile=.5, mustache=True, run=11, cap=True)
-            if u > .7: fr[:] = fr  # se pierde en la oscuridad (lo da la viñeta y la bruma)
-        k = ss(8.6, 8.9, t)
+            sw = math.sin(t * 6)
+            character(fr, 'civil', x, fy, 460 * sc, t, armR=('apunta', (x + 200 * sw, fy - 250 * sc), .9), armL=('apunta', (x - 200 * sw, fy - 250 * sc), .9),
+                      look=(.4, -.1), frown=-.3, smile=.6, mustache=True, run=6, cap=True)
+        k = ss(TC + .6, TC + .9, t)
         if k > 0: blit(fr, s.stamp, 540, 560, k, lerp(1.6, 1., eOut(k)))
     def cam(s, t, d):
-        k = eIO(t / d); return lerp(1.05, 1.14, k), 540, 1150, lerp(60, -80, ss(6, d, t)), 0
+        k = eIO(t / d); return lerp(1.05, 1.12, k), 540, 1200, lerp(50, -50, k), 0
 
 # ================================================================ 5 · Cierre: globo, balanza agrietada, narrador
 class C5(D.S5D):

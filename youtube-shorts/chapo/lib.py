@@ -198,11 +198,12 @@ OUTF = {'militar': dict(top=(92, 104, 64), pants=(72, 82, 52), shoe=(26, 26, 26)
         'bata': dict(top=(236, 239, 244), pants=(54, 58, 70), shoe=(20, 20, 24)),
         'elegante': dict(top=(40, 78, 178), pants=(24, 28, 48), shoe=(14, 14, 18)),
         'reo': dict(top=(240, 112, 28), pants=(228, 100, 24), shoe=(36, 36, 40)),
-        'civil': dict(top=(156, 40, 44), pants=(52, 84, 146), shoe=(70, 46, 30))}
+        'civil': dict(top=(128, 34, 40), pants=(52, 84, 146), shoe=(70, 46, 30)),
+        'comando': dict(top=(26, 28, 32), pants=(22, 24, 28), shoe=(10, 10, 12))}
 SKIN = (246, 244, 240)
 def dark(c, k=.6): return tuple(int(v * k) for v in c)
 
-def character(fr, kind, x, fy, hgt, t, armR=('reposo',), armL=('reposo',), look=(0., 0.), frown=.3, beret=False, smile=0., sash=False, mustache=False, run=0., cuffs=False, cap=False):
+def character(fr, kind, x, fy, hgt, t, armR=('reposo',), armL=('reposo',), look=(0., 0.), frown=.3, beret=False, smile=0., sash=False, mustache=False, run=0., cuffs=False, cap=False, mask=False):
     hands = {}
     u = hgt / 8.; o = OUTF[kind]; br = math.sin(t * 2.2) * u * .05
     hipy = fy - 3.3 * u; shy = fy - 5.75 * u + br
@@ -210,10 +211,21 @@ def character(fr, kind, x, fy, hgt, t, armR=('reposo',), armL=('reposo',), look=
     lw = u * .5
     for sd in (-1, 1):
         hp = A(x + sd * .42 * u, hipy); ft = A(x + sd * .58 * u, fy - .25 * u)
-        if run:
-            ang = math.sin(t * run + (sd > 0) * math.pi) * .55; L_ = 3.05 * u
-            ft = hp + A(math.sin(ang) * L_, math.cos(ang) * L_ - abs(math.sin(ang)) * .3 * u)
-        line(fr, hp, ft, dark(o['pants'], .7), lw + 4); line(fr, hp, ft, o['pants'], lw)
+        pc_ = o['pants']; lwp = lw * (1.25 if kind == 'civil' else 1.)
+        if run:  # pierna en dos tramos: muslo y espinilla, la rodilla se dobla al correr
+            ph_ = t * run + (sd > 0) * math.pi; th = math.sin(ph_) * .6; bend = max(0., -math.cos(ph_)) * 1.1 + .15
+            dirn = -1 if look[0] < 0 else 1; kn_ = hp + A(math.sin(th), math.cos(th)) * 1.55 * u; sa = th - bend * dirn
+            ft = kn_ + A(math.sin(sa), math.cos(sa)) * 1.55 * u
+            segs = [(hp, kn_), (kn_, ft)]
+        else:
+            kn_ = (hp + ft) / 2; segs = [(hp, ft)]
+        for a_, b_ in segs: line(fr, a_, b_, dark(pc_, .7), lwp + 4)
+        for a_, b_ in segs: line(fr, a_, b_, pc_, lwp)
+        if run: circ(fr, kn_, lwp / 2, pc_)
+        if kind == 'civil':  # mezclilla: costura clara y bastilla doblada
+            for a_, b_ in segs: line(fr, A(*a_) + A(sd * .12 * u, 0), A(*b_) + A(sd * .12 * u, 0), (120, 150, 200), 2)
+            dv = A(*segs[-1][1]) - A(*segs[-1][0]); dv /= max(1e-6, np.linalg.norm(dv)); hb = A(*ft) - dv * .35 * u
+            line(fr, hb, A(*ft) - dv * .12 * u, (40, 66, 118), lwp)
         cv2.ellipse(fr, P8(ft + A(sd * .16 * u, .08 * u)), (int(.46 * u * 8), int(.24 * u * 8)), 0, 0, 360, o['shoe'], -1, cv2.LINE_AA, 3)
     top = o['top']; ta = A(x, shy + .55 * u); tb = A(x, hipy)
     if kind == 'bata':
@@ -250,12 +262,35 @@ def character(fr, kind, x, fy, hgt, t, armR=('reposo',), armL=('reposo',), look=
         for k in range(3): line(fr, (x - .56 * u, shy + (.82 + k * .1) * u), (x - .16 * u, shy + (.82 + k * .1) * u), (40, 40, 40), 2)
         line(fr, (x, shy + .55 * u), (x, hipy), dark(top, .7), 3)
     elif kind == 'civil':
-        cv2.rectangle(fr, (int(x - .86 * u), int(shy + .1 * u)), (int(x + .86 * u), int(hipy)), top, -1)
-        for k in range(-3, 4): line(fr, (x + k * .26 * u, shy + .1 * u), (x + k * .26 * u, hipy), dark(top, .62), 3)
-        for k in range(0, 9): line(fr, (x - .86 * u, shy + (.2 + k * .3) * u), (x + .86 * u, shy + (.2 + k * .3) * u), (210, 190, 170), 2)
-        poly(fr, [(x - .32 * u, shy - .22 * u), (x + .32 * u, shy - .22 * u), (x + .16 * u, shy + .3 * u), (x - .16 * u, shy + .3 * u)], (236, 230, 220))
-        line(fr, (x, shy + .3 * u), (x, hipy), dark(top, .5), 3)
-        for i in range(4): circ(fr, (x + .08 * u, shy + (.55 + i * .5) * u), .06 * u, (236, 230, 220))
+        x0_, y0_ = int(x - 1.1 * u), int(shy - .6 * u); x1_, y1_ = int(x + 1.1 * u), int(hipy + 1.2 * u)
+        x0_, y0_ = max(0, x0_), max(0, y0_); x1_, y1_ = min(fr.shape[1], x1_), min(fr.shape[0], y1_)
+        if x1_ > x0_ and y1_ > y0_:
+            mk = np.zeros((y1_ - y0_, x1_ - x0_), np.uint8)
+            cv2.line(mk, (int(ta[0] - x0_), int(ta[1] - y0_)), (int(tb[0] - x0_), int(tb[1] - y0_)), 255, max(1, int(1.78 * u)), cv2.LINE_AA)
+            m_ = (mk.astype(np.float32) / 255.)[:, :, None]
+            yy_, xx_ = np.mgrid[y0_:y1_, x0_:x1_].astype(np.float32); per = .62 * u
+            band = ((((xx_ - x) % per) < .2 * u) | (((yy_ - shy) % per) < .2 * u)).astype(np.float32)
+            both = ((((xx_ - x) % per) < .2 * u) & (((yy_ - shy) % per) < .2 * u)).astype(np.float32)
+            thin = ((np.abs(((xx_ - x + per * .5) % per) - per * .5) < 1.2) | (np.abs(((yy_ - shy + per * .5) % per) - per * .5) < 1.2)).astype(np.float32)
+            pat = np.ones_like(xx_)[:, :, None] * np.array(top, np.float32)
+            pat = pat * (1 - .32 * band[:, :, None]) * (1 - .25 * both[:, :, None])
+            pat = pat * (1 - .45 * thin[:, :, None]) + np.array([214, 196, 168], np.float32) * .45 * thin[:, :, None]
+            roi = fr[y0_:y1_, x0_:x1_].astype(np.float32); fr[y0_:y1_, x0_:x1_] = to8(roi * (1 - m_) + pat * m_)
+        poly(fr, [(x - .34 * u, shy - .24 * u), (x, shy + .18 * u), (x - .14 * u, shy + .32 * u), (x - .42 * u, shy - .05 * u)], dark(top, .55))   # cuello
+        poly(fr, [(x + .34 * u, shy - .24 * u), (x, shy + .18 * u), (x + .14 * u, shy + .32 * u), (x + .42 * u, shy - .05 * u)], dark(top, .55))
+        cv2.rectangle(fr, (int(x - .62 * u), int(shy + .7 * u)), (int(x - .22 * u), int(shy + 1.12 * u)), dark(top, .7), 2)        # bolsillo
+        cv2.ellipse(fr, P8((x, hipy + .1 * u)), (int(.92 * u * 8), int(.82 * u * 8)), 0, 0, 180, (52, 84, 146), -1, cv2.LINE_AA, 3)
+        poly(fr, [(x - .92 * u, hipy - .3 * u), (x + .92 * u, hipy - .3 * u), (x + .92 * u, hipy + .12 * u), (x - .92 * u, hipy + .12 * u)], (52, 84, 146))
+        line(fr, (x, hipy - .1 * u), (x, hipy + .6 * u), (40, 66, 118), 3)
+        for sd2 in (-1, 1): line(fr, (x + sd2 * .5 * u, hipy - .1 * u), (x + sd2 * .3 * u, hipy + .3 * u), (120, 150, 200), 2)
+        line(fr, (x - .92 * u, hipy - .26 * u), (x + .92 * u, hipy - .26 * u), (70, 44, 26), .22 * u)
+        cv2.rectangle(fr, (int(x - .15 * u), int(hipy - .38 * u)), (int(x + .15 * u), int(hipy - .14 * u)), (210, 180, 96), -1)
+        line(fr, (x, shy + .3 * u), (x, hipy - .4 * u), dark(top, .5), 2)
+        for i in range(4): circ(fr, (x + .07 * u, shy + (.55 + i * .45) * u), .05 * u, (236, 230, 220))
+    elif kind == 'comando':
+        cv2.rectangle(fr, (int(x - .78 * u), int(shy + .35 * u)), (int(x + .78 * u), int(hipy - .2 * u)), (44, 48, 40), -1)      # chaleco
+        for k in range(3): cv2.rectangle(fr, (int(x - .62 * u + k * .44 * u), int(shy + 1.3 * u)), (int(x - .3 * u + k * .44 * u), int(shy + 1.8 * u)), (34, 38, 30), -1)
+        line(fr, (x - .8 * u, hipy - .12 * u), (x + .8 * u, hipy - .12 * u), (16, 16, 18), .22 * u)
     elif kind == 'elegante':
         poly(fr, [(x - .3 * u, shy - .22 * u), (x + .3 * u, shy - .22 * u), (x, shy + .7 * u)], (240, 240, 244))
         line(fr, (x, shy + .7 * u), (x, hipy + .2 * u), (232, 190, 80), 3)
@@ -298,17 +333,21 @@ def character(fr, kind, x, fy, hgt, t, armR=('reposo',), armL=('reposo',), look=
         mc = fc + A(0, .2 * u)
         poly(fr, [(mc[0] - .42 * u, mc[1] + .1 * u), (mc[0] - .2 * u, mc[1] - .1 * u), (mc[0], mc[1] - .05 * u), (mc[0] + .2 * u, mc[1] - .1 * u), (mc[0] + .42 * u, mc[1] + .1 * u), (mc[0], mc[1] + .04 * u)], (24, 18, 14))
         cv2.ellipse(fr, P8(head + A(-.05 * u, -.55 * u)), (int(.92 * u * 8), int(.48 * u * 8)), 0, 180, 360, (24, 18, 14), -1, cv2.LINE_AA, 3)
-    if cap:  # gorra con una pizza pequeña al centro
-        cc_ = (40, 44, 52)
-        cv2.ellipse(fr, P8(head + A(0, -.3 * u)), (int(1.0 * u * 8), int(.86 * u * 8)), 0, 180, 360, cc_, -1, cv2.LINE_AA, 3)
-        poly(fr, [(head[0] - 1.02 * u, head[1] - .34 * u), (head[0] + 1.02 * u, head[1] - .34 * u), (head[0] + 1.02 * u, head[1] - .24 * u), (head[0] - 1.02 * u, head[1] - .24 * u)], (30, 32, 38))
-        bd = 1 if look[0] >= 0 else -1
-        cv2.ellipse(fr, P8(head + A(bd * .2 * u, -.3 * u)), (int(.82 * u * 8), int(.2 * u * 8)), 0, 0, 180, (24, 26, 30), -1, cv2.LINE_AA, 3)
-        circ(fr, head + A(0, -1.12 * u), .1 * u, (60, 64, 72))
-        pc = head + A(0, -.58 * u); r_ = .27 * u
-        poly(fr, [(pc[0] - r_, pc[1] - r_ * .75), (pc[0] + r_, pc[1] - r_ * .75), (pc[0], pc[1] + r_ * .85)], (250, 200, 70))       # queso
-        line(fr, (pc[0] - r_ * 1.05, pc[1] - r_ * .8), (pc[0] + r_ * 1.05, pc[1] - r_ * .8), (190, 120, 50), .14 * u)                  # orilla
-        for (ox, oy) in [(-.12, -.32), (.12, -.3), (0, .05)]: circ(fr, pc + A(ox * u, oy * u), .065 * u, (200, 40, 40))           # pepperoni
+    if cap:  # gorra de béisbol puesta de lado (visera hacia la derecha), arriba de las cejas
+        cc_ = (36, 40, 50); cy_ = head[1] - .5 * u
+        cv2.ellipse(fr, P8((head[0], cy_)), (int(.98 * u * 8), int(.62 * u * 8)), 0, 180, 360, cc_, -1, cv2.LINE_AA, 3)
+        poly(fr, [(head[0] - .98 * u, cy_), (head[0] + .98 * u, cy_), (head[0] + .94 * u, cy_ + .1 * u), (head[0] - .94 * u, cy_ + .1 * u)], (26, 28, 36))
+        poly(fr, [(head[0] + .7 * u, cy_ - .04 * u), (head[0] + 1.62 * u, cy_ - .02 * u), (head[0] + 1.7 * u, cy_ + .1 * u), (head[0] + .8 * u, cy_ + .14 * u)], (22, 24, 30))  # visera de lado
+        line(fr, (head[0], cy_ - .6 * u), (head[0], cy_), (54, 58, 68), 2)
+        circ(fr, (head[0], cy_ - .62 * u), .09 * u, (54, 58, 68))
+        pc = A(head[0] - .3 * u, cy_ - .3 * u); r_ = .2 * u
+        poly(fr, [(pc[0] - r_, pc[1] - r_ * .75), (pc[0] + r_, pc[1] - r_ * .75), (pc[0], pc[1] + r_ * .85)], (250, 200, 70))       # pizza
+        line(fr, (pc[0] - r_ * 1.05, pc[1] - r_ * .8), (pc[0] + r_ * 1.05, pc[1] - r_ * .8), (190, 120, 50), .1 * u)
+        for (ox, oy) in [(-.07, -.06), (.07, -.06), (0, .06)]: circ(fr, pc + A(ox * u, oy * u), .045 * u, (200, 40, 40))
+    if mask:  # pasamontañas negro con abertura en los ojos
+        circ(fr, head, .97 * u, (16, 16, 18))
+        cv2.ellipse(fr, P8(fc + A(0, -.05 * u)), (int(.62 * u * 8), int(.22 * u * 8)), 0, 0, 360, SKIN, -1, cv2.LINE_AA, 3)
+        for sd in (-1, 1): cv2.ellipse(fr, P8(fc + A(sd * .3 * u, -.05 * u)), (int(.09 * u * 8), int(.13 * u * 8)), 0, 0, 360, (18, 18, 24), -1, cv2.LINE_AA, 3)
     if beret:
         cv2.ellipse(fr, P8(head + A(-.1 * u, -.74 * u)), (int(1.08 * u * 8), int(.44 * u * 8)), -12, 0, 360, (40, 66, 44), -1, cv2.LINE_AA, 3)
         cv2.ellipse(fr, P8(head + A(.05 * u, -.52 * u)), (int(.98 * u * 8), int(.16 * u * 8)), -6, 0, 360, (26, 44, 30), -1, cv2.LINE_AA, 3)
