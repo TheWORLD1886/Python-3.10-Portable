@@ -8,6 +8,7 @@ Formato: 60 s · 1080x1920 (9:16) · Stickman 3D evolucionado (cabeza esférica 
 | `prompts.json` | Prompts visuales por escena, negative prompt, ajustes de voz, cámara y SFX. |
 
 ## Ajustes ElevenLabs
+- Voz: **Brian C. - Professional Latin Narrator** (`uCQe5kObQIjtylU0HL3m`).
 - Modelo: `eleven_multilingual_v2` (soporta `<break time="x.xs" />`).
 - Stability 0.45 · Similarity 0.80 · Style 0.35 · Speaker boost ON · Speed 0.95.
 - El guion tiene ~103 palabras; a ritmo natural dura ~45 s. Las pausas lo llevan a ~58–60 s.

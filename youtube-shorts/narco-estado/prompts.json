@@ -1,46 +1,73 @@
 {
   "proyecto": "¿Qué pasaría si el crimen organizado tomara oficialmente la Presidencia?",
-  "formato": { "resolucion": "1080x1920", "aspect_ratio": "9:16", "fps": 30, "duracion_total_s": 60 },
+  "formato": {
+    "resolucion": "1080x1920",
+    "aspect_ratio": "9:16",
+    "fps": 30,
+    "duracion_total_s": 60
+  },
   "estilo_global": "evolved minimalist 3D stickman character, smooth matte white porcelain spherical head with no facial features, slender articulated organic body with seamless anatomical joints, realistic 3D tailored clothing with fabric folds and stitching, Unreal Engine 5 cinematic render, Octane Render, volumetric lighting, film grain, 1080x1920 vertical 9:16",
   "negative_prompt": "exposed ball joints, mechanical spheres at joints, robot parts, mannequin seams, facial features, extra limbs, deformed hands, blurry, low resolution, watermark, logo, misspelled text, horizontal frame",
   "elevenlabs": {
     "model_id": "eleven_multilingual_v2",
     "idioma": "es-MX",
-    "voz_sugerida": "Voz masculina grave, narrador documental/thriller (p. ej. 'Brian' o cualquier voz es-MX de la Voice Library)",
-    "voice_settings": { "stability": 0.45, "similarity_boost": 0.8, "style": 0.35, "use_speaker_boost": true, "speed": 0.95 }
+    "voice_id": "uCQe5kObQIjtylU0HL3m",
+    "voz_nombre": "Brian C. - Professional Latin Narrator",
+    "voice_settings": {
+      "stability": 0.45,
+      "similarity_boost": 0.8,
+      "style": 0.35,
+      "use_speaker_boost": true,
+      "speed": 0.95
+    }
   },
   "escenas": [
     {
-      "id": 1, "inicio": "00:00", "fin": "00:08",
+      "id": 1,
+      "inicio": "00:00",
+      "fin": "00:08",
       "subtitulo": "De las sombras al Palacio Nacional. ¿Qué pasaría si el crimen organizado tomara oficialmente la Presidencia?",
       "prompt": "3D cinematic shot, vertical 9:16. An evolved minimalist 3D stickman character with a smooth matte white porcelain spherical head and seamless organic body joints, wearing a tailored luxury black suit with a tricolor presidential sash, stands on a majestic neoclassical presidential balcony at night. Dark dramatic low-key lighting with glowing golden accents and drifting volumetric smoke. Camera: fast push-in zoom from wide to medium shot. Unreal Engine 5 style, 1080x1920.",
-      "camara": "Fast zoom-in", "sfx": "Whoosh grave + tambor cinematográfico al llegar a 'Palacio Nacional'"
+      "camara": "Fast zoom-in",
+      "sfx": "Whoosh grave + tambor cinematográfico al llegar a 'Palacio Nacional'"
     },
     {
-      "id": 2, "inicio": "00:08", "fin": "00:20",
+      "id": 2,
+      "inicio": "00:08",
+      "fin": "00:20",
       "subtitulo": "Primero: Un Narco-Estado oficial. Las instituciones públicas se fusionarían con los carteles, legalizando sus operaciones y cobrando impuestos directos.",
       "prompt": "3D cinematic scene, vertical 9:16. An evolved minimalist 3D stickman executive with a matte white porcelain spherical head and seamless organic joints, wearing a charcoal pinstripe suit and gold cufflinks, sits at a massive polished mahogany desk inside an ornate government office with national flags behind him. He stamps floating glowing golden hologram documents. Orbital camera movement around the desk, shallow depth of field, photorealistic studio lighting, Unreal Engine 5, 1080x1920.",
       "texto_post": "LEGALIZADO / IMPUESTO (añadir en edición como holograma)",
-      "camara": "Orbital 180°", "sfx": "Golpe de sello sincronizado con 'legalizando' e 'impuestos'"
+      "camara": "Orbital 180°",
+      "sfx": "Golpe de sello sincronizado con 'legalizando' e 'impuestos'"
     },
     {
-      "id": 3, "inicio": "00:20", "fin": "00:35",
+      "id": 3,
+      "inicio": "00:20",
+      "fin": "00:35",
       "subtitulo": "Segundo: Intervención extranjera. Para potencias como Estados Unidos, esto sería una amenaza de seguridad nacional. Habría bloqueos comerciales e invasión militar.",
       "prompt": "3D cinematic scene, vertical 9:16. A large 3D topographic relief map of Mexico on a dark war-room table, pulsing with red warning signals along the borders and ports. A formation of high-tech 3D military helicopters flies low over the map. In the foreground, an evolved 3D stickman with a matte white porcelain head and seamless organic joints, wearing a realistic camouflage military uniform with tactical vest, watches from below. Low-angle composition, horizontal tracking camera shot, red and teal lighting, Octane Render style, 1080x1920.",
       "texto_post": "BLOQUEO INTERNACIONAL (añadir en edición como etiqueta holográfica flotante)",
-      "camara": "Travelling horizontal, contrapicado", "sfx": "Rotores de helicóptero + alarma lejana"
+      "camara": "Travelling horizontal, contrapicado",
+      "sfx": "Rotores de helicóptero + alarma lejana"
     },
     {
-      "id": 4, "inicio": "00:35", "fin": "00:48",
+      "id": 4,
+      "inicio": "00:35",
+      "fin": "00:48",
       "subtitulo": "Tercero: Guerra civil interna. La disputa por el control total de los estados entre carteles rivales desataría un conflicto sin precedentes.",
       "prompt": "3D cinematic close-up, vertical 9:16. An evolved 3D stickman character with a matte white porcelain spherical head and seamless organic joints, wearing realistic black tactical gear: plate carrier, gloves, balaclava-style hood around the neck, stands in front of a dark 3D city skyline with rising columns of smoke and flashing red and amber neon hazard lights. Embers floating in the air, shallow depth of field, slow push-in camera movement, Unreal Engine 5, 1080x1920.",
-      "camara": "Slow push-in", "sfx": "Sirenas, explosiones sordas a distancia"
+      "camara": "Slow push-in",
+      "sfx": "Sirenas, explosiones sordas a distancia"
     },
     {
-      "id": 5, "inicio": "00:48", "fin": "01:00",
+      "id": 5,
+      "inicio": "00:48",
+      "fin": "01:00",
       "subtitulo": "El colapso de la democracia sería total. ¿Crees que este escenario está lejos de la realidad? ¡Comenta abajo y suscríbete!",
       "prompt": "3D cinematic medium shot, vertical 9:16. An evolved minimalist 3D stickman character with a matte white porcelain spherical head and seamless organic joints, wearing a navy suit with loosened tie, stands in front of a giant cracked and broken 3D bronze judicial scale of justice, one pan fallen to the marble floor. Confident posture, pointing directly at the camera. Warm golden hour light cutting through dark shadows, dust particles, smooth slow zoom-in, Unreal Engine 5 render, 1080x1920.",
-      "camara": "Smooth zoom-in", "sfx": "Crujido metálico de la balanza + golpe final; CTA animado de suscripción"
+      "camara": "Smooth zoom-in",
+      "sfx": "Crujido metálico de la balanza + golpe final; CTA animado de suscripción"
     }
   ]
 }
