@@ -199,7 +199,8 @@ OUTF = {'militar': dict(top=(92, 104, 64), pants=(72, 82, 52), shoe=(26, 26, 26)
         'elegante': dict(top=(40, 78, 178), pants=(24, 28, 48), shoe=(14, 14, 18)),
         'reo': dict(top=(240, 112, 28), pants=(228, 100, 24), shoe=(36, 36, 40)),
         'civil': dict(top=(128, 34, 40), pants=(52, 84, 146), shoe=(70, 46, 30)),
-        'comando': dict(top=(26, 28, 32), pants=(22, 24, 28), shoe=(10, 10, 12))}
+        'comando': dict(top=(26, 28, 32), pants=(22, 24, 28), shoe=(10, 10, 12)),
+        'juez': dict(top=(22, 22, 28), pants=(22, 22, 28), shoe=(12, 12, 14))}
 SKIN = (246, 244, 240)
 def dark(c, k=.6): return tuple(int(v * k) for v in c)
 
@@ -287,6 +288,10 @@ def character(fr, kind, x, fy, hgt, t, armR=('reposo',), armL=('reposo',), look=
         cv2.rectangle(fr, (int(x - .15 * u), int(hipy - .38 * u)), (int(x + .15 * u), int(hipy - .14 * u)), (210, 180, 96), -1)
         line(fr, (x, shy + .3 * u), (x, hipy - .4 * u), dark(top, .5), 2)
         for i in range(4): circ(fr, (x + .07 * u, shy + (.55 + i * .45) * u), .05 * u, (236, 230, 220))
+    elif kind == 'juez':
+        poly(fr, [(x - 1.05 * u, shy + .1 * u), (x + 1.05 * u, shy + .1 * u), (x + 1.25 * u, hipy + 1.8 * u), (x - 1.25 * u, hipy + 1.8 * u)], (22, 22, 28))
+        poly(fr, [(x - .28 * u, shy - .2 * u), (x + .28 * u, shy - .2 * u), (x + .12 * u, shy + .55 * u), (x - .12 * u, shy + .55 * u)], (240, 240, 244))
+        line(fr, (x, shy + .55 * u), (x, hipy + 1.6 * u), (40, 40, 48), 2)
     elif kind == 'comando':
         cv2.rectangle(fr, (int(x - .78 * u), int(shy + .35 * u)), (int(x + .78 * u), int(hipy - .2 * u)), (44, 48, 40), -1)      # chaleco
         for k in range(3): cv2.rectangle(fr, (int(x - .62 * u + k * .44 * u), int(shy + 1.3 * u)), (int(x - .3 * u + k * .44 * u), int(shy + 1.8 * u)), (34, 38, 30), -1)
