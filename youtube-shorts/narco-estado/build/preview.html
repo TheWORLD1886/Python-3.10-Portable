@@ -1,0 +1,20 @@
+<!doctype html><html><body style="margin:0;background:#000">
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three'; import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'; import { stickman } from './chars.js';
+const W = 2400, H = 1500; const r = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); r.setSize(W, H);
+r.shadowMap.enabled = true; r.toneMapping = THREE.ACESFilmicToneMapping; r.outputColorSpace = THREE.SRGBColorSpace; document.body.appendChild(r.domElement);
+const s = new THREE.Scene(); s.background = new THREE.Color(0x2a2d33); s.environment = new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(), .04).texture; s.environmentIntensity = .6;
+const fl = new THREE.Mesh(new THREE.CircleGeometry(8, 64).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x3a3e46, roughness: .8 })); fl.receiveShadow = true; s.add(fl);
+const d = new THREE.DirectionalLight(0xfff2e0, 2.2); d.position.set(3, 6, 6); d.castShadow = true; d.shadow.mapSize.set(2048, 2048); Object.assign(d.shadow.camera, { left: -4, right: 4, top: 4, bottom: -4 }); s.add(d);
+const rim = new THREE.DirectionalLight(0x8fb0ff, 1.2); rim.position.set(-4, 3, -4); s.add(rim);
+const kinds = ['president', 'executive', 'soldier', 'tactical', 'narrator'];
+const rigs = kinds.map((k, i) => { const m = stickman(k); m.root.position.x = (i - 2) * .95; m.root.rotation.y = (i - 2) * -.08; s.add(m.root);
+  m.lArm.a.rotation.z -= .1; m.rArm.a.rotation.z += .1; m.tick(1); return m; });
+rigs[4].rArm.a.rotation.set(-1.4, 0, -.1); rigs[4].setHand('r', 'point');
+rigs[1].rArm.a.rotation.set(-.5, 0, .1); rigs[1].rArm.b.rotation.x = -1.1; rigs[1].setHand('r', 'fist');
+const cam = new THREE.PerspectiveCamera(30, W / H, .1, 50);
+window.shot = mode => { if (mode === 'full') { cam.position.set(0, 1.15, 7.2); cam.lookAt(0, .95, 0); } else { cam.position.set(0, 1.55, 5.2); cam.lookAt(0, 1.45, 0); cam.fov = 30; cam.updateProjectionMatrix(); }
+  r.render(s, cam); };
+window.ready = true;
+</script></body></html>
