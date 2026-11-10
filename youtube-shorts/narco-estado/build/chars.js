@@ -252,21 +252,25 @@ export function stickman(kind) {
     add(root, new THREE.BoxGeometry(.04, .03, .01), std(0xc9a040, { metalness: 1, roughness: .2 }), 0, .965, .101);
   } else {
     // plate carrier with MOLLE webbing, pouches with flaps, shoulder straps
-    const vm = std(L.vest, { roughness: .95 }), web = std(L.vest - 0x0a0a0a, { roughness: 1 });
-    const front = add(root, new THREE.BoxGeometry(.3, .34, .05), vm, 0, 1.2, .1); front.geometry.translate(0, 0, 0);
-    const back = add(root, new THREE.BoxGeometry(.3, .36, .05), vm, 0, 1.2, -.1);
-    for (let i = 0; i < 4; i++) add(root, new THREE.BoxGeometry(.3, .008, .056), web, 0, 1.08 + i * .04, .1);
-    for (let i = -1; i <= 1; i++) { add(root, new THREE.BoxGeometry(.08, .1, .05), vm, i * .093, 1.1, .14); add(root, new THREE.BoxGeometry(.084, .03, .054), web, i * .093, 1.145, .142); }
+    const vm = std(L.vest, { roughness: .95 }), web = std(new THREE.Color(L.vest).multiplyScalar(.6), { roughness: 1 });
+    // vest shell wraps the torso (child of torso, so it follows its shape); webbing bands on the front
+    const shell = (y0, y1, off, phi0 = 0, phiL = Math.PI * 2) => { const pts = [];
+      for (let k = 0; k <= 16; k++) { const y = y0 + (y1 - y0) * k / 16; pts.push(new THREE.Vector2(rAt(y) + off, y)); }
+      const m = new THREE.Mesh(new THREE.LatheGeometry(pts, 48, phi0, phiL), vm); m.material = m.material; m.castShadow = m.receiveShadow = true; torso.add(m); return m; };
+    shell(1.0, 1.39, .03); const top = new THREE.Mesh(new THREE.LatheGeometry([new THREE.Vector2(rAt(1.39) + .03, 1.39), new THREE.Vector2(rAt(1.43) + .012, 1.43)], 48), vm); torso.add(top);
+    for (let i = 0; i < 4; i++) { const b = shell(1.2 + i * .04, 1.212 + i * .04, .04, -.75, 1.5); b.material = web; }
+    const fz = (x, y, o) => surfZ(x, y) + o;
+    for (let i = -1; i <= 1; i++) { const x = i * .085; add(root, new THREE.BoxGeometry(.076, .1, .04), vm, x, 1.1, fz(x, 1.1, .035)); add(root, new THREE.BoxGeometry(.08, .028, .044), web, x, 1.145, fz(x, 1.145, .038)); }
     for (const s of [-1, 1]) { const st = add(root, new THREE.BoxGeometry(.06, .04, .25), vm, s * .11, 1.41, 0); }
     add(root, new THREE.CylinderGeometry(.158, .158, .05, 32), std(0x15140f, { roughness: .9 }), 0, .965, 0).scale.z = .7;
-    if (L.radio) { add(root, new THREE.BoxGeometry(.05, .09, .04), std(0x0a0a0a), .12, 1.3, .14); add(root, new THREE.CylinderGeometry(.004, .004, .3), std(0x050505), .14, 1.48, .13); }
-    if (L.patch) { const p = add(root, new THREE.PlaneGeometry(.06, .04), new THREE.MeshStandardMaterial({ map: tex(60, 40, g => { ['#006847', '#eee', '#ce1126'].forEach((c, i) => { g.fillStyle = c; g.fillRect(i * 20, 0, 20, 40); }); g.fillStyle = '#7b4b1f'; g.beginPath(); g.arc(30, 20, 6, 0, 7); g.fill(); }) }), -.1, 1.3, .127); }
+    if (L.radio) { add(root, new THREE.BoxGeometry(.05, .09, .04), std(0x0a0a0a), .12, 1.3, fz(.12, 1.3, .045)); add(root, new THREE.CylinderGeometry(.004, .004, .3), std(0x050505), .14, 1.48, fz(.12, 1.3, .05)); }
+    if (L.patch) { const p = add(root, new THREE.PlaneGeometry(.06, .04), new THREE.MeshStandardMaterial({ map: tex(60, 40, g => { ['#006847', '#eee', '#ce1126'].forEach((c, i) => { g.fillStyle = c; g.fillRect(i * 20, 0, 20, 40); }); g.fillStyle = '#7b4b1f'; g.beginPath(); g.arc(30, 20, 6, 0, 7); g.fill(); }) }), -.1, 1.3, fz(-.1, 1.3, .034)); }
   }
   if (L.sash) {
     const st = tex(16, 120, (g, w, h) => { [['#c9a040', 0, 4], ['#0b6b3a', 4, 38], ['#f2f2f2', 42, 36], ['#b3121b', 78, 38], ['#c9a040', 116, 4]].forEach(([c, y, hh]) => { g.fillStyle = c; g.fillRect(0, y, w, hh); }); });
     st.repeat.set(1, 1);
     const geo = new THREE.CylinderGeometry(.2, .2, .1, 96, 1, true).rotateZ(-.95).translate(0, 1.17, 0), pp = geo.attributes.position;
-    for (let i = 0; i < pp.count; i++) { const x = pp.getX(i), y = pp.getY(i), z = pp.getZ(i), a = Math.atan2(z, x), r = rAt(y) + .016; pp.setX(i, Math.cos(a) * r); pp.setZ(i, Math.sin(a) * r); }
+    for (let i = 0; i < pp.count; i++) { const x = pp.getX(i), y = pp.getY(i), z = pp.getZ(i), a = Math.atan2(z, x), r = rAt(y) + .016 + .034 * Math.pow(Math.max(0, Math.sin(a)), 2); pp.setX(i, Math.cos(a) * r); pp.setZ(i, Math.sin(a) * r); }
     geo.computeVertexNormals();
     const band = new THREE.Mesh(geo, std(0xffffff, { map: st, roughness: .5, side: THREE.DoubleSide })); band.castShadow = true; torso.add(band);
     const med = add(root, new THREE.CylinderGeometry(.03, .03, .012, 24), std(0xd4a537, { metalness: 1, roughness: .2 }), .105, 1.02, .118); med.rotation.x = Math.PI / 2;
