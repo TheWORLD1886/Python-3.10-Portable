@@ -39,6 +39,7 @@ function fabricNormal(kind = 'wool') {
 const cloth = (o, kind = 'wool') => new THREE.MeshPhysicalMaterial({ roughness: .78, sheen: .5, sheenRoughness: .7, sheenColor: new THREE.Color(0x777777),
   normalMap: fabricNormal(kind), normalScale: new THREE.Vector2(.55, .55), ...o });
 
+const lerpN = (a, b, k) => a + (b - a) * k;
 const clamp01 = x => Math.min(1, Math.max(0, x));
 // tapered garment tube from a [radius, y] profile, with fabric folds pushed into the surface
 function garment(profile, folds = [], seed = 1, segs = 40) {
@@ -211,6 +212,9 @@ export function stickman(kind) {
   // sculpted torso (lathe profile: hips → waist → chest → shoulders), jacket hem flares below the belt
   const prof = (L.suit ? [[.001, .76], [.168, .762], [.165, .8], [.155, .9], [.145, 1.0]] : [[.001, .8], [.15, .82], [.155, .9], [.143, 1.0]])
     .concat([[.16, 1.1], [.182, 1.22], [.192, 1.32], [.188, 1.38], [.155, 1.44], [.07, 1.48], [.001, 1.49]]).map(([r, y]) => [r, y]);
+  const rAt = y => { for (let i = 1; i < prof.length; i++) { const [r0, y0] = prof[i - 1], [r1, y1] = prof[i]; if (y <= y1 && y >= y0) return r0 + (r1 - r0) * (y - y0) / (y1 - y0); } return .15; };
+  const surfZ = (x, y) => Math.sqrt(Math.max(0, rAt(y) ** 2 - x * x)) * .66;   // front of the torso at (x, y)
+  const conform = (geo, off) => { const p = geo.attributes.position; for (let i = 0; i < p.count; i++) p.setZ(i, surfZ(p.getX(i), p.getY(i)) + off + p.getZ(i)); geo.computeVertexNormals(); return geo; };
   const torso = add(root, garment(prof, [[1.0, .05, .004, 7], [1.36, .05, .003, 4]], 3, 48), top); torso.scale.z = .66;
   if (L.suit) for (const sx of [-1, 1]) { const vent = add(root, new THREE.BoxGeometry(.004, .14, .004), std(0x000000), sx * .02, .83, .113); }
   // shoulders: a continuous yoke so arms grow out of the body
@@ -222,10 +226,18 @@ export function stickman(kind) {
     const shirt = std(L.shirt, { roughness: .5 });
     const collar = add(root, new THREE.TorusGeometry(.05, .016, 8, 24), shirt, 0, 1.48, 0); collar.rotation.x = Math.PI / 2 + .25;
     // open-front V: shirt + tie with knot
-    const vee = new THREE.Shape([new THREE.Vector2(-.065, 0), new THREE.Vector2(.065, 0), new THREE.Vector2(0, -.26)]);
-    add(root, new THREE.ShapeGeometry(vee), shirt, 0, 1.47, .124).rotation.x = -.12;
-    add(root, new THREE.BoxGeometry(.035, .03, .02), std(L.tie, { roughness: .35 }), 0, 1.445, .13);
-    const tie = add(root, new THREE.CylinderGeometry(.02, .006, .3, 4), std(L.tie, { roughness: .35 }), 0, L.loose ? 1.29 : 1.28, .128); tie.scale.z = .25; if (L.loose) tie.rotation.z = .06;
+    const vee = new THREE.PlaneGeometry(1, 1, 12, 30), vp = vee.attributes.position;
+    for (let i = 0; i < vp.count; i++) { const t = .5 - vp.getY(i), y = 1.48 - t * .27; vp.setXYZ(i, vp.getX(i) * .14 * (1 - t), y, 0); }
+    add(root, conform(vee, .007), shirt);
+    // tie: knot + blade that widens and ends in a point, with a woven diagonal stripe
+    const tieTex = tex(64, 256, (g, w, h) => { g.fillStyle = '#' + new THREE.Color(L.tie).getHexString(); g.fillRect(0, 0, w, h);
+      g.strokeStyle = 'rgba(255,255,255,.10)'; g.lineWidth = 4; for (let i = -h; i < h; i += 18) { g.beginPath(); g.moveTo(0, i); g.lineTo(w, i + w * .7); g.stroke(); } });
+    tieTex.repeat.set(1, 1);
+    const tg = new THREE.PlaneGeometry(1, 1, 6, 60), tp = tg.attributes.position, drop = L.loose ? .035 : 0;
+    const tw = t => t < .1 ? lerpN(.034, .024, t / .1) : t < .92 ? lerpN(.02, .05, (t - .1) / .82) : .05 * (1 - (t - .92) / .08);
+    for (let i = 0; i < tp.count; i++) { const u = tp.getX(i), t = .5 - tp.getY(i), w = tw(t), x = u * w + (L.loose ? t * .012 : 0);
+      tp.setXYZ(i, x, 1.465 - drop - t * .3, (t < .1 ? .007 : .0025) * (1 - Math.abs(u) * 1.6)); }
+    add(root, conform(tg, .01), std(0xffffff, { map: tieTex, roughness: .35, side: THREE.DoubleSide }));
     // lapels (peaked), buttons, breast pocket
     for (const s of [-1, 1]) { const lap = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(s * .075, .02), new THREE.Vector2(s * .06, -.09), new THREE.Vector2(s * .01, -.24)]);
       const lm = add(root, new THREE.ExtrudeGeometry(lap, { depth: .012, bevelEnabled: true, bevelSize: .004, bevelThickness: .003, bevelSegments: 2 }), top, s * .055, 1.47, .11); lm.rotation.x = -.1; }
@@ -250,7 +262,6 @@ export function stickman(kind) {
     const st = tex(16, 120, (g, w, h) => { [['#c9a040', 0, 4], ['#0b6b3a', 4, 38], ['#f2f2f2', 42, 36], ['#b3121b', 78, 38], ['#c9a040', 116, 4]].forEach(([c, y, hh]) => { g.fillStyle = c; g.fillRect(0, y, w, hh); }); });
     st.repeat.set(1, 1);
     const geo = new THREE.CylinderGeometry(.2, .2, .1, 96, 1, true).rotateZ(-.95).translate(0, 1.17, 0), pp = geo.attributes.position;
-    const rAt = y => { for (let i = 1; i < prof.length; i++) { const [r0, y0] = prof[i - 1], [r1, y1] = prof[i]; if (y <= y1 && y >= y0) return r0 + (r1 - r0) * (y - y0) / (y1 - y0); } return .15; };
     for (let i = 0; i < pp.count; i++) { const x = pp.getX(i), y = pp.getY(i), z = pp.getZ(i), a = Math.atan2(z, x), r = rAt(y) + .016; pp.setX(i, Math.cos(a) * r); pp.setZ(i, Math.sin(a) * r); }
     geo.computeVertexNormals();
     const band = new THREE.Mesh(geo, std(0xffffff, { map: st, roughness: .5, side: THREE.DoubleSide })); band.castShadow = true; torso.add(band);
