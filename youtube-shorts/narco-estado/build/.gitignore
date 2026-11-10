@@ -7,3 +7,11 @@ log*.txt
 chars_old.js
 crop.jpg
 cmp_*.jpg
+geo/t/
+heli.jpg
+_head.html
+_tail.js
+_glue.js
+bed.wav
+audio.m4a
+*.mp4

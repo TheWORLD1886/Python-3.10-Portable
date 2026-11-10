@@ -166,7 +166,7 @@ function onHead(head, R, obj, u, v, push = 0, rz = 0) {
 function face(head, R, L, rig) {
   // painted, illustrated face (open + blink textures) on the porcelain head
   const open = faceTex(rig.kind, false), shut = faceTex(rig.kind, true);
-  head.material = new THREE.MeshPhysicalMaterial({ map: open, roughness: .45, clearcoat: .3, clearcoatRoughness: .45 });
+  head.material = new THREE.MeshPhysicalMaterial({ map: open, color: 0xe2ded6, roughness: .5, clearcoat: .15, clearcoatRoughness: .5 });
   rig.faceTex = { open, shut };
   if (L.cigar) { const g = new THREE.Group(); const c = add(g, new THREE.CylinderGeometry(R * .05, R * .055, R * .9, 12), std(0x5a3418, { roughness: .9 })); c.rotation.x = Math.PI / 2; c.position.z = R * .4;
     add(g, new THREE.CylinderGeometry(R * .052, R * .052, R * .06, 12), new THREE.MeshBasicMaterial({ color: 0xff5a10 }), 0, 0, R * .86).rotation.x = Math.PI / 2;
@@ -263,7 +263,7 @@ export function stickman(kind) {
     for (let i = -1; i <= 1; i++) { const x = i * .085; add(root, new THREE.BoxGeometry(.076, .1, .04), vm, x, 1.1, fz(x, 1.1, .035)); add(root, new THREE.BoxGeometry(.08, .028, .044), web, x, 1.145, fz(x, 1.145, .038)); }
     for (const s of [-1, 1]) { const st = add(root, new THREE.BoxGeometry(.06, .04, .25), vm, s * .11, 1.41, 0); }
     add(root, new THREE.CylinderGeometry(.158, .158, .05, 32), std(0x15140f, { roughness: .9 }), 0, .965, 0).scale.z = .7;
-    if (L.radio) { add(root, new THREE.BoxGeometry(.05, .09, .04), std(0x0a0a0a), .12, 1.3, fz(.12, 1.3, .045)); add(root, new THREE.CylinderGeometry(.004, .004, .3), std(0x050505), .14, 1.48, fz(.12, 1.3, .05)); }
+    if (L.radio) { add(root, new THREE.BoxGeometry(.05, .09, .04), std(0x0a0a0a), .12, 1.3, fz(.12, 1.3, .045)); add(root, new THREE.CylinderGeometry(.004, .004, .26), std(0x050505), .15, 1.5, -.13); }
     if (L.patch) { const p = add(root, new THREE.PlaneGeometry(.06, .04), new THREE.MeshStandardMaterial({ map: tex(60, 40, g => { ['#006847', '#eee', '#ce1126'].forEach((c, i) => { g.fillStyle = c; g.fillRect(i * 20, 0, 20, 40); }); g.fillStyle = '#7b4b1f'; g.beginPath(); g.arc(30, 20, 6, 0, 7); g.fill(); }) }), -.1, 1.3, fz(-.1, 1.3, .034)); }
   }
   if (L.sash) {
