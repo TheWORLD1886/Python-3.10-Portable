@@ -41,16 +41,22 @@ sfx = np.zeros(N)
 for k in np.arange(starts[1] + .56, ends[1], 1.6):
     i = int(k * SR); L = int(.3 * SR); seg = np.arange(L) / SR
     sfx[i:i + L] += (np.sin(2 * np.pi * 95 * seg) * 1.4 + low(noise[i:i + L], 2500) * .8) * np.exp(-seg * 25)
-# scene 3: helicopter rotor thump + turbine whine
-rotor = low(noise, 400) * (.5 + .5 * np.sign(np.sin(2 * np.pi * 11 * t))) * 1.4 + .08 * np.sin(2 * np.pi * 2300 * t)
-sfx += rotor * env(starts[2], ends[2], .8) * (.6 + .4 * np.sin(np.pi * np.clip((t - starts[2]) / (ends[2] - starts[2]), 0, 1)))
-# scene 4: sirens + fire crackle + distant explosions
-siren = np.sin(2 * np.pi * np.cumsum(750 + 260 * np.sin(2 * np.pi * .45 * t)) / SR) * .22
-crack = band(noise, 1500, 7000) * (rng.random(N) < .0008).astype(float) * 8
-crack = low(np.abs(crack), 3000) * np.sign(noise) * 1.0 + band(noise, 200, 1200) * .35
-sfx += (siren + crack) * env(starts[3], ends[3], .6)
+# scene 3: distant helicopter — soft low "whump" pulses (no harsh square gating / no turbine whine)
+ph = (t * 5.2) % 1; puls = np.exp(-ph * 9) * (1 - np.exp(-ph * 60))
+rotor = low(low(noise, 160) * puls, 220) * 2.2
+sw = np.clip((t - starts[2]) / (ends[2] - starts[2]), 0, 1); passby = np.sin(np.pi * sw) ** 2
+sfx += rotor * env(starts[2], ends[2], 1.5) * (.25 + .5 * passby)
+# scene 4: soft sirens + low fire rumble with sparse, gentle crackles (no broadband hiss)
+siren = np.sin(2 * np.pi * np.cumsum(750 + 260 * np.sin(2 * np.pi * .45 * t)) / SR) * .12
+siren = low(siren, 2500)
+rumble = low(low(noise, 180), 180) * 1.6
+clicks = np.zeros(N); idx = np.where(rng.random(N) < .00012)[0]
+for i in idx:
+    L = min(int(.012 * SR), N - i); clicks[i:i + L] += rng.standard_normal(L) * np.exp(-np.arange(L) / (SR * .002)) * (.3 + rng.random() * .4)
+crackle = low(clicks, 3500) * .5
+sfx += (siren + rumble + crackle) * env(starts[3], ends[3], .8)
 for k in [starts[3] + 2.5, starts[3] + 6.8, starts[3] + 10.2]:
-    i = int(k * SR); L = int(1.8 * SR); seg = np.arange(L) / SR; sfx[i:i + L] += low(noise[i:i + L], 300) * np.exp(-seg * 3) * 2.2
+    i = int(k * SR); L = int(1.8 * SR); seg = np.arange(L) / SR; sfx[i:i + L] += low(noise[i:i + L], 200) * np.exp(-seg * 3) * 1.4
 # scene 5: low choir-ish swell + final hit
 sfx += .15 * np.sin(2 * np.pi * 220 * t) * np.sin(2 * np.pi * 293.7 * t * .5) * env(starts[4], 60, 2)
 mix = mix * .32 + sfx * .35
