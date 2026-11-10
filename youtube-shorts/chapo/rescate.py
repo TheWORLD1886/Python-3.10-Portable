@@ -146,9 +146,9 @@ class R3(D.S3D):
                  (-110.95, 29.07), (-104.66, 24.02), (-101.0, 22.15), (-96.13, 19.17), (-97.5, 25.87), (-92.93, 17.99), (-89.62, 20.97), (-86.85, 21.16), (-98.2, 19.04)]
         s.ord = r_.permutation(len(s.pts)); s.dotg = glow_sprite(80, (255, 40, 30))
         s.title = red_panel('PODER TOTAL', w=640, h=170)
-        cta = np.zeros((120, 560, 4), np.uint8); im = Image.fromarray(cta); dd = ImageDraw.Draw(im)
-        dd.rounded_rectangle((4, 4, 555, 115), 56, fill=(200, 20, 20, 230), outline=(255, 255, 255, 255), width=4); cta = np.array(im)
-        over(cta, N.text_sprite('DALE LIKE · SÍGUEME', 40, (255, 255, 255, 255), spacing=3, pad=10), 300, 60)
+        cta = np.zeros((120, 720, 4), np.uint8); im = Image.fromarray(cta); dd = ImageDraw.Draw(im)
+        dd.rounded_rectangle((4, 4, 715, 115), 56, fill=(200, 20, 20, 230), outline=(255, 255, 255, 255), width=4); cta = np.array(im)
+        over(cta, N.text_sprite('DALE LIKE · SÍGUEME', 40, (255, 255, 255, 255), spacing=3, pad=10, maxw=560), 410, 60)
         over(cta, cv2.resize(emoji_sprite('👍'), (76, 76)), 62, 60); s.cta = cta; s.bell = emoji_sprite('🔔')
     def draw(s, fr, t, d):
         pul = .5 + .5 * math.sin(t * 4)

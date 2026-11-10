@@ -156,9 +156,9 @@ class Blockade(Shot):
         s.flame = glow_sprite(70, (255, 140, 40)); s.puff = glow_sprite(130, (96, 84, 82))
         s.title = red_panel(title, w=700, h=170) if title else None; s.cta = cta
         if cta:
-            c_ = np.zeros((120, 560, 4), np.uint8); im = Image.fromarray(c_); dd = ImageDraw.Draw(im)
-            dd.rounded_rectangle((4, 4, 555, 115), 56, fill=(200, 20, 20, 230), outline=(255, 255, 255, 255), width=4); c_ = np.array(im)
-            over(c_, N.text_sprite('DALE LIKE · SÍGUEME', 40, (255, 255, 255, 255), spacing=3, pad=10), 300, 60)
+            c_ = np.zeros((120, 720, 4), np.uint8); im = Image.fromarray(c_); dd = ImageDraw.Draw(im)
+            dd.rounded_rectangle((4, 4, 715, 115), 56, fill=(200, 20, 20, 230), outline=(255, 255, 255, 255), width=4); c_ = np.array(im)
+            over(c_, N.text_sprite('DALE LIKE · SÍGUEME', 40, (255, 255, 255, 255), spacing=3, pad=10, maxw=560), 410, 60)
             over(c_, cv2.resize(emoji_sprite('👍'), (76, 76)), 62, 60); s.ctaspr = c_; s.bell = emoji_sprite('🔔')
     def draw(s, fr, t, d):
         for i in range(16):
@@ -174,7 +174,7 @@ class Blockade(Shot):
             k = ss(.4, .8, t); blit(fr, s.title, 540, 420 + math.sin(t * 1.6) * 5, k * (.86 + .14 * math.sin(t * 5)), lerp(1.5, 1., eOut(k)))
         if s.cta:
             c = ss(.8, 1.2, t)
-            if c > 0: blit(fr, s.ctaspr, 790, 1840, c, lerp(.6, 1, eBack((t - .8) / .4)) * .6); blit(fr, s.bell, 980, 1820, c, .4)
+            if c > 0: blit(fr, s.ctaspr, 760, 1700, c, lerp(.6, 1, eBack((t - .8) / .4)) * .6); blit(fr, s.bell, 1010, 1680, c, .4)
 
 # ---------------------------------------------------------------- dinero: bóveda y maletines (la primera parte de Q2)
 class Vault(RL.Q2):
