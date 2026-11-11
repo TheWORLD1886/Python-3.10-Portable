@@ -572,9 +572,9 @@ def tl():
         (S[1], Jets(), 1), (T('pero') - .2, Raid(), 1), (T('sus') - .2, Fragment(), 1),
         (S[2], Palace(), 2), (T('tropas') - .4, Border(), 2), (T('gobierno') - .3, Note(), 2), (T('incluso') - .25, Coop(), 2),
         (S[3], CartelMap(), 3), (T('bloqueos') - .25, Blockade('BLOQUEOS'), 3), (T('amenazas') - .25, Facility(), 3), (T('expertos') - .4, Experts(), 3),
-        (S[4], Econ(), 4), (T('méxico', 41) - .25, Trade(), 4), (T('una', 45) - .2, Factory(), 4), (T('transporte') - .45, Customs(), 4),
-        (S[5], Mission(), 0), (T('no', 53) - .15, Network(), 3),
-        (S[6], Split(), 2), (T('te', 64.9) - .35, Close(), 4),
+        (S[4], Econ(), 4), (T('méxico', SC_T[4]) - .25, Trade(), 4), (T('una', T('mundo')) - .2, Factory(), 4), (T('transporte') - .45, Customs(), 4),
+        (S[5], Mission(), 0), (T('no', SC_T[5]) - .15, Network(), 3),
+        (S[6], Split(), 2), (T('te', T('grande')) - .35, Close(), 4),
     ]
     out = []
     for i, (a, sc, g) in enumerate(seq):
@@ -604,9 +604,9 @@ EMOJIS = [
  (T('soberanía'), T('tropas') - .4, '🏛️', 880, 1180, 140, 'pop'), (T('autorización'), T('gobierno') - .35, '🚫', 880, 1000, 140, 'sacude'),
  (T('diplomática'), T('incluso') - .3, '📄', 880, 1000, 130, 'pop'), (T('cooperación'), SC_T[3] - .1, '🤝', 880, 1640, 130, 'sacude'),
  (T('bloqueos'), T('amenazas') - .3, '🚧', 200, 860, 130, 'late'), (T('amenazas'), T('expertos') - .45, '⚠️', 880, 1000, 140, 'late'),
- (T('aumentar'), SC_T[4] - .1, '📈', 880, 1180, 140, 'pop'), (T('economía'), T('méxico', 41) - .3, '💰', 880, 1180, 150, 'late'),
+ (T('aumentar'), SC_T[4] - .1, '📈', 880, 1180, 140, 'pop'), (T('economía'), T('méxico', SC_T[4]) - .3, '💰', 880, 1180, 150, 'late'),
  (T('fábricas'), T('transporte') - .5, '🏭', 200, 1180, 130, 'pop'), (T('empleos'), T('transporte') - .5, '💼', 880, 1180, 130, 'pop'),
- (T('transporte'), SC_T[5] - .1, '🚚', 880, 1180, 140, 'sacude'), (T('trump', 50), T('no', 53) - .2, '❓', 880, 1180, 140, 'late'),
+ (T('transporte'), SC_T[5] - .1, '🚚', 880, 1180, 140, 'sacude'), (T('trump', SC_T[5]), T('no', SC_T[5]) - .2, '❓', 880, 1180, 140, 'late'),
  (SC_T[6] + .3, DUR, '💬', 180, 1180, 130, 'late'), (T('comentarios') - .3, DUR, '🔔', 900, 380, 130, 'sacude'),
 ]
 
@@ -617,7 +617,7 @@ _ef = [[0, 'boom', .9], [.3, 'latido', .3], [T('méxico') + .1, 'impacto', .6], 
 for sec in SC_T[1:7]: _ef += [[sec - .45, 'whoosh', .45], [sec, 'impacto', .55]]
 _ef += [[SC_T[1] + .2, 'riser', .2], [T('pero') + .2, 'beep', .12], [T('significa'), 'impacto', .7], [T('autorización'), 'impacto', .7], [T('cooperación'), 'impacto', .7],
         [T('suspender'), 'caida', .3], [T('bloqueos') - .1, 'boom', .4], [T('bloqueos') + .5, 'pop', .15], [T('amenazas'), 'alarma', .05, 1.8], [T('violencia'), 'impacto', .7],
-        [T('economía'), 'dinero', .3], [T('fábricas'), 'caida', .25], [T('no', 53), 'impacto', .7], [T('eliminar') + .3, 'impacto', .6], [T('dinero', 55), 'dinero', .2],
+        [T('economía'), 'dinero', .3], [T('fábricas'), 'caida', .25], [T('no', SC_T[5]), 'impacto', .7], [T('eliminar') + .3, 'impacto', .6], [T('dinero', SC_T[5]), 'dinero', .2],
         [T('dime') - .2, 'latido', .3], [T('conflicto'), 'boom', .4], [T('comentarios'), 'ding', .3], [DUR - 3.4 + 2.8, 'ding', .25]]
 _s = _s[:_a] + '    EF = ' + repr(sorted(_ef, key=lambda e: e[0])) + _s[_b:]
 _s = _s.replace("env / (env.max() * .25)", "env / (env.max() * .25 + 1e-9)").replace("duck = 1 - .55 * env", "duck = 1 - .7 * env").replace(
