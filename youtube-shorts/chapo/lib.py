@@ -374,6 +374,15 @@ def character(fr, kind, x, fy, hgt, t, armR=('reposo',), armL=('reposo',), look=
                       (head[0] + sd * .74 * u, head[1] + 1.45 * u), (head[0] + sd * .9 * u, head[1] - .05 * u)], hc)
         cv2.ellipse(fr, P8(head + A(0, -.58 * u)), (int(1.0 * u * 8), int(.46 * u * 8)), 0, 180, 360, hc, -1, cv2.LINE_AA, 3)
         line(fr, head + A(0, -1.02 * u), head + A(.05 * u, -.6 * u), (70, 52, 46), 2)
+    elif hair == 'coleta':  # cabello oscuro recogido en cola de caballo, raya en medio
+        hc = (44, 30, 26)
+        tb_ = head + A(.86 * u, -.35 * u)
+        poly(fr, [tuple(tb_ + A(-.12 * u, 0)), tuple(tb_ + A(.22 * u, -.05 * u)), tuple(tb_ + A(.5 * u, .7 * u)), tuple(tb_ + A(.42 * u, 1.5 * u)),
+                  tuple(tb_ + A(.22 * u, 1.7 * u)), tuple(tb_ + A(.16 * u, .9 * u))], hc)                            # la cola cae detrás, por un lado
+        cv2.ellipse(fr, P8(head + A(0, -.5 * u)), (int(1.0 * u * 8), int(.52 * u * 8)), 0, 180, 360, hc, -1, cv2.LINE_AA, 3)
+        for sd in (-1, 1): poly(fr, [(head[0] + sd * .99 * u, head[1] - .5 * u), (head[0] + sd * .7 * u, head[1] - .78 * u), (head[0] + sd * .9 * u, head[1] - .1 * u)], hc)
+        line(fr, head + A(0, -1.02 * u), head + A(.04 * u, -.55 * u), (70, 52, 46), 2)
+        circ(fr, tb_ + A(.1 * u, .05 * u), .14 * u, (150, 30, 50))                                                  # liga
     if beret:
         cv2.ellipse(fr, P8(head + A(-.1 * u, -.74 * u)), (int(1.08 * u * 8), int(.44 * u * 8)), -12, 0, 360, (40, 66, 44), -1, cv2.LINE_AA, 3)
         cv2.ellipse(fr, P8(head + A(.05 * u, -.52 * u)), (int(.98 * u * 8), int(.16 * u * 8)), -6, 0, 360, (26, 44, 30), -1, cv2.LINE_AA, 3)

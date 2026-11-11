@@ -248,7 +248,7 @@ class Palace(Sh):
         s.panel = DT.RS.red_panel('CRISIS DE SOBERANÍA', w=820, h=170)
     def draw(s, fr, t, d):
         cv2.ellipse(fr, (540, 1594), (170, 22), 0, 0, 360, (20, 18, 18), -1, cv2.LINE_AA)
-        character(fr, 'dama', 540, 1590, 500, t, armR=('reposo',), armL=('reposo',), look=(0, -.05), frown=.2, sash=True, hair='largo')
+        character(fr, 'dama', 540, 1590, 500, t, armR=('reposo',), armL=('reposo',), look=(0, -.05), frown=0, sash=True, hair='coleta')
         float_in(fr, s.panel, 540, 330, t, max(.2, s.w('soberanía') - .2))
     def cam(s, t, d):
         k = eIO(t / d); return lerp(1.04, 1.13, k), 540, lerp(1000, 1080, k), 0, 0
@@ -295,7 +295,7 @@ class Note(Sh):
         for k in range(6): cv2.line(s.doc, (14, 26 + k * 18), (104 - (k * 13) % 30, 26 + k * 18), (120, 120, 130, 255), 3)
         cv2.circle(s.doc, (90, 128), 13, (190, 40, 40, 255), -1)
     def draw(s, fr, t, d):
-        character(fr, 'dama', 540, 1400, 480, t, armR=('palma',) if (t % 2.2) < 1.1 else ('reposo',), armL=('reposo',), look=(0, 0), frown=.15, sash=True, hair='largo')
+        character(fr, 'dama', 540, 1400, 480, t, armR=('palma',) if (t % 2.2) < 1.1 else ('reposo',), armL=('reposo',), look=(0, 0), frown=0, sash=True, hair='coleta')
         mic_podium(fr, 540, 1180)
         for i in range(4):
             f = (t * .9 + i * .29) % 1
