@@ -1,0 +1,14 @@
+[Unit]
+Description=MetaTrader 5 (XM demo) + NTI liquidity-sweep EA, headless under Wine/Xvfb
+After=network-online.target
+
+[Service]
+Environment=WINEPREFIX=__WINEPREFIX__
+Environment=WINEDEBUG=-all
+WorkingDirectory=__MT5_DIR__
+ExecStart=/usr/bin/xvfb-run -a /usr/bin/wine terminal64.exe /config:nti_startup.ini
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=default.target

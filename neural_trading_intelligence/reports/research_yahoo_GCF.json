@@ -1,0 +1,197 @@
+{
+  "source": "yahoo:GC=F",
+  "bars": 13709,
+  "from": "2024-06-21 04:00:00+00:00",
+  "to": "2026-11-11 13:00:00+00:00",
+  "costs": {
+    "spread": 0.35,
+    "slippage": 0.1
+  },
+  "default_params": {
+    "sessions": [
+      "london",
+      "newyork"
+    ],
+    "min_pen_atr": 0.05,
+    "max_pen_atr": 1.5,
+    "sl_buffer_atr": 0.15,
+    "max_sl_atr": 2.5,
+    "rr": 2.0,
+    "max_hold_bars": 24,
+    "htf_rule": "4h",
+    "trend_filter": "none",
+    "min_touches": 1,
+    "skip_regimes": [
+      "abnormal"
+    ],
+    "swing_k": 3
+  },
+  "full_sample_default": {
+    "trades": 90,
+    "win_rate": 0.3111111111111111,
+    "avg_win_r": 1.8244958295947764,
+    "avg_loss_r": -1.099739553136424,
+    "expectancy_r": -0.18997743406449505,
+    "expectancy_r_ci95": [
+      -0.4670609000112813,
+      0.10677345688464682
+    ],
+    "t_stat": -1.3019653905594322,
+    "profit_factor": 0.7492372682029554,
+    "max_drawdown_pct": -5.004830153189713,
+    "return_pct": -4.236391632122627,
+    "max_consecutive_losses": 9,
+    "exit_reasons": {
+      "stop": 62,
+      "target": 25,
+      "time": 3
+    },
+    "verdict": "INSUFFICIENT SAMPLE (90 < 100 trades): no conclusion possible"
+  },
+  "full_sample_default_no_costs_expectancy_r": -0.13184447760115303,
+  "walk_forward": {
+    "configs_tested_per_window": 24,
+    "windows": [
+      {
+        "train": [
+          "2024-06-21",
+          "2025-03-21"
+        ],
+        "test_end": "2025-06-21",
+        "chosen": {
+          "rr": 1.5,
+          "trend_filter": "with",
+          "min_touches": 2,
+          "max_pen_atr": 1.0
+        },
+        "train_expectancy_r": 0.099,
+        "oos_trades": 16,
+        "oos_expectancy_r": -0.18
+      },
+      {
+        "train": [
+          "2024-09-21",
+          "2025-06-21"
+        ],
+        "test_end": "2025-09-21",
+        "chosen": {
+          "rr": 2.0,
+          "trend_filter": "with",
+          "min_touches": 2,
+          "max_pen_atr": 1.0
+        },
+        "train_expectancy_r": 0.183,
+        "oos_trades": 10,
+        "oos_expectancy_r": -0.476
+      },
+      {
+        "train": [
+          "2024-12-21",
+          "2025-09-21"
+        ],
+        "test_end": "2025-12-21",
+        "chosen": {
+          "rr": 2.0,
+          "trend_filter": "with",
+          "min_touches": 2,
+          "max_pen_atr": 1.0
+        },
+        "train_expectancy_r": 0.093,
+        "oos_trades": 5,
+        "oos_expectancy_r": -0.443
+      },
+      {
+        "train": [
+          "2025-03-21",
+          "2025-12-21"
+        ],
+        "test_end": "2026-03-21",
+        "chosen": {
+          "rr": 3.0,
+          "trend_filter": "with",
+          "min_touches": 2,
+          "max_pen_atr": 1.0
+        },
+        "train_expectancy_r": -0.187,
+        "oos_trades": 17,
+        "oos_expectancy_r": 0.34
+      },
+      {
+        "train": [
+          "2025-06-21",
+          "2026-03-21"
+        ],
+        "test_end": "2026-06-21",
+        "chosen": {
+          "rr": 3.0,
+          "trend_filter": "with",
+          "min_touches": 1,
+          "max_pen_atr": 1.0
+        },
+        "train_expectancy_r": -0.014,
+        "oos_trades": 26,
+        "oos_expectancy_r": 0.036
+      },
+      {
+        "train": [
+          "2025-09-21",
+          "2026-06-21"
+        ],
+        "test_end": "2026-09-21",
+        "chosen": {
+          "rr": 3.0,
+          "trend_filter": "none",
+          "min_touches": 1,
+          "max_pen_atr": 1.0
+        },
+        "train_expectancy_r": 0.339,
+        "oos_trades": 52,
+        "oos_expectancy_r": 0.046
+      },
+      {
+        "train": [
+          "2025-12-21",
+          "2026-09-21"
+        ],
+        "test_end": "2026-11-11",
+        "chosen": {
+          "rr": 3.0,
+          "trend_filter": "with",
+          "min_touches": 1,
+          "max_pen_atr": 1.0
+        },
+        "train_expectancy_r": 0.312,
+        "oos_trades": 23,
+        "oos_expectancy_r": 0.233
+      }
+    ],
+    "oos": {
+      "trades": 149,
+      "win_rate": 0.31543624161073824,
+      "avg_win_r": 2.3806981240909253,
+      "avg_loss_r": -1.0515736481342588,
+      "expectancy_r": 0.03108925988308127,
+      "expectancy_r_ci95": [
+        -0.2330148448536677,
+        0.3091418052613381
+      ],
+      "t_stat": 0.22536977452403267,
+      "profit_factor": 1.0431873727942085,
+      "max_drawdown_pct": -4.1397847803414765,
+      "return_pct": 1.0325497909367876,
+      "max_consecutive_losses": 10,
+      "exit_reasons": {
+        "stop": 101,
+        "target": 37,
+        "time": 11
+      },
+      "verdict": "NOT DISTINGUISHABLE FROM ZERO: no demonstrated edge"
+    }
+  },
+  "random_benchmark": {
+    "sims": 300,
+    "mean_expectancy_r": -0.0638002198768391,
+    "p95_expectancy_r": 0.2073319867780117,
+    "strategy_percentile": 22.333333333333332
+  }
+}
