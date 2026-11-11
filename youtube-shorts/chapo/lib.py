@@ -200,11 +200,12 @@ OUTF = {'militar': dict(top=(92, 104, 64), pants=(72, 82, 52), shoe=(26, 26, 26)
         'reo': dict(top=(240, 112, 28), pants=(228, 100, 24), shoe=(36, 36, 40)),
         'civil': dict(top=(128, 34, 40), pants=(52, 84, 146), shoe=(70, 46, 30)),
         'comando': dict(top=(26, 28, 32), pants=(22, 24, 28), shoe=(10, 10, 12)),
-        'juez': dict(top=(22, 22, 28), pants=(22, 22, 28), shoe=(12, 12, 14))}
+        'juez': dict(top=(22, 22, 28), pants=(22, 22, 28), shoe=(12, 12, 14)),
+        'dama': dict(top=(92, 26, 44), pants=(40, 22, 30), shoe=(20, 12, 14))}
 SKIN = (246, 244, 240)
 def dark(c, k=.6): return tuple(int(v * k) for v in c)
 
-def character(fr, kind, x, fy, hgt, t, armR=('reposo',), armL=('reposo',), look=(0., 0.), frown=.3, beret=False, smile=0., sash=False, mustache=False, run=0., cuffs=False, cap=False, mask=False):
+def character(fr, kind, x, fy, hgt, t, armR=('reposo',), armL=('reposo',), look=(0., 0.), frown=.3, beret=False, smile=0., sash=False, mustache=False, run=0., cuffs=False, cap=False, mask=False, hair=None):
     hands = {}
     u = hgt / 8.; o = OUTF[kind]; br = math.sin(t * 2.2) * u * .05
     hipy = fy - 3.3 * u; shy = fy - 5.75 * u + br
@@ -238,6 +239,14 @@ def character(fr, kind, x, fy, hgt, t, armR=('reposo',), armL=('reposo',), look=
         poly(fr, [(x - .34 * u, shy - .22 * u), (x + .34 * u, shy - .22 * u), (x, shy + 1.25 * u)], (240, 240, 244))
         poly(fr, [(x - .1 * u, shy - .1 * u), (x + .1 * u, shy - .1 * u), (x + .14 * u, shy + .95 * u), (x, shy + 1.2 * u), (x - .14 * u, shy + .95 * u)], (190, 32, 36))
         if sash:  # banda presidencial tricolor
+            for k, c in enumerate([(0, 120, 72), (245, 245, 245), (206, 24, 40)]):
+                o_ = (k - 1) * .2 * u
+                line(fr, (x - .78 * u + o_, shy + .05 * u), (x + .72 * u + o_, hipy - .1 * u), c, .2 * u)
+            circ(fr, (x + .7 * u, hipy - .12 * u), .2 * u, (232, 190, 80)); circ(fr, (x + .7 * u, hipy - .12 * u), .12 * u, (150, 110, 40))
+    elif kind == 'dama':  # saco formal sin corbata, blusa clara y, si aplica, banda presidencial
+        poly(fr, [(x - .36 * u, shy - .22 * u), (x + .36 * u, shy - .22 * u), (x, shy + .95 * u)], (236, 232, 226))
+        for sd in (-1, 1): line(fr, (x + sd * .36 * u, shy - .2 * u), (x + sd * .1 * u, shy + 1.0 * u), dark(top, .6), 3)
+        if sash:
             for k, c in enumerate([(0, 120, 72), (245, 245, 245), (206, 24, 40)]):
                 o_ = (k - 1) * .2 * u
                 line(fr, (x - .78 * u + o_, shy + .05 * u), (x + .72 * u + o_, hipy - .1 * u), c, .2 * u)
@@ -353,6 +362,18 @@ def character(fr, kind, x, fy, hgt, t, armR=('reposo',), armL=('reposo',), look=
         circ(fr, head, .97 * u, (16, 16, 18))
         cv2.ellipse(fr, P8(fc + A(0, -.05 * u)), (int(.62 * u * 8), int(.22 * u * 8)), 0, 0, 360, SKIN, -1, cv2.LINE_AA, 3)
         for sd in (-1, 1): cv2.ellipse(fr, P8(fc + A(sd * .3 * u, -.05 * u)), (int(.09 * u * 8), int(.13 * u * 8)), 0, 0, 360, (18, 18, 24), -1, cv2.LINE_AA, 3)
+    if hair == 'rubio':  # copete rubio peinado hacia un lado (deja ver las cejas)
+        hc, hd_ = (236, 196, 112), (196, 150, 70)
+        cv2.ellipse(fr, P8(head + A(0, -.56 * u)), (int(.99 * u * 8), int(.5 * u * 8)), 0, 180, 360, hc, -1, cv2.LINE_AA, 3)
+        cv2.ellipse(fr, P8(head + A(.3 * u, -.92 * u)), (int(.92 * u * 8), int(.26 * u * 8)), -8, 0, 360, (248, 214, 136), -1, cv2.LINE_AA, 3)   # copete
+        for k in range(4): line(fr, head + A((-.6 + k * .34) * u, -1.0 * u), head + A((-.3 + k * .36) * u, -.68 * u), hd_, 2)
+    elif hair == 'largo':  # cabello oscuro largo con raya en medio (deja ver las cejas)
+        hc = (44, 30, 26)
+        for sd in (-1, 1):
+            poly(fr, [(head[0] + sd * .62 * u, head[1] - .72 * u), (head[0] + sd * 1.04 * u, head[1] - .25 * u), (head[0] + sd * 1.1 * u, head[1] + 1.35 * u),
+                      (head[0] + sd * .74 * u, head[1] + 1.45 * u), (head[0] + sd * .9 * u, head[1] - .05 * u)], hc)
+        cv2.ellipse(fr, P8(head + A(0, -.58 * u)), (int(1.0 * u * 8), int(.46 * u * 8)), 0, 180, 360, hc, -1, cv2.LINE_AA, 3)
+        line(fr, head + A(0, -1.02 * u), head + A(.05 * u, -.6 * u), (70, 52, 46), 2)
     if beret:
         cv2.ellipse(fr, P8(head + A(-.1 * u, -.74 * u)), (int(1.08 * u * 8), int(.44 * u * 8)), -12, 0, 360, (40, 66, 44), -1, cv2.LINE_AA, 3)
         cv2.ellipse(fr, P8(head + A(.05 * u, -.52 * u)), (int(.98 * u * 8), int(.16 * u * 8)), -6, 0, 360, (26, 44, 30), -1, cv2.LINE_AA, 3)
