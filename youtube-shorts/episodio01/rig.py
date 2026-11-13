@@ -480,7 +480,7 @@ CAST.update({
     'presidenta': dict(nombre='PRESIDENTA', alto=.95, cabeza=1.0, top=(92, 26, 44), pants=(40, 22, 30), shoe=(20, 12, 14), ropa='traje', pelo='cola', pelo_col=(44, 30, 26), banda=[(0, 120, 72), (245, 245, 245), (206, 24, 40)]),
     'soldado':   dict(nombre='SOLDADO', alto=1.0, cabeza=1.0, top=(92, 104, 64), pants=(72, 82, 52), shoe=(26, 26, 26), ropa='militar', pelo='corto', pelo_col=(40, 32, 26), casco=(70, 82, 50)),
     'reo':       dict(nombre='DETENIDO', alto=.98, cabeza=1.0, top=(122, 126, 132), pants=(110, 114, 120), shoe=(40, 40, 44), ropa='gris', pelo='rapado', pelo_col=(200, 196, 190)),
-    'pandillero': dict(nombre='PANDILLERO', alto=.98, cabeza=1.0, top=SKIN, pants=(34, 36, 42), shoe=(236, 236, 240), ropa='sin_camisa', pelo='rapado', pelo_col=(60, 56, 54), rapado_col=(234, 232, 228), tatuajes=True),
+    'pandillero': dict(nombre='PANDILLERO', alto=.98, cabeza=1.0, top=SKIN, pants=(34, 36, 42), shoe=(236, 236, 240), ropa='sin_camisa', pelo='calvo', pelo_col=(60, 56, 54), tatuajes=True),
     'jefe':      dict(nombre='JEFE', alto=1.0, cabeza=1.0, top=(40, 78, 178), pants=(24, 28, 48), shoe=(14, 14, 18), ropa='traje', pelo='peinado', pelo_col=(60, 46, 36), corbata=(200, 170, 60)),
     'ejecutivo': dict(nombre='EJECUTIVO', alto=1.0, cabeza=1.0, top=(34, 38, 60), pants=(28, 31, 48), shoe=(14, 14, 18), ropa='traje', pelo='corto', pelo_col=(70, 60, 50), corbata=(190, 32, 36)),
     'vecino':    dict(nombre='VECINO', alto=.98, cabeza=1.0, top=(128, 34, 40), pants=(52, 84, 146), shoe=(70, 46, 30), ropa='franela', plaid=(90, 24, 28), pelo='corto', pelo_col=(40, 30, 24)),
