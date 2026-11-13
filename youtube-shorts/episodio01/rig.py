@@ -115,6 +115,7 @@ def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
         line(fr, S, e, dk, lw + 5); line(fr, e, hd, dk, lw + 4); line(fr, S, e, col, lw); line(fr, e, hd, col, lw * .92)
         circ(fr, e, lw / 2, col)                                         # codo
         if c['ropa'] == 'franela': dv = hd - e; dv /= max(1e-6, np.linalg.norm(dv)); line(fr, hd - dv * .3 * u, hd - dv * .18 * u, dark(col, .55), lw)
+        if c['ropa'] == 'sin_camisa': tat_limb(fr, S, e, lw, u); tat_limb(fr, e, hd, lw * .92, u)
         circ(fr, hd, .31 * u, (170, 172, 182)); circ(fr, hd, .27 * u, c.get('piel', SKIN)); hands['L' if sd < 0 else 'R'] = hd
     for sd, S, e, hd, behind in arm_geo:
         if behind: draw_arm(sd, S, e, hd)
@@ -154,6 +155,8 @@ def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
             ell(fr, shY + (hip - shY) * b_ + tn * a_ * u, ra * u, rb * u, 20, dark(top, .72))
         for sd in (-1, 1): cv2.rectangle(fr, P8(shY + (hip - shY) * .25 + tn * (sd * .45 - .2) * u), P8(shY + (hip - shY) * .45 + tn * (sd * .45 + .2) * u), dark(top, .6), 2, cv2.LINE_AA, 3)
         line(fr, hip - tv * .15 * u - tn * .9 * u, hip - tv * .15 * u + tn * .9 * u, (34, 34, 26), .22 * u); circ(fr, hip - tv * .15 * u, .12 * u, (190, 160, 70))
+    elif c['ropa'] == 'sin_camisa':                                       # torso desnudo tatuado (pandillero)
+        tat_torso_front(fr, shY, hip, tn, tv, u, top); tat_waist(fr, hip, tn, tv, u, c['pants'])
     elif c['ropa'] in ('blanco', 'gris'):                                 # uniforme de recluso con número
         ell(fr, neck - tv * .02 * u, .4 * u, .2 * u, math.degrees(p['lean']), dark(top, .8))
         line(fr, shY + (hip - shY) * .15, hip - tv * .25 * u, dark(top, .75), 2)
@@ -251,7 +254,7 @@ def hair_front(fr, c, head, u, p):
         for sd in (-1, 1): poly(fr, [head + A(sd * .99 * u, -.6 * u), head + A(sd * .9 * u, -.1 * u), head + A(sd * .98 * u, -.3 * u)], hc)
         for k in range(3): line(fr, head + A((-.5 + k * .35) * u, -1.05 * u), head + A((-.2 + k * .35) * u, -.68 * u), hl, 2)
     elif c['pelo'] == 'rapado':                                           # cabeza rapada: sombra de pelo muy corto
-        ell(fr, head + A(0, -.58 * u), .96 * u, .44 * u, 0, tuple(int(v * .82) for v in c.get('piel', SKIN)), 180, 360)
+        ell(fr, head + A(0, -.58 * u), .96 * u, .44 * u, 0, c.get('rapado_col', tuple(int(v * .82) for v in c.get('piel', SKIN))), 180, 360)
     elif c['pelo'] == 'cola':                                             # recogido en cola de caballo, raya en medio
         ell(fr, head + A(0, -.56 * u), 1.0 * u, .48 * u, 0, hc, 180, 360)
         for sd in (-1, 1): poly(fr, [head + A(sd * .99 * u, -.56 * u), head + A(sd * .76 * u, -.86 * u), head + A(sd * .92 * u, -.15 * u)], hc)
@@ -355,7 +358,9 @@ def person_side(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=1):
         if g is not None: e, hd = ik_limb(S, reach(hd, g), 1.3 * u, 1.25 * u, (-f * .5, 1.))     # codo hacia abajo y atrás
         col = dark(top, shade)
         line(fr, S, e, dark(col, .62), lw + 5); line(fr, e, hd, dark(col, .62), lw + 4); line(fr, S, e, col, lw); line(fr, e, hd, col, lw * .92)
-        circ(fr, e, lw / 2, col); circ(fr, hd, .31 * u, dark((170, 172, 182), shade)); circ(fr, hd, .27 * u, dark(c.get('piel', SKIN), shade)); return hd
+        circ(fr, e, lw / 2, col)
+        if c['ropa'] == 'sin_camisa': tat_limb(fr, S, e, lw, u); tat_limb(fr, e, hd, lw * .92, u)
+        circ(fr, hd, .31 * u, dark((170, 172, 182), shade)); circ(fr, hd, .27 * u, dark(c.get('piel', SKIN), shade)); return hd
     hands = {}
     near, far = ('R', 'L') if f > 0 else ('L', 'R')
     hands[far] = arm(far, .72); leg(far, .78)
@@ -388,6 +393,12 @@ def person_side(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=1):
         cv2.rectangle(fr, P8(q - A(w_ / 2, h_ / 2)), P8(q + A(w_ / 2, h_ / 2)), (236, 236, 230), -1, cv2.LINE_AA, 3)
         num = str(p.get('numero', 10000 + (int(x) * 37) % 89999)); sc_ = max(.2, .0048 * u); (tw, th), _ = cv2.getTextSize(num, cv2.FONT_HERSHEY_DUPLEX, sc_, 1)
         cv2.putText(fr, num, (int(q[0] - tw / 2), int(q[1] + th / 2)), cv2.FONT_HERSHEY_DUPLEX, sc_, (30, 30, 34), max(1, int(u * .03)), cv2.LINE_AA)
+    elif c['ropa'] == 'sin_camisa':                                       # de perfil: pectoral, letras en el costado, cintura caída
+        H_ = hip - shY
+        ell(fr, shY + H_ * .34 + tn * f * .38 * u, .3 * u, .13 * u, 0, dark(top, .82), 0 if f > 0 else 180, 90 if f > 0 else 270, max(2, int(.05 * u)))
+        tat_text(fr, 'MS', shY + H_ * .3 + tn * f * .32 * u, .56 * u); tat_text(fr, '13', shY + H_ * .66 + tn * f * .3 * u, .4 * u)
+        line(fr, hip + tv * .12 * u - tn * .56 * u, hip + tv * .12 * u + tn * .6 * u, (236, 236, 240), .2 * u)
+        line(fr, hip - tv * .06 * u - tn * .62 * u, hip - tv * .06 * u + tn * .64 * u, pants, .3 * u)
     elif c['ropa'] == 'militar':
         for (a_, b_, ra, rb) in [(-.3, .3, .26, .18), (.3, .55, .28, .16), (-.1, .8, .24, .14)]: ell(fr, shY + (hip - shY) * b_ + tn * a_ * u, ra * u, rb * u, 20, dark(top, .72))
         line(fr, hip - tv * .15 * u - tn * .7 * u, hip - tv * .15 * u + tn * .74 * u, (34, 34, 26), .22 * u)
@@ -440,6 +451,18 @@ def head_extras(fr, c, head, u, p, f):
             cv2.ellipse(fr, P8(fc + A(0, .02 * u)), (int(.8 * u * 8), int(.78 * u * 8)), 0, 25, 155, bc, max(2, int(.2 * u)), cv2.LINE_AA, 3)
             cv2.ellipse(fr, P8(fc + A(0, .3 * u)), (int(.22 * u * 8), int(.06 * u * 8)), 0, 180, 360, bc, max(2, int(.05 * u)), cv2.LINE_AA, 3)   # bigote fino (arriba de la boca)
         else: pass                                                            # de perfil: ver beard_profile
+    if c.get('tatuajes'):
+        if f == 0:
+            tat_text(fr, 'MS', fc + A(0, -.72 * u), .56 * u)                                           # frente, arriba de las cejas
+            for sd in (-1, 1):                                                                         # mejillas: tres puntos / 13
+                if sd < 0:
+                    for q in ((-.6, .14), (-.5, .14), (-.55, .24)): circ(fr, fc + A(q[0] * u, q[1] * u), .035 * u, TINTA)
+                else: tat_text(fr, '13', fc + A(.6 * u, .2 * u), .22 * u)
+            line(fr, fc + A(-.34 * u, .06 * u), fc + A(-.34 * u, .14 * u), TINTA, .04 * u)          # lágrima bajo el ojo
+        else:
+            L = lambda xf, y: head + A(f * xf * u, y * u)
+            tat_text(fr, 'MS', L(-.3, -.5), .55 * u)                                                  # costado del cráneo
+            for q in ((.4, .14), (.5, .14), (.45, .24)): circ(fr, L(*q), .035 * u, TINTA)            # tres puntos en la mejilla
     g = c.get('gorra')
     if g:                                                                 # gorra: la visera queda arriba de las cejas
         col = c.get('gorra_col', (36, 40, 50))
@@ -457,13 +480,50 @@ CAST.update({
     'presidenta': dict(nombre='PRESIDENTA', alto=.95, cabeza=1.0, top=(92, 26, 44), pants=(40, 22, 30), shoe=(20, 12, 14), ropa='traje', pelo='cola', pelo_col=(44, 30, 26), banda=[(0, 120, 72), (245, 245, 245), (206, 24, 40)]),
     'soldado':   dict(nombre='SOLDADO', alto=1.0, cabeza=1.0, top=(92, 104, 64), pants=(72, 82, 52), shoe=(26, 26, 26), ropa='militar', pelo='corto', pelo_col=(40, 32, 26), casco=(70, 82, 50)),
     'reo':       dict(nombre='DETENIDO', alto=.98, cabeza=1.0, top=(122, 126, 132), pants=(110, 114, 120), shoe=(40, 40, 44), ropa='gris', pelo='rapado', pelo_col=(200, 196, 190)),
-    'pandillero': dict(nombre='PANDILLERO', alto=.98, cabeza=1.0, top=(30, 30, 36), pants=(50, 60, 90), shoe=(230, 230, 236), ropa='liso', pelo='corto', pelo_col=(20, 18, 16), gorra='frente', gorra_col=(150, 30, 30)),
+    'pandillero': dict(nombre='PANDILLERO', alto=.98, cabeza=1.0, top=SKIN, pants=(34, 36, 42), shoe=(236, 236, 240), ropa='sin_camisa', pelo='rapado', pelo_col=(60, 56, 54), rapado_col=(234, 232, 228), tatuajes=True),
     'jefe':      dict(nombre='JEFE', alto=1.0, cabeza=1.0, top=(40, 78, 178), pants=(24, 28, 48), shoe=(14, 14, 18), ropa='traje', pelo='peinado', pelo_col=(60, 46, 36), corbata=(200, 170, 60)),
     'ejecutivo': dict(nombre='EJECUTIVO', alto=1.0, cabeza=1.0, top=(34, 38, 60), pants=(28, 31, 48), shoe=(14, 14, 18), ropa='traje', pelo='corto', pelo_col=(70, 60, 50), corbata=(190, 32, 36)),
     'vecino':    dict(nombre='VECINO', alto=.98, cabeza=1.0, top=(128, 34, 40), pants=(52, 84, 146), shoe=(70, 46, 30), ropa='franela', plaid=(90, 24, 28), pelo='corto', pelo_col=(40, 30, 24)),
     'vecina':    dict(nombre='VECINA', alto=.93, cabeza=1.0, top=(70, 120, 110), pants=(40, 46, 70), shoe=(110, 60, 46), ropa='sueter', pelo='cola', pelo_col=(60, 40, 30)),
     'doctora':   dict(nombre='DOCTORA', alto=.94, cabeza=1.0, top=(236, 239, 244), pants=(54, 58, 70), shoe=(20, 20, 24), ropa='quirurgica', pelo='melena', pelo_col=(90, 60, 40)),
 })
+
+TINTA = (40, 48, 70)                                                    # tinta de tatuaje: azul-negro desgastado
+def tat_text(fr, txt, c, w_px, col=TINTA, font=cv2.FONT_HERSHEY_COMPLEX | cv2.FONT_ITALIC, th=None):
+    """texto tatuado centrado en c, escalado para medir w_px de ancho (letras tipo old english simplificadas)."""
+    (tw, tth), _ = cv2.getTextSize(txt, font, 1., 2); sc = max(.15, w_px / max(1, tw)); th = th or max(1, int(sc * 1.6))
+    (tw, tth), _ = cv2.getTextSize(txt, font, sc, th)
+    org = (int(c[0] - tw / 2), int(c[1] + tth / 2)); cv2.putText(fr, txt, org, font, sc, col, th, cv2.LINE_AA)
+def tat_limb(fr, a, b, w, u, seed=0):
+    """manga tatuada sobre un segmento del brazo: bandas, picos y rombos que siguen la dirección del hueso."""
+    d = b - a; L = np.linalg.norm(d)
+    if L < 1e-3: return
+    d = d / L; n = A(-d[1], d[0]); hw = w * .42
+    for k in (.18, .82): q = a + d * L * k; line(fr, q - n * hw, q + n * hw, TINTA, .07 * u)              # bandas
+    for i in range(3):                                                                                  # picos tribales
+        k = .3 + i * .17; q = a + d * L * k
+        poly(fr, [q - n * hw * .9, q + d * .12 * u, q - n * hw * .2 + d * .03 * u], TINTA)
+        poly(fr, [q + n * hw * .9, q + d * .12 * u, q + n * hw * .2 + d * .03 * u], TINTA)
+    q = a + d * L * .7; poly(fr, [q + d * .1 * u, q + n * hw * .45, q - d * .1 * u, q - n * hw * .45], TINTA)
+def tat_torso_front(fr, shY, hip, tn, tv, u, top):
+    """pecho y abdomen marcados + tatuajes grandes: letras en el pecho, número en el abdomen, ornamentos en clavículas."""
+    H_ = hip - shY; at = lambda k, o: shY + H_ * k + tn * o * u
+    for sd in (-1, 1): ell(fr, at(.33, sd * .42), .42 * u, .14 * u, 0, dark(top, .82), 10, 170, max(2, int(.05 * u)))   # pectorales
+    line(fr, at(.12, 0), at(.4, 0), dark(top, .86), .04 * u)
+    for k in (.55, .7): line(fr, at(k, -.22), at(k, .22), dark(top, .88), .035 * u)                    # abdomen
+    circ(fr, at(.88, 0), .05 * u, dark(top, .7))                                                         # ombligo
+    for sd in (-1, 1):                                                                                   # ornamento en clavícula
+        a0 = at(.05, sd * .2); a1 = at(.1, sd * .78)
+        line(fr, a0, a1, TINTA, .06 * u); circ(fr, at(.08, sd * .5), .07 * u, TINTA)
+    tat_text(fr, 'MS', at(.26, 0), 1.25 * u)
+    tat_text(fr, '13', at(.66, 0), .62 * u)
+    for sd in (-1, 1):                                                                                   # cuernos (mano «la garra») en los costados
+        q = at(.6, sd * .64)
+        poly(fr, [q + A(-.12 * u, .14 * u), q + A(-.1 * u, -.2 * u), q + A(-.04 * u, .02 * u), q + A(.04 * u, .02 * u), q + A(.1 * u, -.2 * u), q + A(.12 * u, .14 * u)], TINTA)
+def tat_waist(fr, hip, tn, tv, u, pants):
+    """pantalón holgado caído con el elástico del bóxer a la vista."""
+    line(fr, hip + tv * .12 * u - tn * .86 * u, hip + tv * .12 * u + tn * .86 * u, (236, 236, 240), .2 * u)
+    line(fr, hip - tv * .06 * u - tn * .92 * u, hip - tv * .06 * u + tn * .92 * u, pants, .3 * u)
 
 def chaikin_c(pts, it=2):
     """suaviza un contorno cerrado (esquinas redondeadas)."""
@@ -496,7 +556,7 @@ def hair_profile(fr, c, L, uh, f, hc):
     y la nuca detrás de la oreja (sin bloques cuadrados)."""
     st = c['pelo']
     if st in ('corto', 'peinado', 'coletas', 'cola', 'melena', 'rapado'):
-        col = tuple(int(v * .82) for v in c.get('piel', SKIN)) if st == 'rapado' else hc
+        col = c.get('rapado_col', tuple(int(v * .82) for v in c.get('piel', SKIN))) if st == 'rapado' else hc
         arc = _arc(L, -38, -222, 1.03)                                        # de la frente, por la coronilla, hasta la nuca
         inner = [L(-.6, .55), L(-.5, .18), L(-.32, -.22), L(-.05, -.5), L(.3, -.64), L(.62, -.66)]
         if st == 'melena': arc = _arc(L, -38, -210, 1.04); inner = [L(-.75, .62), L(-.55, .2), L(-.3, -.25)] + inner[3:]

@@ -318,7 +318,7 @@ class Protest(Sb):                                 # miles de denuncias por abus
             sx, sy = x + 95, fy - 640 - 20 * up                                  # la pancarta va a un lado; una mano sostiene el palo
             cv2.line(fr, (int(sx), int(sy)), (int(sx), int(fy - 180)), (120, 90, 60), 8)
             character(fr, ['civil', 'dama', 'traje', 'civil'][i], x, fy, 430, t + i, armR=('apunta', (sx, fy - 330 - 20 * up), 1.), armL=('reposo',),
-                      look=(.15, -.3), frown=-.3, who=['vecino', 'vecina', 'ejecutivo', 'pandillero'][i])
+                      look=(.15, -.3), frown=-.3, who=['vecino', 'vecina', 'ejecutivo', 'peaton1'][i])
             cv2.rectangle(fr, (int(sx - 100), int(sy - 70)), (int(sx + 100), int(sy + 60)), (240, 236, 226), -1); blit(fr, s.signs[i], sx, sy - 5)
         for i, tg in enumerate(s.tags):
             if t > .6 + i * .5: float_in(fr, tg, [270, 810, 540][i], [560, 560, 700][i], t, .6 + i * .5)
@@ -435,7 +435,6 @@ class TwoEnemies(Sb):                              # no es el mismo enemigo
     def draw(s, fr, t, d):
         line(fr, (540, 480), (540, 1700), (255, 255, 255), 3)
         character(fr, 'civil', 270, 1620, 480, t, armR=('jarra',), armL=('jarra',), look=(.2, 0), frown=.5, cap=True)
-        for k in range(3): line(fr, (200 + k * 30, 1180), (210 + k * 30, 1230), (30, 30, 40), 4)            # tatuajes estilizados en la cara
         character(fr, 'elegante', 810, 1620, 500, t, armR=('palma',), armL=('jarra',), look=(-.2, 0), frown=.2, smile=.3)
         for k in range(6):                                                    # red internacional detrás del jefe
             a_ = k * math.pi / 3 + t * .3; p = (810 + math.cos(a_) * 230, 820 + math.sin(a_) * 120); line(fr, (810, 820), p, (255, 120, 100), 2); circ(fr, p, 12, (255, 160, 140))
@@ -506,7 +505,7 @@ class Displaced(Sb):                               # más violencia y desplazami
     def draw(s, fr, t, d):
         for i in range(12): f = (i / 12. + t * .07) % 1; blit(fr, s.puff, 80 + (i % 6) * 190 + f * 80, 1250 - f * 800, min(1, f * 5) * (1 - f) * .5, 1 + f * 2.4)
         for q in range(5): fl = .7 + .3 * math.sin(t * 13 + q); blit(fr, s.flame, 120 + q * 200, 1250, fl * .8, 2 + .5 * fl, add=True)
-        for i, (x0, kind, h, kw) in enumerate([(820, 'dama', 440, dict(hair='coleta')), (960, 'traje', 470, {}), (1100, 'civil', 300, {}), (700, 'civil', 450, dict(cap=True))]):   # familias que huyen con sus cosas
+        for i, (x0, kind, h, kw) in enumerate([(820, 'dama', 440, dict(hair='coleta')), (960, 'traje', 470, {}), (1100, 'civil', 300, {}), (700, 'civil', 450, dict(who='peaton2'))]):   # familias que huyen con sus cosas
             x = x0 - 120 * t
             hs = character(fr, kind, x, 1680 + (i % 2) * 30, h, t + i * .7, armR=('reposo',), armL=('apunta', (x - 60, 1400), .3), look=(-.6, 0), frown=-.3, run=4, **kw)
             hx_, hy_ = hs[1][0]; cv2.line(fr, (int(hx_), int(hy_)), (int(hx_), int(hy_ + 18)), (60, 40, 26), 5); cv2.rectangle(fr, (int(hx_ - 42), int(hy_ + 16)), (int(hx_ + 42), int(hy_ + 86)), (120, 80, 50), -1); cv2.rectangle(fr, (int(hx_ - 42), int(hy_ + 16)), (int(hx_ + 42), int(hy_ + 86)), (80, 52, 32), 3)   # maleta
@@ -521,7 +520,7 @@ class NoEvidence(Sb):                              # detenciones masivas sin pru
         s.stamp = N.stamp('SIN PRUEBAS', (255, 59, 42), w=620, px=80)
     def draw(s, fr, t, d):
         on = (t * 2.4) % 1 < .5; blit(fr, glow_sprite(300, (255, 40, 40) if on else (40, 90, 255)), 540, 1150, .22, add=True)
-        for i, (x, kind, kw) in enumerate([(220, 'bata', {}), (520, 'civil', dict(cap=True)), (820, 'dama', dict(hair='coleta'))]):   # civiles comunes detenidos
+        for i, (x, kind, kw) in enumerate([(220, 'bata', {}), (520, 'civil', dict(who='peaton1')), (820, 'dama', dict(hair='coleta'))]):   # civiles comunes detenidos
             character(fr, kind, x, 1660, 420, t + i, armR=('apunta', (x + 30, 1470), .7), armL=('apunta', (x - 30, 1470), .7), look=(0, -.2), frown=-.5, cuffs=True, **kw)
             hs = character(fr, 'militar', x + 110, 1690, 440, t + i, armR=('apunta', (x + 20, 1420), .8), armL=('reposo',), look=(-.5, 0), frown=.35)
         blit(fr, s.folder, 540, 560, ss(.2, .5, t))
