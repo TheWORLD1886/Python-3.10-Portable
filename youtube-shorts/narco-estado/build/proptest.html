@@ -1,0 +1,17 @@
+<!doctype html><html><body style="margin:0;background:#000">
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three'; import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import * as P from './props.js';
+const W = 1600, H = 1000, r = new THREE.WebGLRenderer({ antialias: true }); r.setSize(W, H); r.shadowMap.enabled = true; r.toneMapping = THREE.ACESFilmicToneMapping; r.outputColorSpace = THREE.SRGBColorSpace; document.body.appendChild(r.domElement);
+const s = new THREE.Scene(); s.background = new THREE.Color(0x30343c); s.environment = new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(), .04).texture;
+const d = new THREE.DirectionalLight(0xffffff, 2); d.position.set(4, 6, 5); d.castShadow = true; s.add(d);
+P.initMaterials();
+const what = new URLSearchParams(location.search).get('p') || 'heli';
+const cam = new THREE.PerspectiveCamera(30, W / H, .1, 100);
+if (what === 'heli') { const h = P.helicopter(); h.userData.tick(.3); h.rotation.y = -.7; s.add(h); cam.position.set(4.5, 2.2, 6.5); cam.lookAt(0, .2, -.6); }
+if (what === 'props') { const b = P.baluster(); [0, .25, .5].forEach(x => P.add(s, b, P.MAT.cantera, x - 1.6, 0, 0)); const c = P.column(3, .2); c.position.x = -.4; s.add(c);
+  const m = P.moneyStack(9); m.position.set(.6, 0, 0); m.scale.setScalar(3); s.add(m); P.add(s, new THREE.BoxGeometry(1, .1, 1), P.MAT.mahogany, 1.6, .5, 0); P.add(s, new THREE.SphereGeometry(.3, 32, 16), P.MAT.marble, 2.6, .3, 0);
+  cam.position.set(.4, 2, 6); cam.lookAt(.4, .8, 0); }
+r.render(s, cam); window.ready = true;
+</script></body></html>

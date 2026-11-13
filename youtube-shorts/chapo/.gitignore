@@ -1,0 +1,6 @@
+out/
+__pycache__/
+test_*.jpg
+chapo_detalle_sin_voz.mp4
+muestra_em_*.wav
+voz_kokoro.wav

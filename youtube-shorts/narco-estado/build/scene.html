@@ -1,0 +1,83 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#000;font-family:"Liberation Sans","DejaVu Sans",Arial,sans-serif}
+  canvas{position:absolute;inset:0}
+  #fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none}
+  #vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 55%,rgba(0,0,0,.55) 100%)}
+  #subs{position:absolute;left:60px;right:60px;top:1180px;text-align:center;font-weight:900;font-size:82px;line-height:1.12;
+        text-transform:uppercase;color:#fff;-webkit-text-stroke:10px #000;paint-order:stroke fill;letter-spacing:1px}
+  #subs .on{color:#ffd23a}
+  #badge{position:absolute;left:0;right:0;top:250px;text-align:center}
+  #badge span{display:inline-block;padding:18px 36px;border-radius:14px;background:rgba(170,15,20,.92);color:#fff;font-weight:900;font-size:56px;
+        letter-spacing:2px;box-shadow:0 8px 30px rgba(0,0,0,.6)}
+  #title{position:absolute;left:50px;right:50px;top:200px;text-align:center;color:#fff;font-weight:900;font-size:76px;line-height:1.1;
+        -webkit-text-stroke:9px #000;paint-order:stroke fill}
+  #title b{color:#ffd23a}
+  #cta{position:absolute;left:0;right:0;top:1500px;text-align:center;opacity:0}
+  #cta span{display:inline-block;margin:0 14px;padding:24px 44px;border-radius:60px;font-weight:900;font-size:54px;color:#fff}
+  #cta .c{background:#1f6feb}#cta .s{background:#e00}
+</style>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body>
+<div id="vignette"></div><div id="title"></div><div id="badge"></div><div id="subs"></div><div id="cta"><span class="c">COMENTA</span><span class="s">SUSCRÍBETE</span></div><div id="fade"></div>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { initMaterials } from './props.js';
+import { buildScenes, util } from './scenes.js';
+const { clamp } = util;
+const W = 1080, H = 1920;
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H); renderer.setPixelRatio(1);
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.prepend(renderer.domElement);
+const envTex = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+initMaterials();
+const SC = await buildScenes();
+SC.forEach(S => { S.s.environment = envTex; S.s.environmentIntensity = .45; });
+// cinematic post: bloom + grade (teal/orange split, vignette, grain, slight chromatic aberration)
+const composer = new EffectComposer(renderer); composer.setSize(W, H);
+const rp = new RenderPass(SC[0].s, SC[0].cam); composer.addPass(rp);
+const bloom = new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), .5, .6, 3.0); composer.addPass(bloom);
+composer.addPass(new OutputPass());
+const grade = new ShaderPass({ uniforms: { tDiffuse: { value: null }, time: { value: 0 } },
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }',
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float time; varying vec2 vUv;
+    float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)) + time*7.13)*43758.5453); }
+    void main(){ vec2 d = vUv-.5; float r = dot(d,d);
+      vec3 c = vec3(texture2D(tDiffuse, vUv - d*.004*r*4.).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv + d*.004*r*4.).b);
+      float l = dot(c, vec3(.299,.587,.114)); c = mix(c, c*vec3(.92,1.0,1.08), 1.-smoothstep(.0,.5,l)); c = mix(c, c*vec3(1.08,1.0,.9), smoothstep(.45,1.,l));
+      c = (c-.5)*1.08+.5; c *= 1. - r*1.25; c += (h(vUv*1000.)-.5)*.045; gl_FragColor = vec4(c,1.); }` });
+composer.addPass(grade);
+// ---------- timeline / overlays ----------
+let TL = null;
+window.setup = tl => { TL = tl; };
+const $ = id => document.getElementById(id);
+window.renderAt = t => {
+  const sc = TL.scenes; let i = sc.findIndex(x => t < x.end); if (i < 0) i = sc.length - 1;
+  const cur = sc[i], lt = t - cur.start, dur = cur.end - cur.start, S = SC[i];
+  S.update(lt, dur); S.s.userData.rigs?.forEach(r => r.tick(lt)); rp.scene = S.s; rp.camera = S.cam; grade.uniforms.time.value = t; composer.render();
+  // fades at scene cuts
+  const edge = Math.min(lt, cur.end - t), fadeIn = i === 0 ? 1 : clamp(lt / .25);
+  $('fade').style.opacity = i === 0 && lt < .15 ? 1 - lt / .15 : (1 - fadeIn) + (i < sc.length - 1 ? clamp(1 - (cur.end - t) / .2) : 0);
+  // title & badges
+  $('title').innerHTML = i === 0 ? '¿Y SI EL <b>CRIMEN ORGANIZADO</b><br>TOMARA LA PRESIDENCIA?' : '';
+  $('title').style.opacity = i === 0 ? clamp((lt - 1.4) / .4) : 0;
+  const badges = [null, '1 · NARCO-ESTADO OFICIAL', '2 · INTERVENCIÓN EXTRANJERA', '3 · GUERRA CIVIL INTERNA', null];
+  $('badge').innerHTML = badges[i] ? `<span>${badges[i]}</span>` : '';
+  const bk = clamp((lt - .1) / .3); $('badge').style.transform = `scale(${.6 + .4 * bk})`; $('badge').style.opacity = bk;
+  // subtitles: chunks with active word highlighted
+  const ch = TL.chunks.find(c => t >= c.start && t < c.end);
+  $('subs').innerHTML = ch ? ch.words.map(w => `<span class="${t >= w.start ? 'on' : ''}">${w.text}</span>`).join(' ') : '';
+  $('subs').style.top = i === 0 ? '1250px' : '1180px';
+  const ctaK = clamp((t - (TL.total - 4.2)) / .4); $('cta').style.opacity = ctaK; $('cta').style.transform = `translateY(${(1 - ctaK) * 40}px) scale(${1 + Math.sin(t * 6) * .03 * ctaK})`;
+};
+window.ready = true;
+</script></body></html>
