@@ -154,8 +154,15 @@ def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
             ell(fr, shY + (hip - shY) * b_ + tn * a_ * u, ra * u, rb * u, 20, dark(top, .72))
         for sd in (-1, 1): cv2.rectangle(fr, P8(shY + (hip - shY) * .25 + tn * (sd * .45 - .2) * u), P8(shY + (hip - shY) * .45 + tn * (sd * .45 + .2) * u), dark(top, .6), 2, cv2.LINE_AA, 3)
         line(fr, hip - tv * .15 * u - tn * .9 * u, hip - tv * .15 * u + tn * .9 * u, (34, 34, 26), .22 * u); circ(fr, hip - tv * .15 * u, .12 * u, (190, 160, 70))
-    elif c['ropa'] == 'blanco':                                           # uniforme blanco de recluso
-        ell(fr, neck - tv * .02 * u, .4 * u, .2 * u, math.degrees(p['lean']), (210, 210, 214))
+    elif c['ropa'] in ('blanco', 'gris'):                                 # uniforme de recluso con número
+        ell(fr, neck - tv * .02 * u, .4 * u, .2 * u, math.degrees(p['lean']), dark(top, .8))
+        line(fr, shY + (hip - shY) * .15, hip - tv * .25 * u, dark(top, .75), 2)
+        if c['ropa'] == 'gris':
+            q = shY + (hip - shY) * .36 - tn * .38 * u; w_, h_ = .95 * u, .36 * u
+            cv2.rectangle(fr, P8(q - A(w_ / 2, h_ / 2)), P8(q + A(w_ / 2, h_ / 2)), (236, 236, 230), -1, cv2.LINE_AA, 3)
+            num = str(p.get('numero', 10000 + (int(x) * 37) % 89999))
+            sc_ = max(.22, .0058 * u); (tw, th), _ = cv2.getTextSize(num, cv2.FONT_HERSHEY_DUPLEX, sc_, 1)
+            cv2.putText(fr, num, (int(q[0] - tw / 2), int(q[1] + th / 2)), cv2.FONT_HERSHEY_DUPLEX, sc_, (30, 30, 34), max(1, int(u * .03)), cv2.LINE_AA)
     if c.get('banda'):                                                    # banda presidencial
         for k, col in enumerate(c['banda']):
             o_ = (k - 1) * .2 * u; line(fr, shY - tn * .78 * u + tn * o_, hip + tn * .72 * u - tv * .1 * u + tn * o_, col, .2 * u)
@@ -371,6 +378,11 @@ def person_side(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=1):
         poly(fr, [shY + tn * f * .45 * u, shY + tn * f * .68 * u, shY + (hip - shY) * .5 + tn * f * .6 * u], (236, 236, 240))
         if c.get('corbata'): line(fr, shY + tn * f * .62 * u, shY + (hip - shY) * .45 + tn * f * .66 * u, c['corbata'], .14 * u)
         line(fr, shY + tn * f * .4 * u, shY + (hip - shY) * .55 + tn * f * .55 * u, dark(top, .7), .1 * u)
+    elif c['ropa'] == 'gris':                                             # número del recluso también de perfil
+        q = shY + (hip - shY) * .3 + tn * f * .3 * u; w_, h_ = .8 * u, .3 * u
+        cv2.rectangle(fr, P8(q - A(w_ / 2, h_ / 2)), P8(q + A(w_ / 2, h_ / 2)), (236, 236, 230), -1, cv2.LINE_AA, 3)
+        num = str(p.get('numero', 10000 + (int(x) * 37) % 89999)); sc_ = max(.2, .0048 * u); (tw, th), _ = cv2.getTextSize(num, cv2.FONT_HERSHEY_DUPLEX, sc_, 1)
+        cv2.putText(fr, num, (int(q[0] - tw / 2), int(q[1] + th / 2)), cv2.FONT_HERSHEY_DUPLEX, sc_, (30, 30, 34), max(1, int(u * .03)), cv2.LINE_AA)
     elif c['ropa'] == 'militar':
         for (a_, b_, ra, rb) in [(-.3, .3, .26, .18), (.3, .55, .28, .16), (-.1, .8, .24, .14)]: ell(fr, shY + (hip - shY) * b_ + tn * a_ * u, ra * u, rb * u, 20, dark(top, .72))
         line(fr, hip - tv * .15 * u - tn * .7 * u, hip - tv * .15 * u + tn * .74 * u, (34, 34, 26), .22 * u)
@@ -444,7 +456,7 @@ CAST.update({
     'bukele':    dict(nombre='BUKELE', alto=1.0, cabeza=1.0, top=(30, 34, 44), pants=(26, 28, 36), shoe=(14, 14, 18), ropa='traje', pelo='peinado', pelo_col=(30, 24, 20), barba=(46, 36, 30), banda=[(20, 70, 170), (245, 245, 245), (20, 70, 170)]),
     'presidenta': dict(nombre='PRESIDENTA', alto=.95, cabeza=1.0, top=(92, 26, 44), pants=(40, 22, 30), shoe=(20, 12, 14), ropa='traje', pelo='cola', pelo_col=(44, 30, 26), banda=[(0, 120, 72), (245, 245, 245), (206, 24, 40)]),
     'soldado':   dict(nombre='SOLDADO', alto=1.0, cabeza=1.0, top=(92, 104, 64), pants=(72, 82, 52), shoe=(26, 26, 26), ropa='militar', pelo='corto', pelo_col=(40, 32, 26), casco=(70, 82, 50)),
-    'reo':       dict(nombre='DETENIDO', alto=.98, cabeza=1.0, top=(238, 238, 238), pants=(232, 232, 232), shoe=(220, 220, 220), ropa='blanco', pelo='rapado', pelo_col=(200, 196, 190)),
+    'reo':       dict(nombre='DETENIDO', alto=.98, cabeza=1.0, top=(122, 126, 132), pants=(110, 114, 120), shoe=(40, 40, 44), ropa='gris', pelo='rapado', pelo_col=(200, 196, 190)),
     'pandillero': dict(nombre='PANDILLERO', alto=.98, cabeza=1.0, top=(30, 30, 36), pants=(50, 60, 90), shoe=(230, 230, 236), ropa='liso', pelo='corto', pelo_col=(20, 18, 16), gorra='frente', gorra_col=(150, 30, 30)),
     'jefe':      dict(nombre='JEFE', alto=1.0, cabeza=1.0, top=(40, 78, 178), pants=(24, 28, 48), shoe=(14, 14, 18), ropa='traje', pelo='peinado', pelo_col=(60, 46, 36), corbata=(200, 170, 60)),
     'ejecutivo': dict(nombre='EJECUTIVO', alto=1.0, cabeza=1.0, top=(34, 38, 60), pants=(28, 31, 48), shoe=(14, 14, 18), ropa='traje', pelo='corto', pelo_col=(70, 60, 50), corbata=(190, 32, 36)),

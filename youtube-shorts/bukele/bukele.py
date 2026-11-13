@@ -90,14 +90,17 @@ def night_street(seed=1, col=(30, 26, 34)):
     back.append((dof(haze(rgba(city, np.any(city > 0, 2).astype(np.float32)), (40, 28, 32), .3), 2), .45))
     return back, floor_layer(1270, (34, 32, 36), (46, 44, 48))
 def seated_rows(fr, x0, y0, rows, cols, dx, dy, sc, t, upto=None):
-    """filas de reclusos sentados con camiseta blanca y cabeza rapada (vista típica de la megacárcel)."""
+    """filas de reclusos sentados con uniforme gris, número de reo y cabeza rapada."""
     n = 0; tot = rows * cols
     for r in range(rows):
         for c in range(cols):
             n += 1
             if upto is not None and n > upto * tot: return
             x = x0 + c * dx + (r % 2) * dx * .5; y = y0 + r * dy; s_ = sc * (1 + r * .08)
-            cv2.ellipse(fr, (int(x), int(y + 26 * s_)), (int(30 * s_), int(34 * s_)), 0, 0, 360, (236, 236, 236), -1, cv2.LINE_AA)
+            cv2.ellipse(fr, (int(x), int(y + 26 * s_)), (int(31 * s_), int(35 * s_)), 0, 0, 360, (86, 90, 96), -1, cv2.LINE_AA)
+            cv2.ellipse(fr, (int(x), int(y + 26 * s_)), (int(28 * s_), int(32 * s_)), 0, 0, 360, (122, 126, 132), -1, cv2.LINE_AA)
+            cv2.rectangle(fr, (int(x - 16 * s_), int(y + 14 * s_)), (int(x + 16 * s_), int(y + 28 * s_)), (236, 236, 230), -1)
+            if s_ > .75: cv2.putText(fr, str(1000 + (r * 97 + c * 31) % 9000), (int(x - 14 * s_), int(y + 26 * s_)), cv2.FONT_HERSHEY_PLAIN, .55 * s_, (30, 30, 34), 1, cv2.LINE_AA)
             cv2.circle(fr, (int(x), int(y - 16 * s_)), int(20 * s_), (230, 226, 220), -1, cv2.LINE_AA)
             cv2.circle(fr, (int(x), int(y - 16 * s_)), int(20 * s_), (150, 150, 160), 2, cv2.LINE_AA)
 def bars(fr, x0, x1, y0, y1, k=1., col=(90, 96, 106), step=64):
@@ -148,7 +151,7 @@ class PrisonFill(Sb):                              # las cárceles se llenan
             k = ss(.3 + c * .4, 1.8 + c * .4, t)
             for r in range(5):
                 for q in range(3):
-                    if (r * 3 + q) / 15. < k: cv2.circle(fr, (x0 + 50 + q * 90, 680 + r * 160), 26, (230, 226, 220), -1, cv2.LINE_AA); cv2.ellipse(fr, (x0 + 50 + q * 90, 740 + r * 160), (34, 30), 0, 180, 360, (236, 120, 40), -1, cv2.LINE_AA)
+                    if (r * 3 + q) / 15. < k: cv2.circle(fr, (x0 + 50 + q * 90, 680 + r * 160), 26, (230, 226, 220), -1, cv2.LINE_AA); cv2.ellipse(fr, (x0 + 50 + q * 90, 740 + r * 160), (34, 30), 0, 180, 360, (122, 126, 132), -1, cv2.LINE_AA); cv2.rectangle(fr, (x0 + 38 + q * 90, 722 + r * 160), (x0 + 62 + q * 90, 734 + r * 160), (236, 236, 230), -1)
             bars(fr, x0, x0 + 280, 600, 1480)
         blit(fr, s.hip, 540, 520, ss(.3, .7, t))
         float_in(fr, s.panel, 540, 330, t, .2)
