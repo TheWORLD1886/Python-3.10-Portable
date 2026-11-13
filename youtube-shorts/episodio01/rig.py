@@ -508,7 +508,8 @@ def hair_profile(fr, c, L, uh, f, hc):
         if st in ('corto', 'peinado'): poly(fr, [L(-.14, -.2), L(-.06, -.18), L(-.09, .02), L(-.17, 0)], col)   # patilla corta (solo hombres)
     elif st == 'gorro':
         poly(fr, _arc(L, -36, -205, 1.05) + [L(-.85, .3), L(-.5, -.1), L(-.1, -.5), L(.35, -.66), L(.68, -.68)], hc)
-        pline(fr, [L(-.82, .28), L(-.48, -.12), L(-.08, -.52), L(.35, -.68), L(.68, -.7)], dark(hc, .8), max(2, int(.06 * uh)))   # borde del gorro, arriba de la ceja
+        rim = [L(-.82, .28), L(-.48, -.12), L(-.08, -.52), L(.35, -.68), L(.68, -.7)]
+        for a_, b_ in zip(rim[:-1], rim[1:]): line(fr, a_, b_, dark(hc, .8), max(2, int(.06 * uh)))   # borde del gorro, arriba de la ceja
     elif st == 'revuelto':
         for k in range(7):
             a_ = math.radians(-40 - k * 27); circ(fr, L(math.cos(a_) * .82, math.sin(a_) * .72 - .1), .32 * uh, hc)
