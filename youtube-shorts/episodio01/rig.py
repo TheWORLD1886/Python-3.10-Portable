@@ -107,7 +107,7 @@ def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
         S = shY + tn * (sd * spread * u) + tv * (p['sh'] * .2 * u)
         g = p['grip'] and p['grip'].get('L' if sd < 0 else 'R')
         e = S + down(ua + p['lean']) * 1.3 * u; hd = e + down(ua + la + p['lean']) * 1.25 * u
-        if g is not None: e, hd = ik_limb(S, reach(hd, g), 1.3 * u, 1.25 * u, (sd * .55, 1.))   # codo hacia abajo y un poco afuera
+        if g is not None: e, hd = ik_limb(S, reach(hd, g), 1.3 * u, 1.25 * u, (sd, -.1) if p.get('codo_afuera') else (sd * .55, 1.))   # codo hacia abajo y un poco afuera
         behind = facing != 0 and (hd[0] - S[0]) * facing < 0
         arm_geo.append((sd, S, e, hd, behind))
     def draw_arm(sd, S, e, hd):
@@ -143,6 +143,23 @@ def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
         ell(fr, neck + tv * .05 * u, .78 * u, .32 * u, math.degrees(p['lean']), dark(top, .8))        # capucha detrás del cuello
         poly(fr, [hip - tn * .6 * u - tv * .3 * u, hip + tn * .6 * u - tv * .3 * u, hip + tn * .45 * u - tv * 1.0 * u, hip - tn * .45 * u - tv * 1.0 * u], dark(top, .86))
         for sd in (-1, 1): line(fr, neck + tn * sd * .2 * u - tv * .1 * u, neck + tn * sd * .24 * u - tv * .8 * u, (240, 240, 244), 3)
+    elif c['ropa'] == 'traje':                                            # saco con solapas, camisa y corbata opcional
+        mid = shY + (hip - shY) * .5
+        poly(fr, [shY - tn * .36 * u, shY + tn * .36 * u, mid], (236, 236, 240))
+        if c.get('corbata'): poly(fr, [neck - tv * .02 * u - tn * .08 * u, neck - tv * .02 * u + tn * .08 * u, mid + tn * .1 * u - tv * .15 * u, mid - tv * .25 * u, mid - tn * .1 * u - tv * .15 * u], c['corbata'])
+        for sd in (-1, 1): poly(fr, [shY + tn * sd * .34 * u, shY + tn * sd * .72 * u, mid + tn * sd * .18 * u + tv * .05 * u, mid + tn * sd * .02 * u], dark(top, .75))
+        for k in (.62, .8): circ(fr, shY + (hip - shY) * k + tn * .05 * u, .07 * u, dark(top, .5))
+    elif c['ropa'] == 'militar':                                          # uniforme camuflado, bolsillos y cinturón
+        for (a_, b_, ra, rb) in [(-.45, .25, .32, .2), (.4, .45, .34, .18), (-.2, .7, .3, .16), (.5, .85, .22, .14), (-.55, .9, .2, .14)]:
+            ell(fr, shY + (hip - shY) * b_ + tn * a_ * u, ra * u, rb * u, 20, dark(top, .72))
+        for sd in (-1, 1): cv2.rectangle(fr, P8(shY + (hip - shY) * .25 + tn * (sd * .45 - .2) * u), P8(shY + (hip - shY) * .45 + tn * (sd * .45 + .2) * u), dark(top, .6), 2, cv2.LINE_AA, 3)
+        line(fr, hip - tv * .15 * u - tn * .9 * u, hip - tv * .15 * u + tn * .9 * u, (34, 34, 26), .22 * u); circ(fr, hip - tv * .15 * u, .12 * u, (190, 160, 70))
+    elif c['ropa'] == 'blanco':                                           # uniforme blanco de recluso
+        ell(fr, neck - tv * .02 * u, .4 * u, .2 * u, math.degrees(p['lean']), (210, 210, 214))
+    if c.get('banda'):                                                    # banda presidencial
+        for k, col in enumerate(c['banda']):
+            o_ = (k - 1) * .2 * u; line(fr, shY - tn * .78 * u + tn * o_, hip + tn * .72 * u - tv * .1 * u + tn * o_, col, .2 * u)
+        circ(fr, hip + tn * .7 * u - tv * .12 * u, .2 * u, (232, 190, 80)); circ(fr, hip + tn * .7 * u - tv * .12 * u, .12 * u, (150, 110, 40))
     if c.get('rasgada'):
         for k in range(5):
             q = hip - tv * .3 * u + tn * (-.8 + k * .4) * u; poly(fr, [q - tn * .16 * u, q + tn * .16 * u, q + tv * -.35 * u * (1 + (k % 2) * .6)], dark(top, .45))
@@ -163,6 +180,7 @@ def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
         for sd in (-1, 1): ell(fr, head + A(sd * .32 * uh + p['look'][0] * .3 * uh, -.05 * uh), .1 * uh, .05 * uh, 0, (230, 230, 200))
     else: face(fr, c, head, uh, p, who)
     hair_front(fr, c, head, uh, p)
+    head_extras(fr, c, head, uh, p, 0)
     joints.update(head=head, hip=hip, neck=neck); return hands, joints
 
 def infected_marks(fr, fc, u, k, sides=(-1, 1), f=None):
@@ -204,6 +222,10 @@ def hair_back(fr, c, head, u, p):
     hc = c['pelo_col']
     if c['pelo'] == 'melena':                                            # melena hasta los hombros, por detrás de la cabeza
         poly(fr, [head + A(-1.08 * u, -.3 * u), head + A(1.08 * u, -.3 * u), head + A(1.12 * u, .55 * u), head + A(.92 * u, .86 * u), head + A(.55 * u, .78 * u), head + A(-.55 * u, .78 * u), head + A(-.92 * u, .86 * u), head + A(-1.12 * u, .55 * u)], hc)
+    if c['pelo'] == 'cola':
+        tb_ = head + A(.86 * u, -.35 * u)
+        poly(fr, [tb_ + A(-.1 * u, 0), tb_ + A(.24 * u, -.05 * u), tb_ + A(.5 * u, .7 * u), tb_ + A(.42 * u, 1.5 * u), tb_ + A(.22 * u, 1.7 * u), tb_ + A(.16 * u, .9 * u)], hc)
+        circ(fr, tb_ + A(.1 * u, .05 * u), .14 * u, (150, 30, 50))
     if c['pelo'] == 'coletas':
         for sd in (-1, 1):
             b = head + A(sd * 1.0 * u, -.25 * u)
@@ -217,9 +239,19 @@ def hair_front(fr, c, head, u, p):
     elif c['pelo'] == 'revuelto':
         for k in range(7):
             a_ = math.pi * (1.05 + k * .15); circ(fr, head + A(math.cos(a_) * .82 * u, math.sin(a_) * .72 * u - .12 * u), .32 * u, hc)
+    elif c['pelo'] == 'peinado':                                          # peinado hacia atrás con copete, frente despejada
+        ell(fr, head + A(0, -.6 * u), 1.0 * u, .48 * u, 0, hc, 180, 360); ell(fr, head + A(.15 * u, -.98 * u), .78 * u, .2 * u, -4, hc)
+        for sd in (-1, 1): poly(fr, [head + A(sd * .99 * u, -.6 * u), head + A(sd * .9 * u, -.1 * u), head + A(sd * .98 * u, -.3 * u)], hc)
+        for k in range(3): line(fr, head + A((-.5 + k * .35) * u, -1.05 * u), head + A((-.2 + k * .35) * u, -.68 * u), hl, 2)
+    elif c['pelo'] == 'rapado':                                           # cabeza rapada: sombra de pelo muy corto
+        ell(fr, head + A(0, -.58 * u), .96 * u, .44 * u, 0, tuple(int(v * .82) for v in c.get('piel', SKIN)), 180, 360)
+    elif c['pelo'] == 'cola':                                             # recogido en cola de caballo, raya en medio
+        ell(fr, head + A(0, -.56 * u), 1.0 * u, .48 * u, 0, hc, 180, 360)
+        for sd in (-1, 1): poly(fr, [head + A(sd * .99 * u, -.56 * u), head + A(sd * .76 * u, -.86 * u), head + A(sd * .92 * u, -.15 * u)], hc)
+        line(fr, head + A(0, -1.02 * u), head + A(.04 * u, -.62 * u), hl, 2)
     elif c['pelo'] == 'corto':
         ell(fr, head + A(0, -.55 * u), 1.0 * u, .5 * u, 0, hc, 180, 360)
-        poly(fr, [head + A(-.98 * u, -.55 * u), head + A(-.2 * u, -.62 * u), head + A(-.6 * u, -.35 * u), head + A(-.95 * u, -.2 * u)], hc)   # flequillo de lado
+        poly(fr, [head + A(-.98 * u, -.56 * u), head + A(-.18 * u, -.66 * u), head + A(-.55 * u, -.57 * u), head + A(-.96 * u, -.44 * u)], hc)   # flequillo de lado (arriba de las cejas)
         for sd in (-1, 1): poly(fr, [head + A(sd * .99 * u, -.55 * u), head + A(sd * .86 * u, -.08 * u), head + A(sd * .97 * u, -.2 * u)], hc)
         line(fr, head + A(-.3 * u, -1.0 * u), head + A(.2 * u, -.62 * u), hl, 2)
     elif c['pelo'] == 'melena':
@@ -228,7 +260,7 @@ def hair_front(fr, c, head, u, p):
         line(fr, head + A(.15 * u, -1.03 * u), head + A(.05 * u, -.58 * u), hl, 2)
     elif c['pelo'] == 'coletas':
         ell(fr, head + A(0, -.5 * u), 1.0 * u, .52 * u, 0, hc, 180, 360)
-        poly(fr, [head + A(-.95 * u, -.5 * u), head + A(.95 * u, -.5 * u), head + A(.6 * u, -.35 * u), head + A(0, -.42 * u), head + A(-.6 * u, -.35 * u)], hc)   # flequillo
+        poly(fr, [head + A(-.95 * u, -.52 * u), head + A(.95 * u, -.52 * u), head + A(.6 * u, -.58 * u), head + A(0, -.62 * u), head + A(-.6 * u, -.58 * u)], hc)   # flequillo (arriba de las cejas)
         line(fr, head + A(0, -1.02 * u), head + A(0, -.62 * u), hl, 2)
 
 # ================================================================ extras (mismo estilo y rig)
@@ -335,6 +367,16 @@ def person_side(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=1):
     elif c['ropa'] == 'sudadera':
         ell(fr, neck - tn * f * .35 * u, .38 * u, .3 * u, 0, dark(top, .8))
         poly(fr, [hip + tn * f * .1 * u - tv * .3 * u, hip + tn * f * .55 * u - tv * .3 * u, hip + tn * f * .5 * u - tv * 1.0 * u, hip + tn * f * .15 * u - tv * 1.0 * u], dark(top, .86))
+    if c['ropa'] == 'traje':
+        poly(fr, [shY + tn * f * .45 * u, shY + tn * f * .68 * u, shY + (hip - shY) * .5 + tn * f * .6 * u], (236, 236, 240))
+        if c.get('corbata'): line(fr, shY + tn * f * .62 * u, shY + (hip - shY) * .45 + tn * f * .66 * u, c['corbata'], .14 * u)
+        line(fr, shY + tn * f * .4 * u, shY + (hip - shY) * .55 + tn * f * .55 * u, dark(top, .7), .1 * u)
+    elif c['ropa'] == 'militar':
+        for (a_, b_, ra, rb) in [(-.3, .3, .26, .18), (.3, .55, .28, .16), (-.1, .8, .24, .14)]: ell(fr, shY + (hip - shY) * b_ + tn * a_ * u, ra * u, rb * u, 20, dark(top, .72))
+        line(fr, hip - tv * .15 * u - tn * .7 * u, hip - tv * .15 * u + tn * .74 * u, (34, 34, 26), .22 * u)
+    if c.get('banda'):
+        for k, col in enumerate(c['banda']):
+            o_ = (k - 1) * .16 * u; line(fr, shY - tn * f * .5 * u + tn * o_, hip + tn * f * .55 * u - tv * .1 * u + tn * o_, col, .16 * u)
     if c.get('sangre'):
         for (a_, b_, r_) in [(.2, .35, .3), (-.1, .7, .22)]: ell(fr, shY + (hip - shY) * b_ + tn * f * a_ * u, r_ * u, r_ * .8 * u, 20, (110, 16, 20))
     leg(near, 1.0)
@@ -360,13 +402,66 @@ def person_side(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=1):
         elif bo in ('o', 'grito'): ell(fr, m, .08 * uh, .12 * uh * (1.3 if bo == 'grito' else 1), 0, INK)
         else: line(fr, m - A(f * .12 * uh, 0), m + A(f * .08 * uh, 0), INK, .07 * uh)
         if who == 'sofia': ell(fr, head + A(f * .45 * uh, .25 * uh), .14 * uh, .08 * uh, 0, (250, 196, 196))
-    if c['pelo'] in ('corto', 'melena', 'coletas', 'gorro', 'revuelto'):
+    if c['pelo'] in ('corto', 'melena', 'coletas', 'gorro', 'revuelto', 'peinado', 'cola'):
         if c['pelo'] == 'revuelto':
             for k in range(6): a_ = math.pi * (1.0 + k * .16); circ(fr, head + A(-f * .15 * uh + math.cos(a_) * .82 * uh * -f, math.sin(a_) * .72 * uh - .12 * uh), .32 * uh, hc)
         else:
             ell(fr, head + A(-f * .1 * uh, -.5 * uh), 1.0 * uh, .55 * uh, 0, hc, 180, 360)
-            poly(fr, [head + A(-f * .98 * uh, -.5 * uh), head + A(-f * .95 * uh, .35 * uh if c['pelo'] != 'gorro' else -.2 * uh), head + A(-f * .4 * uh, -.1 * uh), head + A(f * .4 * uh, -.55 * uh)], hc)   # nuca y patilla
-            if c['pelo'] == 'corto': poly(fr, [head + A(f * .2 * uh, -.95 * uh), head + A(f * .9 * uh, -.55 * uh), head + A(f * .45 * uh, -.45 * uh)], hc)   # fleco
-            (circ(fr, head + A(-f * .3 * uh, .02 * uh), .15 * uh, (214, 214, 222)), circ(fr, head + A(-f * .3 * uh, .02 * uh), .11 * uh, SKIN)) if c['pelo'] == 'corto' else None   # oreja
+            poly(fr, [head + A(-f * .99 * uh, -.45 * uh), head + A(-f * .97 * uh, (.3 if c['pelo'] != 'gorro' else -.2) * uh), head + A(-f * .72 * uh, (.22 if c['pelo'] != 'gorro' else -.2) * uh), head + A(-f * .6 * uh, -.5 * uh)], hc)   # nuca (detrás de la oreja)
+            if c['pelo'] in ('corto', 'peinado'): poly(fr, [head + A(f * .2 * uh, -.95 * uh), head + A(f * .9 * uh, -.62 * uh), head + A(f * .45 * uh, -.62 * uh)], hc)   # fleco (arriba de la ceja)
+            (circ(fr, head + A(-f * .3 * uh, .02 * uh), .15 * uh, (214, 214, 222)), circ(fr, head + A(-f * .3 * uh, .02 * uh), .11 * uh, SKIN)) if c['pelo'] in ('corto', 'peinado') else None   # oreja
+    head_extras(fr, c, head, uh, p, f)
     joints.update(head=head, hip=hip, neck=neck); return hands, joints
 def step_len(u, run=False): return (2.1 if run else 1.45) * u
+
+
+# ================================================================ accesorios de cabeza: barba, gorra, casco (nunca bajan de las cejas)
+def head_extras(fr, c, head, u, p, f):
+    lx, ly = p['look']
+    if f == 0: fc = head + A(lx * .34 * u, ly * .3 * u)
+    else: fc = head + A(f * .45 * u, ly * .2 * u)
+    if c.get('barba'):                                                    # barba corta que sigue la mandíbula; la boca queda libre
+        bc = c['barba']
+        if f == 0:
+            cv2.ellipse(fr, P8(fc + A(0, .02 * u)), (int(.8 * u * 8), int(.78 * u * 8)), 0, 25, 155, bc, max(2, int(.2 * u)), cv2.LINE_AA, 3)
+            cv2.ellipse(fr, P8(fc + A(0, .3 * u)), (int(.22 * u * 8), int(.06 * u * 8)), 0, 180, 360, bc, max(2, int(.05 * u)), cv2.LINE_AA, 3)   # bigote fino (arriba de la boca)
+        else:
+            a0, a1 = (30, 115) if f > 0 else (65, 150)                        # solo la mandíbula inferior, hacia el frente
+            cv2.ellipse(fr, P8(head + A(0, .02 * u)), (int(.8 * u * 8), int(.78 * u * 8)), 0, a0, a1, bc, max(2, int(.18 * u)), cv2.LINE_AA, 3)
+    g = c.get('gorra')
+    if g:                                                                 # gorra: la visera queda arriba de las cejas
+        col = c.get('gorra_col', (36, 40, 50))
+        ell(fr, head + A(0, -.62 * u), 1.0 * u, .5 * u, 0, col, 180, 360); poly(fr, [head + A(-1.0 * u, -.62 * u), head + A(1.0 * u, -.62 * u), head + A(.96 * u, -.54 * u), head + A(-.96 * u, -.54 * u)], dark(col, .8))
+        if g == 'frente' and f == 0: ell(fr, head + A(0, -.6 * u), 1.05 * u, .14 * u, 0, dark(col, .7), 0, 180)
+        elif g == 'frente': poly(fr, [head + A(f * .6 * u, -.62 * u), head + A(f * 1.5 * u, -.6 * u), head + A(f * 1.45 * u, -.52 * u), head + A(f * .7 * u, -.54 * u)], dark(col, .7))
+        circ(fr, head + A(0, -1.1 * u), .09 * u, dark(col, 1.3) if False else (60, 64, 74))
+    if c.get('casco'):                                                    # casco militar
+        col = c['casco']
+        ell(fr, head + A(0, -.6 * u), 1.1 * u, .62 * u, 0, col, 180, 360); poly(fr, [head + A(-1.12 * u, -.62 * u), head + A(1.12 * u, -.62 * u), head + A(1.08 * u, -.55 * u), head + A(-1.08 * u, -.55 * u)], dark(col, .75))
+        line(fr, head + A(-.6 * u, -.6 * u), head + A(-.5 * u, -1.0 * u), dark(col, .8), 2)
+
+CAST.update({
+    'bukele':    dict(nombre='BUKELE', alto=1.0, cabeza=1.0, top=(30, 34, 44), pants=(26, 28, 36), shoe=(14, 14, 18), ropa='traje', pelo='peinado', pelo_col=(30, 24, 20), barba=(46, 36, 30), banda=[(20, 70, 170), (245, 245, 245), (20, 70, 170)]),
+    'presidenta': dict(nombre='PRESIDENTA', alto=.95, cabeza=1.0, top=(92, 26, 44), pants=(40, 22, 30), shoe=(20, 12, 14), ropa='traje', pelo='cola', pelo_col=(44, 30, 26), banda=[(0, 120, 72), (245, 245, 245), (206, 24, 40)]),
+    'soldado':   dict(nombre='SOLDADO', alto=1.0, cabeza=1.0, top=(92, 104, 64), pants=(72, 82, 52), shoe=(26, 26, 26), ropa='militar', pelo='corto', pelo_col=(40, 32, 26), casco=(70, 82, 50)),
+    'reo':       dict(nombre='DETENIDO', alto=.98, cabeza=1.0, top=(238, 238, 238), pants=(232, 232, 232), shoe=(220, 220, 220), ropa='blanco', pelo='rapado', pelo_col=(200, 196, 190)),
+    'pandillero': dict(nombre='PANDILLERO', alto=.98, cabeza=1.0, top=(30, 30, 36), pants=(50, 60, 90), shoe=(230, 230, 236), ropa='liso', pelo='corto', pelo_col=(20, 18, 16), gorra='frente', gorra_col=(150, 30, 30)),
+    'jefe':      dict(nombre='JEFE', alto=1.0, cabeza=1.0, top=(40, 78, 178), pants=(24, 28, 48), shoe=(14, 14, 18), ropa='traje', pelo='peinado', pelo_col=(60, 46, 36), corbata=(200, 170, 60)),
+    'ejecutivo': dict(nombre='EJECUTIVO', alto=1.0, cabeza=1.0, top=(34, 38, 60), pants=(28, 31, 48), shoe=(14, 14, 18), ropa='traje', pelo='corto', pelo_col=(70, 60, 50), corbata=(190, 32, 36)),
+    'vecino':    dict(nombre='VECINO', alto=.98, cabeza=1.0, top=(128, 34, 40), pants=(52, 84, 146), shoe=(70, 46, 30), ropa='franela', plaid=(90, 24, 28), pelo='corto', pelo_col=(40, 30, 24)),
+    'vecina':    dict(nombre='VECINA', alto=.93, cabeza=1.0, top=(70, 120, 110), pants=(40, 46, 70), shoe=(110, 60, 46), ropa='sueter', pelo='cola', pelo_col=(60, 40, 30)),
+    'doctora':   dict(nombre='DOCTORA', alto=.94, cabeza=1.0, top=(236, 239, 244), pants=(54, 58, 70), shoe=(20, 20, 24), ropa='quirurgica', pelo='melena', pelo_col=(90, 60, 40)),
+})
+
+def gait_x(x, d, u, fy, run=False):
+    """caminata con pies fijos a partir de la posición absoluta x (sirve cuando la escena mueve al personaje por su cuenta)."""
+    s = step_len(u, run) * d; ph = x / (2 * s); feet = {}
+    for key, off in (('L', 0.), ('R', .5)):
+        f = ph + off; n = math.floor(f); fr_ = f - n; P = lambda m: 2 * s * (m + .25 - off)
+        if fr_ < .5: fx, fyy = P(n), fy
+        else:
+            q = (fr_ - .5) / .5; fx = P(n) + (P(n + 1) - P(n)) * ease(q); fyy = fy - math.sin(math.pi * q) * (.55 if run else .35) * u
+        feet[key] = (fx, fyy)
+    sw = math.sin(2 * math.pi * ph); bob = math.cos(4 * math.pi * (ph - .25)) * (.08 if run else .05) * u
+    pose = dict(lean=d * (.22 if run else .05), uL=d * sw * (.6 if run else .4), lL=(1.5 if run else .25), uR=-d * sw * (.6 if run else .4), lR=(1.5 if run else .25), look=(.55 * d, 0.))
+    return pose, feet, bob

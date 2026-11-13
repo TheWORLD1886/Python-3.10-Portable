@@ -25,22 +25,43 @@ red_panel = DT.RS.red_panel
 def gold_panel(t1, t2=None, w=760, h=160): return N.holo_panel(w, h, t1, t2, col=(255, 210, 90), fill=(60, 40, 6, 190))
 def blue_panel(t1, t2=None, w=760, h=160): return N.holo_panel(w, h, t1, t2)
 
-# ---------------------------------------------------------------- personajes y utilería propia
-OUTF['cecot'] = dict(top=(236, 236, 236), pants=(236, 236, 236), shoe=(220, 220, 220))
-def bukele(fr, x, fy, h, t, **kw):
-    """presidente salvadoreño estilizado: traje oscuro, barba corta y banda azul-blanco-azul."""
-    kw.setdefault('armR', ('reposo',)); kw.setdefault('armL', ('reposo',))
-    character(fr, 'traje', x, fy, h, t, **kw)
-    u = h / 8.; look = kw.get('look', (0, 0)); hx, hy = x + look[0] * u * .12, fy - 6.95 * u
-    fc = A(hx + look[0] * .34 * u, hy + look[1] * .3 * u)
-    cv2.ellipse(fr, P8((fc[0], fc[1] + .45 * u)), (int(.62 * u * 8), int(.42 * u * 8)), 0, 0, 180, (40, 30, 26), -1, cv2.LINE_AA, 3)   # barba
-    cv2.ellipse(fr, P8((hx, hy - .5 * u)), (int(.99 * u * 8), int(.52 * u * 8)), 0, 180, 360, (34, 26, 22), -1, cv2.LINE_AA, 3)    # pelo peinado hacia atrás
-    hipy = fy - 3.3 * u; shy = fy - 5.75 * u
-    for k, c in enumerate([(20, 70, 170), (245, 245, 245), (20, 70, 170)]):
-        o_ = (k - 1) * .2 * u; line(fr, (x - .78 * u + o_, shy + .05 * u), (x + .72 * u + o_, hipy - .1 * u), c, .2 * u)
+# ---------------------------------------------------------------- personajes: rig articulado nuevo (episodio 01)
+sys.path.insert(0, os.path.join(HERE_B, '..', 'episodio01'))
+import rig as RG
+KIND = {'militar': 'soldado', 'cecot': 'reo', 'traje': 'ejecutivo', 'elegante': 'jefe', 'bata': 'doctora', 'comando': 'soldado', 'reo': 'reo'}
+def rig_character(fr, kind, x, fy, hgt, t, armR=('reposo',), armL=('reposo',), look=(0., 0.), frown=.3, smile=0., run=0., cuffs=False, cap=False,
+                  mustache=False, hair=None, sash=False, mask=False, beret=False, who=None, **kw):
+    """adaptador: las escenas siguen describiendo poses sencillas (reposo, jarra, palma, apunta) y aquí se traducen al rig
+    articulado (codos y rodillas con IK, pies fijos al caminar, peinados que no tapan las cejas)."""
+    if who is None:
+        who = KIND.get(kind) or ('pandillero' if (kind == 'civil' and cap) else 'vecino' if kind == 'civil' else ('presidenta' if sash else 'vecina') if kind == 'dama' else 'ejecutivo')
+    u = hgt * RG.CAST[who]['alto'] / 8.
+    p = dict(frown=frown * .9, boca='sonrisa' if smile > .3 else 'neutra', look=tuple(look), blink=RG.blink(t, int(x) % 7), grip={})
+    side = run > 0
+    d = 1 if look[0] >= 0 else -1
+    if side:
+        gp, feet, bob = RG.gait_x(x, d, u, fy); p.update(gp); p['look'] = (.55 * d, look[1])
+    for key, pose in (('R', armR), ('L', armL)):
+        sd = 1 if key == 'R' else -1
+        if pose[0] == 'apunta': p['grip'][key] = (pose[1][0], pose[1][1], pose[2])
+        elif side: continue
+        elif pose[0] == 'jarra': p['grip'][key] = (x + sd * 1.05 * u, fy - 3.45 * u, 1.); p['codo_afuera'] = True
+        elif pose[0] == 'palma': p['u' + key] = sd * .55; p['l' + key] = sd * 1.9
+    if not p['grip']: p['grip'] = None                                            # sin agarres: brazos con su pose natural
+    if side: hands, j = RG.person_side(fr, who, x, fy + bob, hgt, p, t, feet=feet, facing=d)
+    else: hands, j = RG.person(fr, who, x, fy, hgt, p, t)
+    if cuffs and 'L' in hands and 'R' in hands:                                  # esposas en las muñecas
+        a_, b_ = A(*hands['L']), A(*hands['R'])
+        for q in (a_, b_): cv2.circle(fr, P8(q), int(.3 * u * 8), (200, 206, 216), max(2, int(.06 * u)), cv2.LINE_AA, 3)
+        for k in range(5): cv2.circle(fr, P8(a_ + (b_ - a_) * (k + .5) / 5 + A(0, math.sin((k + .5) / 5 * math.pi) * .15 * u)), int(.06 * u * 8), (190, 196, 206), 2, cv2.LINE_AA, 3)
+    hR, hL = A(*hands.get('R', (x + u, fy - 3 * u))), A(*hands.get('L', (x - u, fy - 3 * u)))
+    return {1: (hR, hR), -1: (hL, hL)}
+character = rig_character
+CH.character = rig_character                                                    # también el narrador del cierre
+def bukele(fr, x, fy, h, t, **kw): return rig_character(fr, 'traje', x, fy, h, t, who='bukele', **kw)
 def presidenta(fr, x, fy, h, t, **kw):
-    kw.setdefault('armR', ('reposo',)); kw.setdefault('armL', ('reposo',)); kw.setdefault('frown', 0)
-    character(fr, 'dama', x, fy, h, t, sash=True, hair='coleta', **kw)
+    kw.pop('frown', None); return rig_character(fr, 'dama', x, fy, h, t, who='presidenta', frown=0., **kw)
+OUTF['cecot'] = dict(top=(236, 236, 236), pants=(236, 236, 236), shoe=(220, 220, 220))
 
 SV = [(-90.13, 13.73), (-89.8, 14.05), (-89.57, 14.4), (-89.35, 14.43), (-89.05, 14.33), (-88.8, 14.15), (-88.5, 13.98), (-88.05, 13.98), (-87.75, 13.85),
       (-87.8, 13.38), (-88.3, 13.17), (-88.9, 13.27), (-89.5, 13.48), (-89.85, 13.52), (-90.13, 13.73)]
@@ -108,9 +129,9 @@ class Soldiers(Sb):                                # miles de soldados salen a l
         on = (t * 2.4) % 1 < .5; tint_ = (255, 40, 40) if on else (40, 90, 255)
         blit(fr, glow_sprite(300, tint_), 540, 1100, .25, add=True)
         for i in range(3): truck(fr, lerp(-420, 1200, ((t / 5.) + i * .34) % 1.2 - .1), 1340, 1.0)
-        for r, (fy, h, n) in enumerate([(1500, 300, 7), (1620, 360, 6), (1760, 420, 5)]):
+        for r, (fy, h, n) in enumerate([(1500, 300, 4), (1620, 360, 4), (1760, 420, 3)]):
             for i in range(n):
-                x = (i * W / n + t * 90 + r * 60) % (W + 200) - 100
+                x = (i * (W + 300) / n + t * 90 + r * 140) % (W + 300) - 150
                 hs = character(fr, 'militar', x, fy, h, t + i * .3 + r, armR=('apunta', (x + 200, fy - h * .6), .85), armL=('apunta', (x + 200, fy - h * .6), .45), look=(.5, 0), frown=.35, run=4)
                 lib.rifle(fr, hs, h / 8.)
         float_in(fr, s.panel, 540, 330, t, .2)
@@ -289,11 +310,12 @@ class Protest(Sb):                                 # miles de denuncias por abus
         s.signs = [N.text_sprite(x, 30, (30, 30, 34, 255), pad=6, maxw=180) for x in ('INOCENTE', 'DEBIDO PROCESO', '¿DÓNDE ESTÁ?', 'JUSTICIA')]
         s.tags = [chip('DETENCIONES ARBITRARIAS', (255, 120, 100)), chip('ABUSOS', (255, 120, 100)), chip('DEBIDO PROCESO', (255, 120, 100))]
     def draw(s, fr, t, d):
-        for i, x in enumerate((140, 390, 660, 920)):                         # familiares con fotos y pancartas
+        for i, x in enumerate((110, 355, 600, 835)):                         # familiares con fotos y pancartas
             fy = 1650 + (i % 2) * 40; up = .5 + .5 * math.sin(t * 3 + i)
-            character(fr, ['civil', 'dama', 'traje', 'civil'][i], x, fy, 430, t + i, armR=('apunta', (x + 40, fy - 640 - 30 * up), .95), armL=('apunta', (x - 40, fy - 640 - 30 * up), .95),
-                      look=(0, -.3), frown=-.3, hair='coleta' if i == 1 else None)
-            sx, sy = x, fy - 720 - 30 * up; cv2.line(fr, (int(sx), int(sy)), (int(sx), int(sy + 170)), (120, 90, 60), 8)
+            sx, sy = x + 95, fy - 640 - 20 * up                                  # la pancarta va a un lado; una mano sostiene el palo
+            cv2.line(fr, (int(sx), int(sy)), (int(sx), int(fy - 180)), (120, 90, 60), 8)
+            character(fr, ['civil', 'dama', 'traje', 'civil'][i], x, fy, 430, t + i, armR=('apunta', (sx, fy - 330 - 20 * up), 1.), armL=('reposo',),
+                      look=(.15, -.3), frown=-.3, who=['vecino', 'vecina', 'ejecutivo', 'pandillero'][i])
             cv2.rectangle(fr, (int(sx - 100), int(sy - 70)), (int(sx + 100), int(sy + 60)), (240, 236, 226), -1); blit(fr, s.signs[i], sx, sy - 5)
         for i, tg in enumerate(s.tags):
             if t > .6 + i * .5: float_in(fr, tg, [270, 810, 540][i], [560, 560, 700][i], t, .6 + i * .5)
@@ -484,7 +506,7 @@ class Displaced(Sb):                               # más violencia y desplazami
         for i, (x0, kind, h, kw) in enumerate([(820, 'dama', 440, dict(hair='coleta')), (960, 'traje', 470, {}), (1100, 'civil', 300, {}), (700, 'civil', 450, dict(cap=True))]):   # familias que huyen con sus cosas
             x = x0 - 120 * t
             hs = character(fr, kind, x, 1680 + (i % 2) * 30, h, t + i * .7, armR=('reposo',), armL=('apunta', (x - 60, 1400), .3), look=(-.6, 0), frown=-.3, run=4, **kw)
-            cv2.rectangle(fr, (int(hs[1][0][0] - 40), int(hs[1][0][1])), (int(hs[1][0][0] + 40), int(hs[1][0][1] + 70)), (120, 80, 50), -1)   # maleta
+            hx_, hy_ = hs[1][0]; cv2.line(fr, (int(hx_), int(hy_)), (int(hx_), int(hy_ + 18)), (60, 40, 26), 5); cv2.rectangle(fr, (int(hx_ - 42), int(hy_ + 16)), (int(hx_ + 42), int(hy_ + 86)), (120, 80, 50), -1); cv2.rectangle(fr, (int(hx_ - 42), int(hy_ + 16)), (int(hx_ + 42), int(hy_ + 86)), (80, 52, 32), 3)   # maleta
         float_in(fr, s.panel, 540, 330, t, .2)
 
 # ================================================================ EL DILEMA
