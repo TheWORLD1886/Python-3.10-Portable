@@ -402,13 +402,17 @@ def person_side(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=1):
     uh = u * c['cabeza']; head = neck + rot(A(f * .1 * uh, -1.0 * uh - .25 * u), p['tilt'])
     line(fr, neck + tv * .05 * u, head, (214, 214, 222), .34 * u)
     hc = c['pelo_col']
-    if c['pelo'] == 'melena': poly(fr, [head + A(-f * .2 * uh, -.75 * uh), head + A(-f * 1.12 * uh, -.15 * uh), head + A(-f * 1.05 * uh, .82 * uh), head + A(-f * .45 * uh, .78 * uh), head + A(-f * .25 * uh, .4 * uh)], hc)
+    L = lambda xf, y: head + A(f * xf * uh, y * uh)                       # coordenadas locales: xf hacia el frente
+    # pelo largo / colas que cuelgan por detrás de la cabeza
+    if c['pelo'] == 'melena': poly(fr, [L(-.2, -.75), L(-1.1, -.15), L(-1.05, .82), L(-.5, .8), L(-.3, .4)], hc)
     if c['pelo'] == 'coletas':
-        b = head + A(-f * .95 * uh, -.25 * uh)
-        poly(fr, [b, b + A(-f * .35 * uh, -.1 * uh), b + A(-f * .7 * uh, .5 * uh), b + A(-f * .55 * uh, 1.05 * uh), b + A(-f * .3 * uh, .55 * uh)], hc); circ(fr, b, .14 * uh, (240, 90, 150))
+        b_ = L(-.95, -.25); poly(fr, [b_, L(-1.3, -.35), L(-1.65, .25), L(-1.5, .8), L(-1.25, .3)], hc); circ(fr, b_, .14 * uh, (240, 90, 150))
+    if c['pelo'] == 'cola':
+        poly(fr, [L(-.85, -.45), L(-1.12, -.4), L(-1.32, .4), L(-1.22, 1.3), L(-1.02, 1.45), L(-1.02, .5)], hc); circ(fr, L(-.95, -.4), .14 * uh, (150, 30, 50))
     circ(fr, head, 1.0 * uh, (150, 154, 170)); circ(fr, head, .96 * uh, dark(c.get('piel', SKIN), .84)); circ(fr, head + A(f * .05 * uh, -.06 * uh), .9 * uh, c.get('piel', SKIN))
     if c.get('sombra'): circ(fr, head, 1.0 * uh, (20, 20, 24)); ell(fr, head + A(f * .55 * uh, -.05 * uh), .1 * uh, .05 * uh, 0, (230, 230, 200))
     else:
+        if c.get('barba'): beard_profile(fr, c['barba'], L)               # la barba va debajo de los ojos y la boca
         e = head + A(f * .55 * uh, -.05 * uh + p['look'][1] * .2 * uh)                      # un solo ojo, hacia el frente
         if c.get('infectado'): infected_marks(fr, e, uh, c['infectado'], sides=(1,), f=f)
         if p['blink'] > .5: line(fr, e - A(.08 * uh, 0), e + A(.08 * uh, 0), INK, .07 * uh)
@@ -419,14 +423,7 @@ def person_side(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=1):
         elif bo in ('o', 'grito'): ell(fr, m, .08 * uh, .12 * uh * (1.3 if bo == 'grito' else 1), 0, INK)
         else: line(fr, m - A(f * .12 * uh, 0), m + A(f * .08 * uh, 0), INK, .07 * uh)
         if who == 'sofia': ell(fr, head + A(f * .45 * uh, .25 * uh), .14 * uh, .08 * uh, 0, (250, 196, 196))
-    if c['pelo'] in ('corto', 'melena', 'coletas', 'gorro', 'revuelto', 'peinado', 'cola'):
-        if c['pelo'] == 'revuelto':
-            for k in range(6): a_ = math.pi * (1.0 + k * .16); circ(fr, head + A(-f * .15 * uh + math.cos(a_) * .82 * uh * -f, math.sin(a_) * .72 * uh - .12 * uh), .32 * uh, hc)
-        else:
-            ell(fr, head + A(-f * .1 * uh, -.5 * uh), 1.0 * uh, .55 * uh, 0, hc, 180, 360)
-            poly(fr, [head + A(-f * .99 * uh, -.45 * uh), head + A(-f * .97 * uh, (.3 if c['pelo'] != 'gorro' else -.2) * uh), head + A(-f * .72 * uh, (.22 if c['pelo'] != 'gorro' else -.2) * uh), head + A(-f * .6 * uh, -.5 * uh)], hc)   # nuca (detrás de la oreja)
-            if c['pelo'] in ('corto', 'peinado'): poly(fr, [head + A(f * .2 * uh, -.95 * uh), head + A(f * .9 * uh, -.62 * uh), head + A(f * .45 * uh, -.62 * uh)], hc)   # fleco (arriba de la ceja)
-            (circ(fr, head + A(-f * .3 * uh, .02 * uh), .15 * uh, (214, 214, 222)), circ(fr, head + A(-f * .3 * uh, .02 * uh), .11 * uh, SKIN)) if c['pelo'] in ('corto', 'peinado') else None   # oreja
+    hair_profile(fr, c, L, uh, f, hc)
     head_extras(fr, c, head, uh, p, f)
     joints.update(head=head, hip=hip, neck=neck); return hands, joints
 def step_len(u, run=False): return (2.1 if run else 1.45) * u
@@ -442,9 +439,7 @@ def head_extras(fr, c, head, u, p, f):
         if f == 0:
             cv2.ellipse(fr, P8(fc + A(0, .02 * u)), (int(.8 * u * 8), int(.78 * u * 8)), 0, 25, 155, bc, max(2, int(.2 * u)), cv2.LINE_AA, 3)
             cv2.ellipse(fr, P8(fc + A(0, .3 * u)), (int(.22 * u * 8), int(.06 * u * 8)), 0, 180, 360, bc, max(2, int(.05 * u)), cv2.LINE_AA, 3)   # bigote fino (arriba de la boca)
-        else:
-            a0, a1 = (30, 115) if f > 0 else (65, 150)                        # solo la mandíbula inferior, hacia el frente
-            cv2.ellipse(fr, P8(head + A(0, .02 * u)), (int(.8 * u * 8), int(.78 * u * 8)), 0, a0, a1, bc, max(2, int(.18 * u)), cv2.LINE_AA, 3)
+        else: pass                                                            # de perfil: ver beard_profile
     g = c.get('gorra')
     if g:                                                                 # gorra: la visera queda arriba de las cejas
         col = c.get('gorra_col', (36, 40, 50))
@@ -490,3 +485,39 @@ def gait_x(x, d, u, fy, run=False):
     sw = math.sin(2 * math.pi * ph); bob = math.cos(4 * math.pi * (ph - .25)) * (.08 if run else .05) * u
     pose = dict(lean=d * (.22 if run else .05), uL=d * sw * (.6 if run else .4), lL=(1.5 if run else .25), uR=-d * sw * (.6 if run else .4), lR=(1.5 if run else .25), look=(.55 * d, 0.))
     return pose, feet, bob
+
+
+def _arc(L, a0, a1, r=1.0, n=24):
+    """puntos sobre el contorno de la cabeza (ángulos en grados: 0 = frente, -90 = coronilla, 90 = barbilla)."""
+    return [L(math.cos(math.radians(a)) * r, math.sin(math.radians(a)) * r) for a in np.linspace(a0, a1, n)]
+
+def hair_profile(fr, c, L, uh, f, hc):
+    """pelo de perfil: sigue la forma del cráneo, con la línea del nacimiento curva por ARRIBA de la ceja
+    y la nuca detrás de la oreja (sin bloques cuadrados)."""
+    st = c['pelo']
+    if st in ('corto', 'peinado', 'coletas', 'cola', 'melena', 'rapado'):
+        col = tuple(int(v * .82) for v in c.get('piel', SKIN)) if st == 'rapado' else hc
+        arc = _arc(L, -38, -222, 1.03)                                        # de la frente, por la coronilla, hasta la nuca
+        inner = [L(-.6, .55), L(-.5, .18), L(-.32, -.22), L(-.05, -.5), L(.3, -.64), L(.62, -.66)]
+        if st == 'melena': arc = _arc(L, -38, -210, 1.04); inner = [L(-.75, .62), L(-.55, .2), L(-.3, -.25)] + inner[3:]
+        poly(fr, arc + inner, col)
+        hl = tuple(min(255, int(v * 1.35)) for v in col)
+        for k in range(3): line(fr, L(-.1 - k * .25, -.98 + k * .06), L(.25 - k * .25, -.8 + k * .05), hl, max(1, int(.02 * uh)))   # brillo / mechones
+        if st == 'peinado': ell(fr, L(.32, -.92), .62 * uh, .2 * uh, -6 * f, hc)                      # copete
+        if st == 'corto': poly(fr, [L(.55, -.66), L(.9, -.62), L(.62, -.56)], hc)                        # punta del fleco
+        if st in ('corto', 'peinado'): poly(fr, [L(-.14, -.2), L(-.06, -.18), L(-.09, .02), L(-.17, 0)], col)   # patilla corta (solo hombres)
+    elif st == 'gorro':
+        poly(fr, _arc(L, -36, -205, 1.05) + [L(-.85, .3), L(-.5, -.1), L(-.1, -.5), L(.35, -.66), L(.68, -.68)], hc)
+        pline(fr, [L(-.82, .28), L(-.48, -.12), L(-.08, -.52), L(.35, -.68), L(.68, -.7)], dark(hc, .8), max(2, int(.06 * uh)))   # borde del gorro, arriba de la ceja
+    elif st == 'revuelto':
+        for k in range(7):
+            a_ = math.radians(-40 - k * 27); circ(fr, L(math.cos(a_) * .82, math.sin(a_) * .72 - .1), .32 * uh, hc)
+    if st not in ('melena', 'gorro', 'sombra'):                              # oreja con detalle
+        e0 = L(-.28, .06); circ(fr, e0, .17 * uh, dark(c.get('piel', SKIN), .78)); circ(fr, e0, .14 * uh, c.get('piel', SKIN))
+        cv2.ellipse(fr, P8(e0), (int(.08 * uh * 8), int(.1 * uh * 8)), 0, 200 if f > 0 else -20, 340 if f > 0 else 160, dark(c.get('piel', SKIN), .7), max(1, int(.03 * uh)), cv2.LINE_AA, 3)
+
+def beard_profile(fr, col, L):
+    """barba de perfil: solo la mandíbula (de la patilla a la barbilla), deja libre la boca; bigote corto."""
+    pts = _arc(L, 25, 118, .99) + [L(-.4, .55), L(-.22, .2), L(.1, .5), L(.42, .58), L(.7, .5)]
+    poly(fr, pts, col)
+    line(fr, L(.48, .31), L(.74, .33), col, .07 * L(1, 0)[0] * 0 + 4)
