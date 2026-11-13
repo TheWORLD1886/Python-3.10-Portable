@@ -360,9 +360,14 @@ def person_side(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=1):
     near, far = ('R', 'L') if f > 0 else ('L', 'R')
     hands[far] = arm(far, .72); leg(far, .78)
     # torso de perfil: más angosto (profundidad) y con pecho y espalda
-    pts = [shY - tn * .72 * u, shY + tn * .76 * u, hip + tn * .72 * u - tv * .15 * u, hip - tn * .68 * u - tv * .15 * u]
-    poly(fr, pts, dark(top, .62)); poly(fr, [shY - tn * .66 * u, shY + tn * .7 * u, hip + tn * .66 * u - tv * .2 * u, hip - tn * .62 * u - tv * .2 * u], top)
-    ell(fr, (shY + hip) / 2 + tn * f * .05 * u, .74 * u, 1.35 * u, math.degrees(p['lean']), top)
+    def silhouette(grow):
+        # (altura desde la cadera 0..1.1, desplazamiento hacia el frente en u): pecho redondeado, espalda curva, cintura más angosta
+        prof = [(1.06, .15), (1.02, .42), (.9, .66), (.72, .74), (.5, .6), (.3, .54), (.08, .6), (-.08, .58),
+                (-.08, -.6), (.08, -.62), (.3, -.52), (.55, -.58), (.78, -.66), (.95, -.58), (1.04, -.35), (1.08, -.1)]
+        H_ = (shY - hip)
+        pts_ = [hip + H_ * h_ + tn * f * (o_ + np.sign(o_) * grow) * u for h_, o_ in prof]
+        return chaikin_c(pts_, 2)
+    poly(fr, silhouette(.06), dark(top, .62)); poly(fr, silhouette(0.), top)
     front = lambda k: (shY + (hip - shY) * k) + tn * f * .64 * u
     if c['ropa'] == 'franela':
         for k in (-.3, .05, .35): line(fr, shY + tn * k * u, hip + tn * k * u, c['plaid'], .1 * u)
@@ -465,6 +470,14 @@ CAST.update({
     'doctora':   dict(nombre='DOCTORA', alto=.94, cabeza=1.0, top=(236, 239, 244), pants=(54, 58, 70), shoe=(20, 20, 24), ropa='quirurgica', pelo='melena', pelo_col=(90, 60, 40)),
 })
 
+def chaikin_c(pts, it=2):
+    """suaviza un contorno cerrado (esquinas redondeadas)."""
+    p = [A(*q) for q in pts]
+    for _ in range(it):
+        q = []
+        for a_, b_ in zip(p, p[1:] + p[:1]): q += [a_ * .75 + b_ * .25, a_ * .25 + b_ * .75]
+        p = q
+    return p
 def gait_x(x, d, u, fy, run=False):
     """caminata con pies fijos a partir de la posición absoluta x (sirve cuando la escena mueve al personaje por su cuenta)."""
     s = step_len(u, run) * d; ph = x / (2 * s); feet = {}
