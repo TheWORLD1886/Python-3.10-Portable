@@ -155,6 +155,15 @@ def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
             ell(fr, shY + (hip - shY) * b_ + tn * a_ * u, ra * u, rb * u, 20, dark(top, .72))
         for sd in (-1, 1): cv2.rectangle(fr, P8(shY + (hip - shY) * .25 + tn * (sd * .45 - .2) * u), P8(shY + (hip - shY) * .45 + tn * (sd * .45 + .2) * u), dark(top, .6), 2, cv2.LINE_AA, 3)
         line(fr, hip - tv * .15 * u - tn * .9 * u, hip - tv * .15 * u + tn * .9 * u, (34, 34, 26), .22 * u); circ(fr, hip - tv * .15 * u, .12 * u, (190, 160, 70))
+    elif c['ropa'] == 'cuero':                                            # chaqueta de cuero negra sobre camiseta negra, cierre y brillo
+        mid = shY + (hip - shY) * .55
+        poly(fr, [shY - tn * .42 * u, shY + tn * .42 * u, hip + tn * .3 * u - tv * .2 * u, hip - tn * .3 * u - tv * .2 * u], (16, 16, 18)); ell(fr, neck - tv * .05 * u, .24 * u, .12 * u, 0, (40, 40, 44), 0, 180, max(2, int(.04 * u)))   # camiseta negra, cuello redondo
+        for sd in (-1, 1):                                                                                             # solapas / cuello
+            poly(fr, [neck + tn * sd * .3 * u - tv * .02 * u, shY + tn * sd * .7 * u, shY + tn * sd * .46 * u + tv * -.55 * u, shY + tn * sd * .3 * u + tv * -.1 * u], dark(top, 1.6))
+            line(fr, shY + tn * sd * .44 * u + tv * -.6 * u, hip + tn * sd * .32 * u + tv * .2 * u, (130, 132, 140), .05 * u)   # cierre abierto
+            ell(fr, shY + (hip - shY) * .2 + tn * sd * .62 * u, .22 * u, .5 * u, 0, (64, 64, 72), 200, 300, max(2, int(.05 * u)))   # brillo del cuero
+            line(fr, shY + (hip - shY) * .72 + tn * sd * .42 * u, shY + (hip - shY) * .62 + tn * sd * .72 * u, (110, 112, 120), .04 * u)  # bolsillo con cierre
+        line(fr, hip - tv * .2 * u - tn * .88 * u, hip - tv * .2 * u + tn * .88 * u, dark(top, .8), .16 * u)                 # pretina
     elif c['ropa'] == 'sin_camisa':                                       # torso desnudo tatuado (pandillero)
         tat_torso_front(fr, shY, hip, tn, tv, u, top); tat_waist(fr, hip, tn, tv, u, c['pants'])
     elif c['ropa'] in ('blanco', 'gris'):                                 # uniforme de recluso con número
@@ -393,6 +402,11 @@ def person_side(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=1):
         cv2.rectangle(fr, P8(q - A(w_ / 2, h_ / 2)), P8(q + A(w_ / 2, h_ / 2)), (236, 236, 230), -1, cv2.LINE_AA, 3)
         num = str(p.get('numero', 10000 + (int(x) * 37) % 89999)); sc_ = max(.2, .0048 * u); (tw, th), _ = cv2.getTextSize(num, cv2.FONT_HERSHEY_DUPLEX, sc_, 1)
         cv2.putText(fr, num, (int(q[0] - tw / 2), int(q[1] + th / 2)), cv2.FONT_HERSHEY_DUPLEX, sc_, (30, 30, 34), max(1, int(u * .03)), cv2.LINE_AA)
+    elif c['ropa'] == 'cuero':
+        poly(fr, [neck + tn * f * .1 * u, shY + tn * f * .62 * u, shY + tn * f * .4 * u - tv * .5 * u, shY + tn * f * .05 * u - tv * .1 * u], dark(top, 1.6))
+        line(fr, shY + tn * f * .6 * u - tv * .5 * u, hip + tn * f * .55 * u + tv * .2 * u, (130, 132, 140), .05 * u)
+        ell(fr, shY + (hip - shY) * .3 + tn * f * .1 * u, .3 * u, .55 * u, 0, (64, 64, 72), 200 if f > 0 else 240, 300 if f > 0 else 340, max(2, int(.05 * u)))
+        line(fr, hip - tv * .2 * u - tn * .58 * u, hip - tv * .2 * u + tn * .6 * u, dark(top, .8), .16 * u)
     elif c['ropa'] == 'sin_camisa':                                       # de perfil: pectoral, letras en el costado, cintura caída
         H_ = hip - shY
         ell(fr, shY + H_ * .34 + tn * f * .38 * u, .3 * u, .13 * u, 0, dark(top, .82), 0 if f > 0 else 180, 90 if f > 0 else 270, max(2, int(.05 * u)))
@@ -451,6 +465,12 @@ def head_extras(fr, c, head, u, p, f):
             cv2.ellipse(fr, P8(fc + A(0, .02 * u)), (int(.8 * u * 8), int(.78 * u * 8)), 0, 25, 155, bc, max(2, int(.2 * u)), cv2.LINE_AA, 3)
             cv2.ellipse(fr, P8(fc + A(0, .3 * u)), (int(.22 * u * 8), int(.06 * u * 8)), 0, 180, 360, bc, max(2, int(.05 * u)), cv2.LINE_AA, 3)   # bigote fino (arriba de la boca)
         else: pass                                                            # de perfil: ver beard_profile
+    if c.get('gafas'):
+        if f == 0:
+            for sd in (-1, 1): ell(fr, fc + A(sd * .34 * u, -.04 * u), .24 * u, .17 * u, 0, (16, 18, 24)); ell(fr, fc + A(sd * .34 * u - .07 * u, -.1 * u), .07 * u, .04 * u, 0, (90, 96, 110))
+            line(fr, fc + A(-.11 * u, -.08 * u), fc + A(.11 * u, -.08 * u), (16, 18, 24), .05 * u)
+        else:
+            ell(fr, head + A(f * .56 * 1, -.04 * u), .2 * u, .17 * u, 0, (16, 18, 24)); line(fr, head + A(f * .4 * u, -.08 * u), head + A(-f * .2 * u, -.02 * u), (16, 18, 24), .05 * u)
     if c.get('tatuajes'):
         if f == 0:
             tat_text(fr, 'MS', fc + A(0, -.72 * u), .56 * u)                                           # frente, arriba de las cejas
@@ -480,6 +500,12 @@ CAST.update({
     'presidenta': dict(nombre='PRESIDENTA', alto=.95, cabeza=1.0, top=(92, 26, 44), pants=(40, 22, 30), shoe=(20, 12, 14), ropa='traje', pelo='cola', pelo_col=(44, 30, 26), banda=[(0, 120, 72), (245, 245, 245), (206, 24, 40)]),
     'soldado':   dict(nombre='SOLDADO', alto=1.0, cabeza=1.0, top=(92, 104, 64), pants=(72, 82, 52), shoe=(26, 26, 26), ropa='militar', pelo='corto', pelo_col=(40, 32, 26), casco=(70, 82, 50)),
     'reo':       dict(nombre='DETENIDO', alto=.98, cabeza=1.0, top=(122, 126, 132), pants=(110, 114, 120), shoe=(40, 40, 44), ropa='gris', pelo='rapado', pelo_col=(200, 196, 190)),
+    'jensen':    dict(nombre='JENSEN HUANG', alto=1.0, cabeza=1.0, top=(30, 30, 34), pants=(24, 24, 28), shoe=(12, 12, 14), ropa='cuero', pelo='peinado', pelo_col=(196, 198, 204)),
+    'alice':     dict(nombre='ALICE HUANG', alto=.94, cabeza=1.0, top=(222, 214, 200), pants=(40, 34, 40), shoe=(20, 16, 18), ropa='traje', pelo='melena', pelo_col=(22, 18, 20)),
+    'colette':   dict(nombre='COLETTE KRESS', alto=.95, cabeza=1.0, top=(34, 46, 76), pants=(28, 34, 52), shoe=(18, 18, 22), ropa='traje', pelo='melena', pelo_col=(196, 164, 112)),
+    'agente':    dict(nombre='AGENTE', alto=1.0, cabeza=1.0, top=(22, 24, 30), pants=(20, 22, 28), shoe=(10, 10, 12), ropa='traje', corbata=(14, 14, 18), pelo='corto', pelo_col=(30, 24, 20), gafas=True),
+    'portavoz':  dict(nombre='PORTAVOZ', alto=.98, cabeza=1.0, top=(44, 46, 54), pants=(36, 38, 44), shoe=(14, 14, 16), ropa='traje', corbata=(150, 30, 36), pelo='corto', pelo_col=(20, 18, 18)),
+    'directora': dict(nombre='DIRECTORA', alto=.95, cabeza=1.0, top=(84, 86, 94), pants=(50, 52, 60), shoe=(20, 18, 20), ropa='traje', pelo='cola', pelo_col=(70, 46, 32)),
     'pandillero': dict(nombre='PANDILLERO', alto=.98, cabeza=1.0, top=SKIN, pants=(34, 36, 42), shoe=(236, 236, 240), ropa='sin_camisa', pelo='calvo', pelo_col=(60, 56, 54), tatuajes=True),
     'jefe':      dict(nombre='JEFE', alto=1.0, cabeza=1.0, top=(40, 78, 178), pants=(24, 28, 48), shoe=(14, 14, 18), ropa='traje', pelo='peinado', pelo_col=(60, 46, 36), corbata=(200, 170, 60)),
     'ejecutivo': dict(nombre='EJECUTIVO', alto=1.0, cabeza=1.0, top=(34, 38, 60), pants=(28, 31, 48), shoe=(14, 14, 18), ropa='traje', pelo='corto', pelo_col=(70, 60, 50), corbata=(190, 32, 36)),

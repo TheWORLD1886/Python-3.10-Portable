@@ -1,0 +1,45 @@
+¿Una espía china logró acercarse al hombre más poderoso de NVIDIA?
+(Guion del usuario con dos ajustes verificados en prensa, 13 nov 2026)
+
+[GANCHO]
+Una de las empresas más poderosas del mundo está en medio de un escándalo internacional.
+Su CEO habría mantenido una relación con una mujer que, según los servicios de inteligencia estadounidenses, trabajaba para China.
+Y lo más preocupante: todo podría estar relacionado con los secretos de la inteligencia artificial.
+
+[¿QUIÉN ES ELLA?]
+El protagonista es Jensen Huang, fundador y hasta hace poco CEO de NVIDIA, la compañía cuyos chips impulsan gran parte de la revolución mundial de la inteligencia artificial.
+La mujer señalada es Alice Huang, una empresaria china que llegó a ocupar un puesto directivo en Megaspeed, una compañía de infraestructura informática y centros de datos.
+Megaspeed también era un importante comprador de chips NVIDIA.
+Pero los servicios de inteligencia estadounidenses comenzaron a sospechar que había algo más detrás de sus actividades.
+
+[¿CÓMO DESCUBRIERON LA PRESUNTA OPERACIÓN?]
+Según las investigaciones periodísticas, las agencias estadounidenses llevaban tiempo vigilando a Alice.
+Mediante labores de inteligencia y vigilancia de sus comunicaciones, habrían llegado a la conclusión de que estaba recopilando información para Pekín.
+El FBI habría advertido a legisladores sobre sus sospechas casi un año antes de que el escándalo estallara públicamente.
+Después aparecieron fotografías de Alice junto a Jensen en reuniones y eventos privados.
+La relación personal entre ambos terminó convirtiéndose en un asunto de seguridad nacional.
+Pero hay un detalle fundamental: las pruebas específicas siguen siendo clasificadas y no se ha demostrado públicamente qué información habría conseguido transmitir.
+
+[EL IMPACTO EN NVIDIA]
+El problema para NVIDIA es enorme.
+Sus chips son fundamentales para desarrollar inteligencia artificial y Estados Unidos intenta impedir que China obtenga tecnología avanzada que pueda darle una ventaja estratégica.
+La junta directiva abrió una investigación independiente para determinar si Jensen fue objetivo de una operación extranjera.
+La compañía afirmó que no tenía motivos para creer que sus secretos corporativos o la seguridad nacional hubieran sido comprometidos.
+Sin embargo, la polémica golpeó la confianza de los inversionistas.
+
+[¿Y EL GOBIERNO ESTADOUNIDENSE?]
+Washington también quedó bajo presión.
+La investigación abrió preguntas sobre los controles de exportación, la relación entre las grandes tecnológicas y el gobierno, y el acceso de China a los chips estadounidenses.
+Legisladores exigieron explicaciones a Jensen y a NVIDIA.            <- AJUSTE: no hay registro de que lo convocaran al Congreso por este caso
+Mientras tanto, Pekín rechazó las acusaciones de espionaje.
+
+[EL GIRO FINAL]
+Y entonces llegó otro golpe: el 12 de noviembre, Jensen Huang renunció y el consejo nombró a Colette Kress directora ejecutiva interina.   <- AJUSTE: anuncio oficial de NVIDIA
+El caso ya no es solamente una historia de infidelidad.
+Es una historia sobre espionaje, inteligencia artificial, dinero y poder internacional.
+
+[INTERACCIÓN]
+Pero queda una pregunta:
+¿Crees que China intentó utilizar una relación personal para acercarse a los secretos de NVIDIA?
+¿O todavía falta conocer la verdadera historia?
+Te leo en los comentarios.
