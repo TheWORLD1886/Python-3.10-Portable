@@ -1,0 +1,121 @@
+{
+  "episode_id": "E001",
+  "language": "es-MX",
+  "scenes": [
+    {
+      "scene_id": "SC001",
+      "lines": [
+        {
+          "character_id": "narrator",
+          "text": "10:47 de la noche. En una pequeña ciudad de Estados Unidos, todo parece normal. Las familias cenan, los negocios siguen abiertos… Pero en el hospital, los médicos intentan contener algo que todavía no comprenden.",
+          "emotion": "narracion_terror",
+          "direction": "terror"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC002",
+      "lines": [
+        {
+          "character_id": "narrator",
+          "text": "Daniel tiene 32 años. Vive con su esposa Laura y su hija Sofía, de nueve. Esta noche cenan con las noticias de fondo… hasta que aparece una alerta de última hora.",
+          "emotion": "calma",
+          "direction": "calma"
+        },
+        {
+          "character_id": "narrator",
+          "text": "Personas atacando a desconocidos por toda la ciudad. Hospitales saturados. Las autoridades piden no salir de casa.",
+          "emotion": "narracion_terror",
+          "direction": "terror"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC003",
+      "lines": [
+        {
+          "character_id": "narrator",
+          "text": "Suena el teléfono. Es Marcos, su hermano. Está desesperado.",
+          "emotion": "narracion_terror",
+          "direction": "terror"
+        },
+        {
+          "character_id": "marcos",
+          "text": "¡Daniel! ¡Cierra todas las puertas! Algo está pasando en las calles, la gente está…",
+          "emotion": "desesperacion",
+          "direction": "desesperado"
+        },
+        {
+          "character_id": "narrator",
+          "text": "Y la llamada… se corta. Daniel mira por la ventana.",
+          "emotion": "narracion_terror",
+          "direction": "terror"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC004",
+      "lines": [
+        {
+          "character_id": "narrator",
+          "text": "Un auto se estrella contra una tienda. La gente corre. Una mujer cae… y alguien se abalanza sobre ella.",
+          "emotion": "narracion_terror",
+          "direction": "terror"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC005",
+      "lines": [
+        {
+          "character_id": "narrator",
+          "text": "Y entonces… tres golpes sacuden la puerta.",
+          "emotion": "narracion_terror",
+          "direction": "terror"
+        },
+        {
+          "character_id": "hombre_puerta",
+          "text": "¡Por favor! ¡Déjenme entrar!",
+          "emotion": "grito",
+          "direction": "gritando"
+        },
+        {
+          "character_id": "narrator",
+          "text": "Daniel mira por la mirilla. Es un hombre cubierto de sangre. Pero algo no está bien: no deja de golpear.",
+          "emotion": "narracion_terror",
+          "direction": "terror"
+        },
+        {
+          "character_id": "laura",
+          "text": "Daniel… no lo dejes entrar.",
+          "emotion": "susurro",
+          "direction": "susurro"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC006",
+      "lines": [
+        {
+          "character_id": "sofia",
+          "text": "Papá…",
+          "emotion": "tristeza",
+          "direction": "llorando"
+        },
+        {
+          "character_id": "narrator",
+          "text": "Su hija llora. El hombre suplica. Y algo se mueve detrás de él, en la oscuridad. ¿Qué debería hacer Daniel?",
+          "emotion": "narracion_terror",
+          "direction": "terror"
+        },
+        {
+          "character_id": "narrator",
+          "text": "Tú decides cómo empieza esta historia. Comenta A o B. Porque mañana… quizá ya no exista un lugar seguro.",
+          "emotion": "calma",
+          "direction": "calma"
+        }
+      ]
+    }
+  ],
+  "unknown_speakers": []
+}
