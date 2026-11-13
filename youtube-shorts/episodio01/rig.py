@@ -37,6 +37,13 @@ def mix(p, q, k):
         a, b = p[key], q.get(key, p[key])
         if isinstance(a, (int, float)) and isinstance(b, (int, float)): r[key] = a + (b - a) * k
         elif isinstance(a, tuple) and isinstance(b, tuple): r[key] = tuple(x + (y - x) * k for x, y in zip(a, b))
+        elif key == 'grip' and (a or b):
+            a, b = a or {}, b or {}; r[key] = {}
+            for h in set(a) | set(b):
+                ga, gb = a.get(h), b.get(h)
+                if ga and gb: r[key][h] = tuple(x + (y - x) * k for x, y in zip(ga[:2], gb[:2])) + ((ga[2] if len(ga) > 2 else 1) + ((gb[2] if len(gb) > 2 else 1) - (ga[2] if len(ga) > 2 else 1)) * k,)
+                elif ga: r[key][h] = tuple(ga[:2]) + ((ga[2] if len(ga) > 2 else 1) * (1 - k),)
+                else: r[key][h] = tuple(gb[:2]) + ((gb[2] if len(gb) > 2 else 1) * k,)
         else: r[key] = b if k >= .5 else a
     return r
 
@@ -46,6 +53,23 @@ def ik2(root, target, l1, l2, bend_sign):
     a = math.acos(max(-1, min(1, (l1 * l1 + D * D - l2 * l2) / (2 * l1 * D))))
     base = math.atan2(d[1], d[0]); ang = base + a * bend_sign
     return root + A(math.cos(ang), math.sin(ang)) * l1
+
+def ik_limb(root, target, l1, l2, prefer):
+    """IK de dos huesos robusto: (1) el objetivo se acerca a lo alcanzable, así ningún hueso cambia de largo;
+    (2) de las dos soluciones posibles se elige la anatómica (codo hacia afuera y abajo, rodilla hacia adelante)."""
+    root, target = A(*root), A(*target); d = target - root; n = np.linalg.norm(d)
+    if n < 1e-6: d, n = A(0, 1.), 1.
+    D = min(max(n, abs(l1 - l2) + 1e-3), (l1 + l2) * .995); end = root + d / n * D
+    a = math.acos(max(-1, min(1, (l1 * l1 + D * D - l2 * l2) / (2 * l1 * D)))); base = math.atan2(d[1], d[0])
+    cands = [root + A(math.cos(base + a * sg), math.sin(base + a * sg)) * l1 for sg in (1, -1)]
+    mid = (root + end) / 2; pv = A(*prefer)
+    e = max(cands, key=lambda c: float(np.dot(c - mid, pv)))
+    return e, end
+
+def reach(fk_hand, g):
+    """objetivo de la mano: g = (x, y) o (x, y, peso). Con peso < 1 la mano viaja suavemente desde su pose natural."""
+    if len(g) > 2: w = max(0., min(1., g[2])); return A(*fk_hand) + (A(g[0], g[1]) - A(*fk_hand)) * ease(w)
+    return A(*g)
 
 def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
     """Dibuja al personaje. fy = suelo. feet = {'L': (x, y), 'R': (x, y)} fija los tobillos (IK) para que no resbalen."""
@@ -62,8 +86,7 @@ def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
         hp = hip + tn * (sd * (.42 if facing == 0 else .16) * u); L1 = L2 = 1.55 * u
         key = 'L' if sd < 0 else 'R'
         if feet and key in feet:
-            an = A(*feet[key]) - A(0, .22 * u); kn = ik2(hp, an, L1, L2, -1 if facing >= 0 else 1)
-            if facing == 0: kn = ik2(hp, an, L1, L2, 1 if sd < 0 else -1)
+            kn, an = ik_limb(hp, A(*feet[key]) - A(0, .22 * u), L1, L2, (sd, -.15) if facing == 0 else (facing, -.1))
         else:
             kn = hp + down(th) * L1; an = kn + down(th + sn) * L2
         col = c['pants']; w = lw * (1.25 if c['ropa'] == 'franela' else 1.12 if who == 'laura' else 1.0)
@@ -83,8 +106,8 @@ def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
     for sd, ua, la in ((-1, p['uL'], p['lL']), (1, p['uR'], p['lR'])):
         S = shY + tn * (sd * spread * u) + tv * (p['sh'] * .2 * u)
         g = p['grip'] and p['grip'].get('L' if sd < 0 else 'R')
-        if g is not None: hd = A(*g); e = ik2(S, hd, 1.3 * u, 1.25 * u, -1 if sd < 0 else 1)
-        else: e = S + down(ua + p['lean']) * 1.3 * u; hd = e + down(ua + la + p['lean']) * 1.25 * u
+        e = S + down(ua + p['lean']) * 1.3 * u; hd = e + down(ua + la + p['lean']) * 1.25 * u
+        if g is not None: e, hd = ik_limb(S, reach(hd, g), 1.3 * u, 1.25 * u, (sd * .55, 1.))   # codo hacia abajo y un poco afuera
         behind = facing != 0 and (hd[0] - S[0]) * facing < 0
         arm_geo.append((sd, S, e, hd, behind))
     def draw_arm(sd, S, e, hd):
@@ -257,7 +280,7 @@ def person_side(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=1):
         if feet and key in feet: an = A(*feet[key]) - A(0, .22 * u)
         else:
             th = p['thL'] if key == 'L' else p['thR']; an = hip + down(th) * 3.05 * u
-        kn = ik2(hip, an, L1, L2, -f)                                   # rodilla hacia adelante
+        kn, an = ik_limb(hip, an, L1, L2, (f, -.1))                     # rodilla hacia adelante
         col = dark(pants, shade); w = lw * 1.15
         for a_, b_ in ((hip, kn), (kn, an)): line(fr, a_, b_, dark(col, .68), w + 4)
         for a_, b_ in ((hip, kn), (kn, an)): line(fr, a_, b_, col, w)
@@ -269,8 +292,8 @@ def person_side(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=1):
         S = shY + tn * (-f * .05 * u)
         ua = p['uL'] if key == 'L' else p['uR']; la = abs(p['lL'] if key == 'L' else p['lR'])
         g = p['grip'] and p['grip'].get(key)
-        if g is not None: hd = A(*g); e = ik2(S, hd, 1.3 * u, 1.25 * u, f)
-        else: e = S + down(ua + p['lean']) * 1.3 * u; hd = e + down(ua + p['lean'] + f * la) * 1.25 * u   # el codo solo dobla hacia adelante
+        e = S + down(ua + p['lean']) * 1.3 * u; hd = e + down(ua + p['lean'] + f * la) * 1.25 * u   # el codo solo dobla hacia adelante
+        if g is not None: e, hd = ik_limb(S, reach(hd, g), 1.3 * u, 1.25 * u, (-f * .5, 1.))     # codo hacia abajo y atrás
         col = dark(top, shade)
         line(fr, S, e, dark(col, .62), lw + 5); line(fr, e, hd, dark(col, .62), lw + 4); line(fr, S, e, col, lw); line(fr, e, hd, col, lw * .92)
         circ(fr, e, lw / 2, col); circ(fr, hd, .31 * u, dark((170, 172, 182), shade)); circ(fr, hd, .27 * u, dark(SKIN, shade)); return hd

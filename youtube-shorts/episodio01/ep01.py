@@ -49,7 +49,8 @@ class S12(Shot):                                   # pareja entra a la tienda
         for who, x0, dist, uu, sd in (('peaton1', 40, dh(t), uH, 7), ('novia', -60, dm(t), uM, 8)):
             if who == 'novia' and x0 + dist > 760: continue                           # ya entró
             x, p, feet, b = gait(0, x0, 1, uu, 1490, dist=dist)
-            if who == 'peaton1' and 1.9 < t < 3.1: p.update(uR=-.6, lR=1.2, look=(.3, 0))   # mano en la puerta
+            if who == 'peaton1':                                                       # la mano va a la puerta y regresa (sin saltos)
+                wgt = ss(1.6, 2.0, t) * (1 - ss(2.9, 3.3, t)); p['grip'] = {'R': (690, 1500 - 4.3 * uH, wgt)}; p['look'] = (.3 * wgt + .55 * (1 - wgt), 0)
             if who == 'novia' and x0 + dist > 680: p['look'] = (.6, 0)
             person_side(fr, who, x, 1490 + b, 420, dict(p, blink=blink(t, sd), boca='sonrisa'), t, feet=feet, facing=1)
         cv2.rectangle(fr, (630, 1010), (650, 1340), (40, 30, 26), -1)                  # marco de la puerta (por delante)
@@ -207,7 +208,7 @@ class Phone(Shot):
             ph0 = A(820, 1500); uD = U('daniel', 1150); ear = A(560 + 1.0 * uD, 2150 - 7.0 * uD)
             path = ph0 + (ear - ph0) * lift + A(60, -120) * math.sin(lift * math.pi)                                 # arco natural
             hand = A(620, 1500) + (ph0 - A(620, 1500)) * reach if lift <= 0 else path
-            p = dict(grip={'R': tuple(hand), 'L': (420, 1505)}, look=(.4 * (1 - lift), .25 * (1 - lift)), frown=-.15 - .1 * lift, blink=blink(t, 1), lean=.06 * reach * (1 - lift))
+            p = dict(grip={'R': tuple(hand), 'L': (500, 1510)}, look=(.4 * (1 - lift), .25 * (1 - lift)), frown=-.15 - .1 * lift, blink=blink(t, 1), lean=.06 * reach * (1 - lift))
             person(fr, 'daniel', 560, 2150, 1150, p, t)
             draw_table(fr, y=1510, plates=((560, 1),))
             vib = math.sin(t * 60) * 6 * (reach < .9)
@@ -245,7 +246,7 @@ class ToWindow(Shot):                              # Daniel camina hacia la vent
         uu = U('daniel', 760); D_ = 2 * step_len(uu) * 1; dist = D_ * min(1., (t / 2.2) * (2 - t / 2.2)) if t < 2.2 else D_
         x, p, feet, b = gait(0, 360, 1, uu, 1820, dist=dist)
         k = 1 - ss(1.8, 2.2, t); p.update(uL=p['uL'] * k, uR=p['uR'] * k, blink=blink(t, 1), frown=-.35)
-        if t > 2.2: p.update(grip={'R': (x + 1.5 * uu, 1820 - 5.0 * uu)}, lean=.06)                                   # apoya la mano en el marco
+        p.update(grip={'R': (x + 1.45 * uu, 1820 - 5.0 * uu, ss(1.9, 2.5, t))}, lean=.06 * ss(1.9, 2.5, t))                                   # apoya la mano en el marco
         person_side(fr, 'daniel', x, 1820 + b * k, 760, p, t, feet=feet, facing=1)
         tint(fr, c, .1 * ss(.3, .8, t), 600, W)
 
@@ -316,7 +317,7 @@ class RunLock(Shot):                               # Daniel corre a la puerta, f
         x, p, feet, b = gait(0, -120, 1, uu, 1340, run=True, dist=dist)
         k = 1 - ss(1.2, 1.6, t)
         p.update(uL=p['uL'] * k, uR=p['uR'] * k, lean=p['lean'] * k + .04, frown=-.5, boca='tensa', blink=blink(t, 1))
-        if t > 1.6: p.update(grip={'R': (690, 945 + 10 * math.sin(ss(2.0, 2.3, t) * math.pi))}, look=(.6, 0))      # extiende el brazo al cerrojo
+        p.update(grip={'R': (690, 945 + 10 * math.sin(ss(2.0, 2.3, t) * math.pi), ss(1.3, 1.9, t))})                # extiende el brazo al cerrojo
         person_side(fr, 'daniel', x, 1340 + b * k, 690, p, t, feet=feet, facing=1)
     def cam(s, t, d): x = -120 + 4 * step_len(U('daniel', 690), True) * (1 - (1 - min(1, t / 1.6)) ** 2); return 1.06, 540, 1150, -(x - 540) * .25, 0
 
@@ -327,21 +328,23 @@ def carry(fr, t, x, fy, lift, h=800, cry=0., hide=0., step_back=None):
     body_fy = fy + crouch * 1.3 * uL
     hip = A(x, body_fy - 3.35 * uL); neck = hip + A(0, -2.45 * uL)
     sof_h = h * .95; uS = U('sofia', sof_h); up = ease(max(0, lift - .35) / .65)
-    side = A(x + 1.4 * uL, hip[1] - 1.1 * uL)                              # cadera derecha de Laura (donde se sienta Sofía)
+    side = A(x + 1.65 * uL, hip[1] - 1.1 * uL)                              # cadera derecha de Laura (donde se sienta Sofía)
     ground = A(x + 2.6 * uL, fy)
     shp = ground + (side + A(0, 3.35 * uS) - ground) * up                    # «suelo» virtual de Sofía mientras la sube
     sx, sfy = shp
     ship = A(sx, sfy - 3.35 * uS)
-    pl = dict(grip=({'R': tuple(ship + A(.2 * uS, .4 * uS)), 'L': tuple(ship + A(-.4 * uS, -1.6 * uS))} if lift > .25 else None),
+    gw = ss(.12, .35, lift)
+    pl = dict(grip={'R': tuple(ship + A(.2 * uS, .4 * uS)) + (gw,), 'L': tuple(ship + A(-.4 * uS, -1.6 * uS)) + (gw,)},
               lean=-.05 * up, frown=-.35, boca='tensa' if hide < .9 else 'o', look=(.35 * (1 - hide) - .1 * hide, .05), blink=blink(t, 2), tilt=.06 * up)
     person(fr, 'laura', x, body_fy, h, pl, t, feet={'L': (x - .5 * uL, fy), 'R': (x + .5 * uL, fy)})
     ps = dict(uL=-.2 - 1.6 * up, lL=-1.2 * up, uR=.2, lR=0., thL=-.2 - .7 * up, snL=.9 * up, thR=.15 - .55 * up, snR=.65 * up,
-              grip={'L': tuple(neck + A(.15 * uL, .45 * uL)), 'R': tuple(neck + A(.75 * uL, .25 * uL))} if up > .7 else None,
+              grip={'L': tuple(neck + A(.5 * uL, .55 * uL)) + (ss(.45, .85, up),), 'R': tuple(neck + A(1.0 * uL, .3 * uL)) + (ss(.45, .85, up),)},
               look=(-.5 * up, .1 + .2 * hide), frown=-.4 - .2 * cry, boca='grito' if cry > .5 else ('triste' if up > .5 else 'o'),
               sh=.5 * up + .25 * math.sin(t * 18) * cry, tilt=-.18 * up - .15 * hide, blink=1. if hide > .6 else blink(t, 3))
     person(fr, 'sofia', sx, sfy, sof_h, ps, t)
     if lift > .25:                                                     # las manos de Laura quedan por delante (sosteniéndola)
-        for g in pl['grip'].values(): circ(fr, g, .31 * uL, (170, 172, 182)); circ(fr, g, .27 * uL, SKIN)
+        for h_, g in pl['grip'].items():
+            if g[2] > .98: circ(fr, g[:2], .31 * uL, (170, 172, 182)); circ(fr, g[:2], .27 * uL, SKIN)
 
 class Lift(Shot):
     def __init__(s): s.back, s.main, s.front = set_dining()
@@ -380,7 +383,7 @@ class Peephole_approach(Shot):                     # Daniel se acerca lento a la
         x, p, feet, b = gait(0, 330, 1, uu, 1340, dist=dist)
         k = ss(1.7, 2.3, t)
         p.update(uL=p['uL'] * .3, uR=p['uR'] * .3, sh=.8, lean=.05 + .2 * k, frown=-.5, boca='tensa', blink=blink(t, 1),
-                 grip={'R': (640, 1000)} if t > 1.6 else None)
+                 grip={'R': (640, 1000, ss(1.3, 2.0, t))})
         person_side(fr, 'daniel', x, 1340, 690, p, t, feet=feet, facing=1)
     def cam(s, t, d): k = ease(t / d); return lerp(1.02, 1.2, k), 640, lerp(1150, 1000, k), 0, 0      # dolly in
 
