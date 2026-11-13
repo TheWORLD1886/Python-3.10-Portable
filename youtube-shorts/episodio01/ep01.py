@@ -19,8 +19,7 @@ class S11(Shot):                                   # calle principal: autos, ár
         s.back, s.main, s.front = set_street(); s.clock = N.text_sprite('10:47 PM', 120, (255, 240, 210, 255), glow=(255, 160, 80), glow_r=18, spacing=8)
         s.title = N.text_sprite('EL DÍA QUE TODO TERMINÓ', 44, (230, 230, 240, 255), stroke=4, stroke_col=(0, 0, 0, 200), spacing=10)
     def draw(s, fr, t, d):
-        for x in (60, 1000): tree(fr, x, 1380, .9, t)
-        for x in (300, 820): streetlamp(fr, x, 1370)
+        street_props(fr, t)
         for i, (x0, v, who) in enumerate([(-80, 150, 'peaton1'), (900, -130, 'mujer')]):
             x, p, feet, b = gait(t, x0, v, U(who, 330), 1440)
             person_side(fr, who, x, 1440 + b, 330, dict(p, blink=blink(t, i)), t, feet=feet, facing=1 if v > 0 else -1)
@@ -34,67 +33,53 @@ class S11(Shot):                                   # calle principal: autos, ár
 class S12(Shot):                                   # pareja entra a la tienda
     def __init__(s): s.back, s.main, s.front = set_street(seed=5)
     def draw(s, fr, t, d):
-        for x in (980,): tree(fr, x, 1380, 1.0, t)
-        streetlamp(fr, 900, 1370)
+        street_props(fr, t, lamps=(250,), trees=(1000,), signal=False)
         door_open = ss(1.9, 2.4, t)
-        cv2.rectangle(fr, (650, 1020), (int(650 + 160 * (1 - door_open)), 1340), (90, 120, 140), -1)     # hoja de la puerta de vidrio
-        cv2.rectangle(fr, (650, 1020), (int(650 + 160 * (1 - door_open)), 1340), (200, 220, 230), 4)
+        cv2.rectangle(fr, (550, 1020), (int(550 + 140 * (1 - door_open)), 1340), (150, 190, 210), -1)     # hoja de vidrio que se abre
+        cv2.rectangle(fr, (550, 1020), (int(550 + 140 * (1 - door_open)), 1340), (200, 220, 230), 4)
         # peatón al fondo
         x, p, feet, b = gait(t, 1150, -150, U('peaton2', 300), 1430)
         person_side(fr, 'peaton2', x, 1430 + b, 300, dict(p, blink=blink(t, 4)), t, feet=feet, facing=-1)
         # pareja: caminan, él se detiene y abre; ella entra; él la sigue
         uH, uM = U('peaton1', 420), U('novia', 420)
-        dh = lambda tt: min(560., 230 * tt) if tt < 2.0 else 460 + 100 * ease((tt - 2.0) / .6) + max(0, tt - 3.1) * 230
+        dh = lambda tt: min(420., 230 * tt) if tt < 2.0 else 420 + 60 * ease((tt - 2.0) / .6) + max(0, tt - 3.1) * 230
         dm = lambda tt: 230 * tt
         for who, x0, dist, uu, sd in (('peaton1', 40, dh(t), uH, 7), ('novia', -60, dm(t), uM, 8)):
-            if who == 'novia' and x0 + dist > 760: continue                           # ya entró
+            if who == 'novia' and x0 + dist > 640: continue                           # ya entró
             x, p, feet, b = gait(0, x0, 1, uu, 1490, dist=dist)
             if who == 'peaton1':                                                       # la mano va a la puerta y regresa (sin saltos)
-                wgt = ss(1.6, 2.0, t) * (1 - ss(2.9, 3.3, t)); p['grip'] = {'R': (690, 1500 - 4.3 * uH, wgt)}; p['look'] = (.3 * wgt + .55 * (1 - wgt), 0)
-            if who == 'novia' and x0 + dist > 680: p['look'] = (.6, 0)
+                wgt = ss(1.6, 2.0, t) * (1 - ss(2.9, 3.3, t)); p['grip'] = {'R': (600, 1500 - 4.3 * uH, wgt)}; p['look'] = (.3 * wgt + .55 * (1 - wgt), 0)
+            if who == 'novia' and x0 + dist > 560: p['look'] = (.6, 0)
             person_side(fr, who, x, 1490 + b, 420, dict(p, blink=blink(t, sd), boca='sonrisa'), t, feet=feet, facing=1)
-        cv2.rectangle(fr, (630, 1010), (650, 1340), (40, 30, 26), -1)                  # marco de la puerta (por delante)
+        cv2.rectangle(fr, (686, 1010), (704, 1340), (40, 30, 26), -1)                  # marco de la puerta (por delante)
     def cam(s, t, d):
         k = ease(t / d); return 1.08, lerp(420, 620, k), 1080, 0, 0                   # travelling lateral
 
 class S13(Shot):                                   # hospital: llega la ambulancia
     def __init__(s):
-        sky = vgrad([(0, (6, 8, 20)), (1, (26, 30, 50))]); s.back = [(dof(opaque(sky), 2), .1)]
-        m = np.zeros((H, W, 3), np.uint8)
-        cv2.rectangle(m, (-10, 420), (W + 10, 1400), (180, 186, 196), -1)
-        for r in range(6):
-            for c in range(6): cv2.rectangle(m, (40 + c * 175, 470 + r * 130), (150 + c * 175, 560 + r * 130), (255, 236, 190) if (r + c) % 3 else (120, 150, 180), -1)
-        cv2.rectangle(m, (320, 1180), (760, 1400), (120, 200, 230), -1); cv2.rectangle(m, (320, 1180), (760, 1400), (90, 96, 106), 10)
-        m[1400:] = (40, 40, 46); al = np.zeros((H, W)); al[420:] = 1
-        s.main = rgba(m, al); s.front = [(bokeh_layer(10, (255, 80, 60), 31, ymin=300, ymax=1500), 1.7)]
+        s.back, s.main, s.front = set_hospital()
         s.sign = N.text_sprite('HOSPITAL', 90, (255, 255, 255, 255), glow=(255, 60, 60), glow_r=16, spacing=12)
+        s.urg = N.text_sprite('URGENCIAS', 30, (255, 255, 255, 255), pad=4, spacing=6)
     def draw(s, fr, t, d):
-        blit(fr, s.sign, 540, 360); poly(fr, [(900, 290), (940, 290), (940, 330), (980, 330), (980, 370), (940, 370), (940, 410), (900, 410), (900, 370), (860, 370), (860, 330), (900, 330)], (230, 30, 40))
+        blit(fr, s.urg, 540, 1130); blit(fr, s.sign, 540, 360); poly(fr, [(900, 290), (940, 290), (940, 330), (980, 330), (980, 370), (940, 370), (940, 410), (900, 410), (900, 370), (860, 370), (860, 330), (900, 330)], (230, 30, 40))
         x = 540 + 900 * (1 - ease(t / 1.8)) * -1 + 0                                   # frena progresivamente
-        ax = lerp(-500, 520, ease(t / 1.8))
-        poly(fr, [(ax - 260, 1620), (ax + 200, 1620), (ax + 260, 1540), (ax + 260, 1420), (ax - 260, 1420)], (240, 240, 244))
-        cv2.rectangle(fr, (int(ax - 250), 1500), (int(ax + 250), 1520), (220, 40, 40), -1)
-        blit(fr, N.text_sprite('AMBULANCIA', 30, (220, 40, 40, 255), pad=6), ax - 40, 1470)
-        for wx in (-170, 160): circ(fr, (ax + wx, 1625), 40, (18, 18, 20)); circ(fr, (ax + wx, 1625), 18, (150, 150, 158))
+        ax = lerp(-600, 520, ease(t / 1.8)); sy = 1.35; by = 1760                                         # ambulancia grande, en primer plano
+        P = lambda px, py: (ax + px * sy, by + py * sy)
+        poly(fr, [P(-260, 0), P(150, 0), P(150, -230), P(-260, -230)], (240, 240, 244))
+        poly(fr, [P(150, 0), P(270, 0), P(270, -110), P(220, -170), P(150, -170)], (236, 236, 240)); poly(fr, [P(170, -100), P(250, -100), P(215, -155), P(170, -155)], (80, 120, 160))
+        poly(fr, [P(-260, -110), P(270, -110), P(270, -80), P(-260, -80)], (220, 40, 40))
+        poly(fr, [P(-90, -200), P(-60, -200), P(-60, -170), P(-30, -170), P(-30, -140), P(-60, -140), P(-60, -110), P(-90, -110), P(-90, -140), P(-120, -140), P(-120, -170), P(-90, -170)], (220, 40, 40))
+        blit(fr, N.text_sprite('AMBULANCIA', 30, (220, 40, 40, 255), pad=6), *P(60, -45))
+        for wx in (-170, 180): circ(fr, P(wx, 6), 44 * sy, (18, 18, 20)); circ(fr, P(wx, 6), 20 * sy, (150, 150, 158))
         on = (t * 4) % 1 < .5
-        blit(fr, glow_sprite(110, (255, 30, 30) if on else (40, 80, 255)), ax - 150, 1410, 1, add=True); blit(fr, glow_sprite(110, (40, 80, 255) if on else (255, 30, 30)), ax + 150, 1410, 1, add=True)
+        blit(fr, glow_sprite(110, (255, 30, 30) if on else (40, 80, 255)), *P(-200, -240), 1, add=True); blit(fr, glow_sprite(110, (40, 80, 255) if on else (255, 30, 30)), *P(100, -240), 1, add=True)
         tint(fr, (255, 40, 40) if on else (40, 80, 255), .08)
         k = ss(2.3, 3.0, t); fr[:] = to8(fr * (1 - k) + 255 * k * .9)              # barrido de luz hacia el interior
     def cam(s, t, d): k = ease(t / d); return lerp(1.04, 1.14, k), lerp(380, 600, k), 1150, 0, 0
 
 class S14(Shot):                                   # pasillo: camilla apresurada
     shake = 4.
-    def __init__(s):
-        m = np.zeros((H, W, 3), np.uint8); m[:] = (190, 200, 196)
-        vx, vy = 540, 980
-        poly(m, [(0, 0), (W, 0), (vx + 120, vy - 120), (vx - 120, vy - 120)], (220, 226, 224)); poly(m, [(0, H), (W, H), (vx + 120, vy + 120), (vx - 120, vy + 120)], (150, 170, 166))
-        poly(m, [(0, 0), (vx - 120, vy - 120), (vx - 120, vy + 120), (0, H)], (176, 190, 188)); poly(m, [(W, 0), (vx + 120, vy - 120), (vx + 120, vy + 120), (W, H)], (170, 184, 182))
-        cv2.rectangle(m, (vx - 120, vy - 120), (vx + 120, vy + 120), (90, 110, 120), -1)
-        for k in range(5):
-            f = (k + 1) / 6.; y = int(lerp(0, vy - 120, f ** .6)); x0 = int(lerp(0, vx - 120, f ** .6)); x1 = W - x0
-            cv2.rectangle(m, (x0 + 60, y - 6), (x1 - 60, y + 6), (250, 252, 255), -1)
-        s.back = [(dof(opaque(m.astype(np.float32)), 1.5), .5)]; s.main = np.zeros((H, W, 4), np.uint8)
-        s.front = [(bokeh_layer(6, (220, 255, 240), 41, ymin=100, ymax=600), 1.6)]
+    def __init__(s): s.back, s.main, s.front = set_corridor()
     def draw(s, fr, t, d):
         if (t * 9) % 1 < .12 and t > 1.5: fr[:] = to8(fr * .82)                         # fluorescente que parpadea
         dist = 300 * t
@@ -143,11 +128,12 @@ class Dining(Shot):
     def draw(s, fr, t, d):
         lamp(fr)
         P = s.poses(t)
+        for x in (260, 540, 820): chair_back(fr, x, 1000, w=230, h=340)
         for who, x, h, sd in (('laura', 260, 760, 2), ('daniel', 540, 800, 1), ('sofia', 820, 760, 3)):
             p = dict(P[who]); p['blink'] = blink(t, sd)
             if 'grip' in p: p['grip'] = {k: (v[0] + (x - {'laura': 260, 'daniel': 540, 'sofia': 820}[who]) * 0, v[1]) for k, v in p['grip'].items()}
             person(fr, who, x, 1690 if who != 'sofia' else 1560, h, p, t)
-        draw_table(fr)
+        draw_table(fr, t=t)
         if s.mode == 'cena':
             for i, (who, x) in enumerate((('daniel', 540), ('laura', 260), ('sofia', 820))):
                 a_ = ss(.4 + i * .9, .8 + i * .9, t); blit(fr, s.names[who], x, 760 if who != 'sofia' else 860, a_)
@@ -157,8 +143,9 @@ class Dining(Shot):
 
 class TVShot(Shot):                                # televisor: noticiero / mensaje / estática
     def __init__(s, kind):
-        s.kind = kind; i8 = walls((30, 24, 24), (50, 40, 36), (26, 20, 20), 1500); s.back = [(dof(opaque(i8.astype(np.float32)), 3), .4)]
-        s.main = np.zeros((H, W, 4), np.uint8); s.front = [(bokeh_layer(6, (120, 160, 255), 51, ymin=300, ymax=1500), 1.6)]
+        s.kind = kind; s.back, s.main, s.front = set_livingtv()
+        s.live = N.text_sprite('● EN VIVO', 30, (255, 255, 255, 255), pad=6); s.logo = N.text_sprite('NOTICIAS 24', 26, (255, 255, 255, 255), pad=6, spacing=3)
+        s.tick = N.text_sprite('ÚLTIMA HORA · SE REPORTAN ATAQUES EN EL CENTRO · HOSPITALES SATURADOS · EVITE SALIR DE CASA · ', 26, (255, 255, 255, 255), pad=4)
         s.b1 = N.text_sprite('ÚLTIMA HORA', 56, (255, 255, 255, 255), spacing=6); s.b2 = N.text_sprite('ATAQUES EN TODA LA CIUDAD · HOSPITALES SATURADOS', 30, (255, 255, 255, 255), pad=8)
         s.msg = N.text_sprite('PERMANEZCAN EN SUS CASAS', 50, (255, 255, 255, 255), spacing=4, maxw=700); s.ns = N.text_sprite('SIN SEÑAL', 70, (240, 240, 240, 255), stroke=5, stroke_col=(0, 0, 0, 255), spacing=8)
     def draw(s, fr, t, d):
@@ -172,13 +159,22 @@ class TVShot(Shot):                                # televisor: noticiero / mens
             blit(scr, s.ns, (x1 - x0) / 2, (y1 - y0) / 2, .6 + .4 * math.sin(t * 9))
         else:
             scr[:] = (24, 40, 90); cv2.rectangle(scr, (0, 0), (scr.shape[1], scr.shape[0]), (30, 50, 110), -1)
-            person(scr, 'presentadora', 430, 760, 640, dict(uL=.3, lL=-1.3, uR=-.3, lR=1.3, blink=blink(t, 9), boca='o' if (t * 6) % 1 < .5 else 'neutra', frown=-.2), t)
+            cv2.rectangle(scr, (560, 40), (830, 250), (16, 26, 60), -1); cv2.rectangle(scr, (560, 40), (830, 250), (120, 200, 255), 3)     # mapa de la ciudad
+            for k in range(8): cv2.line(scr, (570, 60 + k * 25), (820, 70 + k * 22), (50, 80, 130), 2); cv2.line(scr, (580 + k * 32, 50), (590 + k * 30, 240), (50, 80, 130), 2)
+            for k, (mx, my) in enumerate([(610, 100), (700, 170), (760, 90), (650, 210), (790, 200)]):
+                if (t * 2 + k * .3) % 1 < .7: cv2.circle(scr, (mx, my), 10, (255, 50, 40), -1)
+            cv2.rectangle(scr, (0, 0), (180, 50), (200, 20, 30), -1); blit(scr, s.live, 90, 25); blit(scr, s.logo, 760, 290)
+            cv2.rectangle(scr, (40, 300), (520, 520), (40, 30, 26), -1); cv2.rectangle(scr, (40, 300), (520, 312), (120, 200, 255), -1)   # escritorio
+            person(scr, 'presentadora', 280, 560, 520, dict(uL=.3, lL=-1.3, uR=-.3, lR=1.3, blink=blink(t, 9), boca='o' if (t * 6) % 1 < .5 else 'neutra', frown=-.2), t)
             if s.kind == 'news':
                 k = ss(.2, .6, t); cv2.rectangle(scr, (0, 380), (int(scr.shape[1] * k), 520), (200, 20, 30), -1)
                 if k > .9: blit(scr, s.b1, 230, 425); blit(scr, s.b2, 430, 490)
                 blit(fr, glow_sprite(40, (255, 40, 40)), x1 - 40, y0 + 40, .5 + .5 * math.sin(t * 8), add=True)
             else:
                 cv2.rectangle(scr, (0, 360), (scr.shape[1], 520), (180, 20, 30), -1); blit(scr, s.msg, 430, 440, .7 + .3 * math.sin(t * 6))
+        if s.kind != 'static':                                                     # cintillo que corre
+            cv2.rectangle(scr, (0, scr.shape[0] - 40), (scr.shape[1], scr.shape[0]), (10, 10, 16), -1); tw = s.tick.shape[1]; off = (t * 160) % tw
+            for k in (0, 1): blit(scr, s.tick, scr.shape[1] + tw / 2 - off - k * tw, scr.shape[0] - 20)
         fr[y0:y1, x0:x1] = scr
         tint(fr, (80, 140, 255) if s.kind != 'static' else (220, 220, 230), .08)
     def cam(s, t, d): k = ease(t / d); return lerp(1.0, 1.08, k), 540, 820, 0, 0
@@ -187,10 +183,11 @@ class SofiaMCU(Shot):                              # Sofía reacciona en su sill
     def __init__(s): s.back, s.main, s.front = set_dining()
     def draw(s, fr, t, d):
         k = ss(.3, .9, t); k2 = ss(1.2, 1.8, t)
-        p = dict(grip={'L': (420, 1520), 'R': (700, 1520)}, hip_dx=.4 * math.sin(t * 3) * (1 - k2), look=(lerp(.5, -.5, k) * (1 - k2) - .1 * k2, -.05 * k2),
+        p = dict(grip={'L': (430, 1560), 'R': (690, 1560)}, hip_dx=.4 * math.sin(t * 3) * (1 - k2), look=(lerp(.5, -.5, k) * (1 - k2) - .1 * k2, -.05 * k2),
                  frown=-.45 * k2, sh=.7 * k2, boca='o' if k2 > .5 else 'neutra', blink=blink(t, 3))
-        person(fr, 'sofia', 560, 2100, 1350, p, t)
-        draw_table(fr, y=1530, plates=((560, 1),))
+        chair_back(fr, 560, 1020, w=420, h=600)
+        person(fr, 'sofia', 560, 2030, 1700, p, t)
+        draw_table(fr, y=1560, plates=((560, 1),), t=t)
         tint(fr, (80, 140, 255), .14 * (.7 + .3 * math.sin(t * 13)), 0, 540)
     def cam(s, t, d): k = ease(t / d); return lerp(1.0, 1.06, k), 540, 1150, 0, 0
 
@@ -223,14 +220,14 @@ class Phone(Shot):
             if m == 'llamada':
                 fw = ss(1.0, 3.4, t)
                 uD = U('daniel', 1500); ear = (600 + 1.0 * uD, 2650 - 7.0 * uD)
-                p = dict(grip={'R': ear, 'L': (430, 1620)}, look=(-.1, .05), frown=-.15 - .4 * fw, boca='neutra' if fw < .3 else ('tensa' if fw < .7 else 'o'),
+                p = dict(grip={'R': ear, 'L': (500, 1680)}, look=(-.1, .05), frown=-.15 - .4 * fw, boca='neutra' if fw < .3 else ('tensa' if fw < .7 else 'o'),
                          lean=.1 * fw, sh=.4 * fw, blink=blink(t, 1))
                 person(fr, 'daniel', 600, 2650, 1500, p, t)
                 blit(fr, cv2.resize(s.ph, (90, 170)), ear[0] + 20, ear[1] - 30, 1)
             else:
                 low = ss(.2, .9, t); uD = U('daniel', 1500); ear = A(600 + 1.0 * uD, 2650 - 7.0 * uD)
                 hand = ear + (A(660, 1700) - ear) * low
-                p = dict(grip={'R': tuple(hand), 'L': (430, 1620)}, look=(.1, .35 * low), frown=-.5, boca='o', sh=.5, blink=blink(t, 1))
+                p = dict(grip={'R': tuple(hand), 'L': (500, 1680)}, look=(.1, .35 * low), frown=-.5, boca='o', sh=.5, blink=blink(t, 1))
                 person(fr, 'daniel', 600, 2650, 1500, p, t)
                 blit(fr, cv2.resize(s.end, (150, 280)) if low > .6 else cv2.resize(s.ph, (80, 150)), hand[0] + 10, hand[1] - 60, 1)
             draw_table(fr, y=1700, plates=())
@@ -251,62 +248,80 @@ class ToWindow(Shot):                              # Daniel camina hacia la vent
         tint(fr, c, .1 * ss(.3, .8, t), 600, W)
 
 # ================================================================ ESCENA 4 · EL COMIENZO DEL FIN
-class Crash(Shot):                                 # por la ventana: el auto derrapa y se estrella
+def infected_run(t, x0, v, uu, fy, f):
+    """carrera del infectado: torso muy inclinado, brazos estirados hacia la presa, cabeza que se sacude, paso cojo."""
+    x, p, feet, b = gait(t, x0, v, uu, fy, run=True)
+    k = feet['L'][1] < fy - 1 and math.sin(t * 9) > 0                     # una pierna arrastra (cojea)
+    p.update(lean=f * .38, uL=f * (1.25 + .15 * math.sin(t * 11)), lL=.25, uR=f * (1.05 + .15 * math.sin(t * 9 + 1)), lR=.3,
+             tilt=.22 * math.sin(t * 7) + f * .1, boca='grito', frown=-.2, look=(.6 * f, .1), blink=0)
+    return x, p, feet, b * 1.4
+
+class Crash(Shot):                                 # por la ventana: el auto derrapa y se estrella contra la tienda
     shake = 0.
     def __init__(s):
-        s.back, s.main, s.front = set_street(seed=9); s.sparks = rng.uniform(0, 1, (40, 3))
+        s.back, s.main, s.front = set_street(seed=9); s.sparks = rng.uniform(0, 1, (46, 3))
         win = np.zeros((H, W, 4), np.uint8)
-        cv2.rectangle(win, (0, 0), (W, H), (60, 40, 28, 255), 120); cv2.rectangle(win, (520, 0), (560, H), (60, 40, 28, 255), -1)
-        cv2.rectangle(win, (0, 0), (110, H), (110, 40, 40, 255), -1); cv2.rectangle(win, (970, 0), (W, H), (110, 40, 40, 255), -1)   # cortinas
-        s.front = [(dof(win, 4), 1.25)]
+        cv2.rectangle(win, (0, 0), (W, H), (70, 48, 32, 255), 70); cv2.rectangle(win, (528, 0), (552, H), (70, 48, 32, 255), -1)      # marco de la ventana
+        cv2.rectangle(win, (0, 0), (64, H), (130, 50, 56, 255), -1); cv2.rectangle(win, (W - 64, 0), (W, H), (130, 50, 56, 255), -1)   # cortinas recogidas
+        cv2.rectangle(win, (0, H - 150), (W, H), (90, 64, 44, 255), -1)                                                                  # repisa
+        poly(win, [(820, H - 150), (900, H - 150), (890, H - 70), (830, H - 70)], (170, 96, 64, 255))
+        for k in range(7): cv2.ellipse(win, (860 + (k - 3) * 18, H - 180 - (k % 2) * 26), (12, 34), (k - 3) * 18, 0, 360, (56, 128, 70, 255), -1, cv2.LINE_AA)
+        s.front = [(dof(win, 3), 1.2)]
     def draw(s, fr, t, d):
-        tree(fr, 980, 1380, 1., t); streetlamp(fr, 860, 1370)
+        street_props(fr, t)
         tc = 2.0
-        if t < tc:
-            k = t / tc; x = lerp(-300, 420, k); y = lerp(1700, 1560, k ** 2); ang = -.9 * ss(.9, 2.0, t) + .15 * math.sin(t * 10) * ss(.6, 1.2, t)
-        else: x, y, ang = 420, 1560, -.9
-        if t >= tc: cv2.rectangle(fr, (180, 1040), (560, 1330), (30, 26, 30), -1)                 # vitrina rota
-        car(fr, x, y, 1.3, (60, 60, 70), t, ang=ang, wheel=t * 12)
+        if t < tc:                                                           # pierde el control: derrapa (giro moderado) y se va contra la vitrina
+            k = t / tc; x = lerp(-320, 330, ease(k)); y = lerp(1720, 1430, k ** 1.6); ang = -.32 * ss(.5, 1.6, t) + .07 * math.sin(t * 14) * ss(.4, 1.0, t)
+        else: x, y, ang = 330, 1430, -.32
+        if t >= tc:
+            cv2.rectangle(fr, (90, 1010), (520, 1330), (36, 30, 34), -1)                                     # vitrina rota
+            for k in range(9): line(fr, (300, 1170), (300 + math.cos(k * .7) * 220, 1170 + math.sin(k * .7) * 150), (200, 220, 230), 2)
+        car(fr, x, y, 1.25, (70, 74, 86), t, ang=ang, wheel=t * 12)
         if t >= tc:
             f = t - tc
-            blit(fr, glow_sprite(260, (255, 140, 40)), 420, 1350, (.6 + .3 * math.sin(t * 13)) * min(1, f * 4), add=True)
-            for i, (a_, b_, c_) in enumerate(s.sparks):                                            # vidrios y chispas
-                vx, vy = (a_ - .5) * 900, -300 - b_ * 600; px = 420 + vx * f; py = 1300 + vy * f + 900 * f * f
-                if py < 1900: circ(fr, (px, py), 3 + 3 * c_, (255, 230, 160) if i % 2 else (200, 230, 255))
-            for i, (who, x0, v) in enumerate((('peaton1', 520, 520), ('mujer', 300, -480), ('peaton2', 700, 560))):
+            blit(fr, glow_sprite(240, (255, 140, 40)), 420, 1260, (.55 + .3 * math.sin(t * 13)) * min(1, f * 4), add=True)
+            for i in range(10): g = (f * .5 + i / 10.) % 1; blit(fr, glow_sprite(90, (70, 66, 70)), 380 + math.sin(i * 3 + f) * 60, 1250 - g * 600, (1 - g) * .45 * min(1, f * 2), 1 + g * 1.5)   # humo
+            for i, (a_, b_, c_) in enumerate(s.sparks):                                                      # vidrios y chispas
+                vx, vy = (a_ - .3) * 900, -300 - b_ * 600; px = 300 + vx * f; py = 1200 + vy * f + 900 * f * f
+                if py < 1500: circ(fr, (px, py), 3 + 3 * c_, (255, 230, 160) if i % 2 else (200, 230, 255))
+            for i, (who, x0, v) in enumerate((('peaton1', 520, 520), ('mujer', 260, -480), ('peaton2', 760, 560))):   # la gente huye
                 if f < .25: continue
                 xx, p, feet, b = gait(f - .25, x0, v, U(who, 330), 1450 + i * 12, run=True)
-                p.update(frown=-.5, boca='grito', sh=.8, blink=0)
+                p.update(frown=-.5, boca='grito', sh=.8, blink=0, uL=p['uL'] * .6 - .6 * (v > 0) + .6 * (v < 0), lL=1.3)
                 person_side(fr, who, xx, 1450 + i * 12 + b, 330, p, t, feet=feet, facing=1 if v > 0 else -1)
         s.shake = 12 * math.exp(-max(0, t - tc) * 3) if t >= tc else 0
-    def cam(s, t, d): z, cx, cy, dx, dy = Shot.cam(s, t, d); return 1.12, 540, 1150, dx, dy
+    def cam(s, t, d): z, cx, cy, dx, dy = Shot.cam(s, t, d); return 1.08, 540, 1150, dx, dy
 
-class Fall(Shot):                                  # una mujer tropieza y cae; una figura se abalanza (corte antes del contacto)
+class Fall(Shot):                                  # una mujer huye, tropieza con unas bolsas de basura y cae; un infectado se abalanza
     shake = 5.
     def __init__(s):
         s.back, s.main, s.front = set_street(seed=13)
         s.front = [(bokeh_layer(14, (255, 120, 50), 61, rmin=20, rmax=60, ymin=200, ymax=1700), 1.7)]
     def draw(s, fr, t, d):
-        blit(fr, glow_sprite(320, (255, 120, 40)), 200, 1250, .5 + .2 * math.sin(t * 11), add=True)
-        tf = 1.1; uu = U('mujer', 520)
+        street_props(fr, t, signal=False)
+        blit(fr, glow_sprite(320, (255, 120, 40)), 160, 1250, .5 + .2 * math.sin(t * 11), add=True)
+        bags = (560, 1716)
+        for k, (dx, r) in enumerate([(-40, 46), (20, 52), (70, 40)]): ell(fr, (bags[0] + dx, bags[1] - r * .6), r, r * .75, 0, (30, 30, 34)); line(fr, (bags[0] + dx, bags[1] - r * 1.3), (bags[0] + dx + 8, bags[1] - r * 1.45), (60, 60, 64), 4)
+        tf = 1.05; uu = U('mujer', 520)
         if t < tf:
-            x, p, feet, b = gait(t, -180, 520, uu, 1700, run=True); p.update(frown=-.5, boca='grito', sh=.8, blink=0)
-            person_side(fr, 'mujer', x, 1700 + b, 520, p, t, feet=feet, facing=1)
+            x, p, feet, b = gait(t, -60, 560, uu, 1720, run=True); p.update(frown=-.5, boca='grito', sh=.8, blink=0, look=(-.4, 0))   # mira hacia atrás mientras corre
+            person_side(fr, 'mujer', x, 1720 + b, 520, p, t, feet=feet, facing=1)
         else:
-            f = t - tf; x0 = -180 + 520 * tf
-            ang = 1.45 * ease(f / .55); slide = 140 * ease(f / .6)
-            p = dict(lean=0, uL=-1.6 * ease(f / .4), lL=.3, uR=-1.4 * ease(f / .4), lR=.3, thL=-.4, thR=.3, frown=-.6, boca='grito', sh=1., look=(.5, -.2))
-            draw_rotated(fr, lambda c: person_side(c, 'mujer', x0 + slide, 1700, 520, p, t, facing=1), (x0 + slide, 1700), ang)
-            if f > .55: circ(fr, (x0 + slide + 330, 1690), 6, (255, 255, 255))
-        # la figura entra desde la derecha y se lanza
-        if t > 1.3:
-            g = t - 1.3; dist = min(560., 640 * g)
-            x, p, feet, b = gait(0, 1250, -1, U('figura', 560), 1720, run=True, dist=dist)
-            lunge = ss(.6, 1.0, g)
-            p.update(lean=-.22 - .5 * lunge, uL=-1.4 * lunge + p['uL'] * (1 - lunge), uR=-1.3 * lunge + p['uR'] * (1 - lunge), lL=.2, lR=.2)
-            person_side(fr, 'figura', x, 1720 + b, 560, p, t, feet=feet, facing=-1)
+            f = t - tf; x0 = -60 + 560 * tf
+            ang = 1.45 * ease(f / .5); slide = 160 * ease(f / .55)
+            p = dict(lean=0, uL=-1.6 * ease(f / .35), lL=.3, uR=-1.4 * ease(f / .35), lR=.3, thL=-.5, thR=.35, frown=-.6, boca='grito', sh=1., look=(.5, -.2))
+            draw_rotated(fr, lambda c: person_side(c, 'mujer', x0 + slide, 1720, 520, p, t, facing=1), (x0 + slide, 1720), ang)
+            if 0 < f < .4:
+                for k in range(6): circ(fr, (x0 + slide + 340 + k * 14, 1700 - k * 6), 4, (200, 200, 190))      # polvo del golpe
+        if t > 1.25:                                                         # el infectado llega cojeando y se lanza (corte antes del contacto)
+            g = t - 1.25; dist = min(520., 620 * g)
+            x, p, feet, b = infected_run(g, 1220, -1, U('infectado', 560), 1730, -1)
+            x = 1220 - dist; feet = {k_: (v_[0] + (1220 - 620 * g) * 0 - (dist - 620 * g) * 0, v_[1]) for k_, v_ in gait(0, 1220, -1, U('infectado', 560), 1730, run=True, dist=dist)[2].items()}
+            lunge = ss(.55, .95, g)
+            p.update(lean=-.38 - .45 * lunge, uL=-1.5 - .2 * lunge, uR=-1.3 - .2 * lunge)
+            person_side(fr, 'infectado', x, 1730 + b, 560, p, t, feet=feet, facing=-1)
         tint(fr, (255, 110, 40), .08)
-    def cam(s, t, d): z, cx, cy, dx, dy = Shot.cam(s, t, d); return 1.1, 560, 1250, dx, dy
+    def cam(s, t, d): z, cx, cy, dx, dy = Shot.cam(s, t, d); return 1.08, 560, 1250, dx, dy
 
 class RunLock(Shot):                               # Daniel corre a la puerta, frena, gira y pone el seguro
     def __init__(s): s.back, s.main, s.front = set_hall(door_x=820)
@@ -336,12 +351,12 @@ def carry(fr, t, x, fy, lift, h=800, cry=0., hide=0., step_back=None):
     gw = ss(.12, .35, lift)
     pl = dict(grip={'R': tuple(ship + A(.2 * uS, .4 * uS)) + (gw,), 'L': tuple(ship + A(-.4 * uS, -1.6 * uS)) + (gw,)},
               lean=-.05 * up, frown=-.35, boca='tensa' if hide < .9 else 'o', look=(.35 * (1 - hide) - .1 * hide, .05), blink=blink(t, 2), tilt=.06 * up)
-    person(fr, 'laura', x, body_fy, h, pl, t, feet={'L': (x - .5 * uL, fy), 'R': (x + .5 * uL, fy)})
     ps = dict(uL=-.2 - 1.6 * up, lL=-1.2 * up, uR=.2, lR=0., thL=-.2 - .7 * up, snL=.9 * up, thR=.15 - .55 * up, snR=.65 * up,
               grip={'L': tuple(neck + A(.5 * uL, .55 * uL)) + (ss(.45, .85, up),), 'R': tuple(neck + A(1.0 * uL, .3 * uL)) + (ss(.45, .85, up),)},
               look=(-.5 * up, .1 + .2 * hide), frown=-.4 - .2 * cry, boca='grito' if cry > .5 else ('triste' if up > .5 else 'o'),
               sh=.5 * up + .25 * math.sin(t * 18) * cry, tilt=-.18 * up - .15 * hide, blink=1. if hide > .6 else blink(t, 3))
     person(fr, 'sofia', sx, sfy, sof_h, ps, t)
+    person(fr, 'laura', x, body_fy, h, pl, t, feet={'L': (x - .5 * uL, fy), 'R': (x + .5 * uL, fy)})
     if lift > .25:                                                     # las manos de Laura quedan por delante (sosteniéndola)
         for h_, g in pl['grip'].items():
             if g[2] > .98: circ(fr, g[:2], .31 * uL, (170, 172, 182)); circ(fr, g[:2], .27 * uL, SKIN)
@@ -387,24 +402,40 @@ class Peephole_approach(Shot):                     # Daniel se acerca lento a la
         person_side(fr, 'daniel', x, 1340, 690, p, t, feet=feet, facing=1)
     def cam(s, t, d): k = ease(t / d); return lerp(1.02, 1.2, k), 640, lerp(1150, 1000, k), 0, 0      # dolly in
 
-class Peephole(Shot):                              # vista por la mirilla (ojo de pez)
+class Peephole(Shot):                              # vista por la mirilla (ojo de pez): el hombre golpea y suplica
     def __init__(s, creature=False):
-        s.creature = creature; sky = vgrad([(0, (8, 14, 12)), (1, (30, 46, 36))]); s.back = [(opaque(sky), .2)]
+        s.creature = creature; s.porch = set_porch(); sky = vgrad([(0, (8, 14, 12)), (1, (30, 46, 36))]); s.back = [(opaque(sky), .2)]
         s.main = np.zeros((H, W, 4), np.uint8); s.front = []
     def draw(s, fr, t, d):
-        porch = np.zeros_like(fr); porch[:] = (16, 24, 20); porch[1350:] = (40, 48, 40)
-        blit(porch, glow_sprite(260, (180, 255, 190)), 540, 380, .5, add=True)
-        if s.creature:                                                  # algo se arrastra en la oscuridad detrás del hombre
-            g = ss(.3, 2.6, t)
-            draw_rotated(porch, lambda c: person_side(c, 'figura', 900 - 260 * g, 1500, 360, dict(uL=-1.2 + .5 * math.sin(t * 5), uR=-.8 - .5 * math.sin(t * 5), lL=.4, lR=.4, look=(.6, 0)), t, facing=-1),
-                         (900 - 260 * g, 1500), -1.3)
-            for sd in (-1, 1): blit(porch, glow_sprite(14, (255, 250, 210)), 760 - 260 * g + sd * 18, 1360, .9, add=True)
-        hit = abs(math.sin(t * 3.6)); jerk = math.sin(t * 23) * .08 * (math.sin(t * 1.7) > .3)
-        p = dict(uL=-2.6 + .9 * hit, lL=-.6, uR=2.6 - .9 * (1 - hit), lR=.6, look=(.0, -.1), tilt=jerk, frown=-.6, boca='grito' if (t * 2) % 1 < .6 else 'o', sh=.6, blink=blink(t, 7))
-        person(porch, 'hombre', 540, 2050, 1150, p, t)
-        tint(porch, (120, 255, 150), .12)
+        porch = s.porch.copy()
+        fl = .85 + .15 * (math.sin(t * 31) > -.7); blit(porch, glow_sprite(260, (180, 255, 190)), 540, 380, .55 * fl, add=True)   # lámpara que parpadea
+        look_back = 0.
+        if s.creature:                                                       # detrás de él, en la penumbra, un infectado se acerca cojeando
+            g = ss(.1, 2.8, t); look_back = ss(1.0, 1.4, t)
+            sc = 420 + 200 * g; dist = 260 * g; x0 = 120
+            x, p, feet, b = infected_run(t * .5, x0, 1, U('infectado', sc), 1440, 1)
+            feet = gait(0, x0, 1, U('infectado', sc), 1440, dist=dist)[2]
+            p.update(lean=.15, uL=1.0 + .2 * math.sin(t * 5), uR=.8, lL=-.3, lR=-.3, tilt=.25 * math.sin(t * 4))
+            silh = np.zeros_like(porch); person_side(silh, 'infectado', x0 + dist, 1440 + b * .5, sc, p, t, feet=feet, facing=1)
+            m = (silh.max(2) > 6)[:, :, None]; porch[:] = np.where(m, (silh * (.5 + .3 * g)).astype(np.uint8), porch)
+            blit(porch, glow_sprite(14, (255, 250, 210)), x0 + dist + .5 * U('infectado', sc), 1440 - 7.0 * U('infectado', sc), .9, add=True)
+        # el hombre: golpea con los puños alternando, pega la cara a la mirilla, voltea hacia atrás
+        ph = (t * 1.6) % 1; hitR = ph < .5; k = math.sin(ph * 2 * math.pi)
+        reach = lambda on, kk: (on * (.5 + .5 * kk))
+        pr = reach(hitR, k); pl_ = reach(not hitR, -k)
+        uH = U('hombre', 1150); head_y = 2050 - 7.0 * uH
+        x_man = 600 if s.creature else 540                                    # puños al frente, a la altura del pecho: golpe hacia la puerta
+        p = dict(grip={'R': (x_man + 170 - 30 * pr, head_y + 330 - 120 * pr, 1.), 'L': (x_man - 170 + 30 * pl_, head_y + 330 - 120 * pl_, 1.)},
+                 look=(-.6 * look_back + .05 * math.sin(t * 3), -.05), tilt=.06 * math.sin(t * 2.3) - .15 * look_back, frown=-.6,
+                 boca='grito' if (t * 2.4) % 1 < .55 else 'o', sh=.6, blink=blink(t, 7))
+        person(porch, 'hombre', x_man, 2050, 1150, p, t)
+        for pt, kk in ((p['grip']['R'], pr), (p['grip']['L'], pl_)):          # el puño crece al acercarse al lente
+            circ(porch, pt[:2], (.27 + .12 * kk) * U('hombre', 1150), dark(CAST['hombre']['piel'], .9))
+        tint(porch, (120, 255, 150), .1)
         fr[:] = fisheye(porch, .45)
-    def cam(s, t, d): return 1.0, 540, 960, math.sin(t * 2) * 3, 0
+        if t % .625 < .05: fr[:] = to8(fr * 1.06)                            # cada golpe: destello y sacudida leve
+    def cam(s, t, d):
+        hit = math.exp(-((t % .625) / .05) ** 2) * 6; return 1.0, 540, 960, math.sin(t * 2) * 3 + hit, hit * .5
 
 class Whisper(Shot):                               # Laura susurra
     def __init__(s): s.back, s.main, s.front = set_hall(door_x=980)
@@ -413,16 +444,17 @@ class Whisper(Shot):                               # Laura susurra
     def cam(s, t, d): k = ease(t / d); return lerp(1.05, 1.12, k), 520, 900, 0, 0
 
 # ================================================================ ESCENA 6 · LA DECISIÓN
-class Doubt(Shot):
+class Doubt(Shot):                                 # Daniel duda: mira la puerta, a su familia, la puerta; la mano se acerca a la perilla
     def __init__(s): s.back, s.main, s.front = set_hall(door_x=880)
     def draw(s, fr, t, d):
         door_parts(fr, 880, [.6, 1.2], t, lock_k=1)
-        lk = [(0, (.6, 0)), (.5, (.6, 0)), (.8, (-.6, 0)), (1.3, (-.6, 0)), (1.6, (.6, 0))]
-        lx = lk[0][1][0]
+        lk = [(0, .6), (.45, .6), (.75, -.6), (1.15, -.6), (1.45, .6)]
+        lx = lk[-1][1]
         for (a_, va), (b_, vb) in zip(lk[:-1], lk[1:]):
-            if a_ <= t <= b_: lx = lerp(va[0], vb[0], ease((t - a_) / (b_ - a_)))
-        if t > lk[-1][0]: lx = .6
-        p = dict(grip={'R': (860, 1720)}, look=(lx, 0), frown=-.55, boca='tensa', sh=.7, blink=blink(t, 1), tilt=.05 * math.sin(t * 2))
+            if a_ <= t <= b_: lx = lerp(va, vb, ease((t - a_) / (b_ - a_))); break
+        if t < lk[0][0]: lx = lk[0][1]
+        p = dict(uL=-.12, lL=.12, grip={'R': (800, 1880 - 60 * ss(.9, 1.5, t), ss(.3, 1.2, t))}, look=(lx, 0), frown=-.55, boca='tensa', sh=.7,
+                 blink=blink(t, 1), tilt=.05 * math.sin(t * 2), lean=.04 * lx)
         person(fr, 'daniel', 470, 2300, 1300, p, t)
     def cam(s, t, d): k = ease(t / d); return lerp(1.04, 1.1, k), 540, 1000, 0, 0
 

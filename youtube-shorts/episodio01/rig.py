@@ -115,7 +115,7 @@ def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
         line(fr, S, e, dk, lw + 5); line(fr, e, hd, dk, lw + 4); line(fr, S, e, col, lw); line(fr, e, hd, col, lw * .92)
         circ(fr, e, lw / 2, col)                                         # codo
         if c['ropa'] == 'franela': dv = hd - e; dv /= max(1e-6, np.linalg.norm(dv)); line(fr, hd - dv * .3 * u, hd - dv * .18 * u, dark(col, .55), lw)
-        circ(fr, hd, .31 * u, (170, 172, 182)); circ(fr, hd, .27 * u, SKIN); hands['L' if sd < 0 else 'R'] = hd
+        circ(fr, hd, .31 * u, (170, 172, 182)); circ(fr, hd, .27 * u, c.get('piel', SKIN)); hands['L' if sd < 0 else 'R'] = hd
     for sd, S, e, hd, behind in arm_geo:
         if behind: draw_arm(sd, S, e, hd)
     # ---------------- torso
@@ -143,6 +143,10 @@ def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
         ell(fr, neck + tv * .05 * u, .78 * u, .32 * u, math.degrees(p['lean']), dark(top, .8))        # capucha detrás del cuello
         poly(fr, [hip - tn * .6 * u - tv * .3 * u, hip + tn * .6 * u - tv * .3 * u, hip + tn * .45 * u - tv * 1.0 * u, hip - tn * .45 * u - tv * 1.0 * u], dark(top, .86))
         for sd in (-1, 1): line(fr, neck + tn * sd * .2 * u - tv * .1 * u, neck + tn * sd * .24 * u - tv * .8 * u, (240, 240, 244), 3)
+    if c.get('rasgada'):
+        for k in range(5):
+            q = hip - tv * .3 * u + tn * (-.8 + k * .4) * u; poly(fr, [q - tn * .16 * u, q + tn * .16 * u, q + tv * -.35 * u * (1 + (k % 2) * .6)], dark(top, .45))
+        line(fr, shY + tn * .3 * u + tv * -.4 * u, shY + tn * .55 * u + tv * -1.1 * u, dark(top, .4), .08 * u)
     if c.get('sangre'):                                                   # manchas estilizadas (sin heridas)
         for (a_, b_, r_) in [(-.3, .35, .32), (.35, .6, .22), (-.1, .8, .2), (.5, .2, .16)]:
             ell(fr, shY + (hip - shY) * b_ + tn * a_ * u, r_ * u, r_ * .8 * u, 20, (110, 16, 20))
@@ -153,7 +157,7 @@ def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
     head = neck + rot(A(0, -1.0 * uh - .25 * u), p['tilt'])
     line(fr, neck + tv * .05 * u, head, (214, 214, 222), .34 * u)
     hair_back(fr, c, head, uh, p)
-    circ(fr, head, 1.0 * uh, (150, 154, 170)); circ(fr, head, .96 * uh, (204, 206, 218)); circ(fr, head + A(-.05 * uh, -.06 * uh), .9 * uh, SKIN)
+    circ(fr, head, 1.0 * uh, (150, 154, 170)); circ(fr, head, .96 * uh, dark(c.get('piel', SKIN), .84)); circ(fr, head + A(-.05 * uh, -.06 * uh), .9 * uh, c.get('piel', SKIN))
     if c.get('sombra'):
         circ(fr, head, 1.0 * uh, (20, 20, 24))
         for sd in (-1, 1): ell(fr, head + A(sd * .32 * uh + p['look'][0] * .3 * uh, -.05 * uh), .1 * uh, .05 * uh, 0, (230, 230, 200))
@@ -161,10 +165,23 @@ def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
     hair_front(fr, c, head, uh, p)
     joints.update(head=head, hip=hip, neck=neck); return hands, joints
 
+def infected_marks(fr, fc, u, k, sides=(-1, 1), f=None):
+    """rasgos de infección (k = 0..1): ojeras hundidas, venas oscuras, manchas en la boca."""
+    for sd in sides:
+        e = fc + A(sd * .34 * u, -.05 * u) if f is None else fc
+        ell(fr, e + A(0, .03 * u), .17 * u, .21 * u, 0, (int(190 - 50 * k), int(176 - 50 * k), int(186 - 44 * k)))
+        for j in range(1 + int(k)):
+            a_ = (j * 1.3 + (sd > 0) * .7) + .4; v0 = e + A(math.cos(a_) * .2 * u, math.sin(a_) * .22 * u)
+            line(fr, v0, v0 + A(math.cos(a_) * .14 * u, math.sin(a_) * .12 * u), (150, 110, 130), max(1., .025 * u))
 def face(fr, c, head, u, p, who):
     lx, ly = p['look']; fc = head + A(lx * .34 * u, ly * .3 * u)
+    inf = c.get('infectado', 0)
+    if inf: infected_marks(fr, fc, u, inf)
     for sd in (-1, 1):
         e = fc + A(sd * .34 * u, -.05 * u)
+        if inf >= .9 and p['blink'] <= .5:                                 # infectado: ojo pálido con pupila diminuta
+            ell(fr, e, .1 * u, .13 * u, 0, (226, 226, 196)); circ(fr, e + A(lx * .04 * u, 0), .035 * u, INK)
+            line(fr, fc + A(sd * .56 * u, -.38 * u), fc + A(sd * .14 * u, -.5 * u + (sd > 0) * .1 * u), INK, .09 * u); continue
         if p['blink'] > .5: line(fr, e - A(.1 * u, 0), e + A(.1 * u, 0), INK, .07 * u)
         else:
             sy = .165 * (1 - p['blink'] * 1.6 if p['blink'] < .5 else .2)
@@ -180,11 +197,13 @@ def face(fr, c, head, u, p, who):
     else: line(fr, m - A(.2 * u, 0), m + A(.2 * u, 0), INK, .08 * u)
     if who == 'sofia':
         for sd in (-1, 1): ell(fr, fc + A(sd * .55 * u, .22 * u), .15 * u, .08 * u, 0, (250, 196, 196))
+    if inf:                                                                # manchas oscuras en la barbilla (estilizadas, sin gore)
+        for k in range(3): line(fr, m + A((-.12 + k * .12) * u, .1 * u), m + A((-.1 + k * .11) * u, (.3 + .08 * (k % 2)) * u), (110, 20, 26), .06 * u)
 
 def hair_back(fr, c, head, u, p):
     hc = c['pelo_col']
     if c['pelo'] == 'melena':                                            # melena hasta los hombros, por detrás de la cabeza
-        poly(fr, [head + A(-1.1 * u, -.2 * u), head + A(1.1 * u, -.2 * u), head + A(1.18 * u, 1.25 * u), head + A(.6 * u, 1.4 * u), head + A(-.6 * u, 1.4 * u), head + A(-1.18 * u, 1.25 * u)], hc)
+        poly(fr, [head + A(-1.08 * u, -.3 * u), head + A(1.08 * u, -.3 * u), head + A(1.12 * u, .55 * u), head + A(.92 * u, .86 * u), head + A(.55 * u, .78 * u), head + A(-.55 * u, .78 * u), head + A(-.92 * u, .86 * u), head + A(-1.12 * u, .55 * u)], hc)
     if c['pelo'] == 'coletas':
         for sd in (-1, 1):
             b = head + A(sd * 1.0 * u, -.25 * u)
@@ -205,7 +224,7 @@ def hair_front(fr, c, head, u, p):
         line(fr, head + A(-.3 * u, -1.0 * u), head + A(.2 * u, -.62 * u), hl, 2)
     elif c['pelo'] == 'melena':
         ell(fr, head + A(0, -.52 * u), 1.03 * u, .54 * u, 0, hc, 180, 360)
-        for sd in (-1, 1): poly(fr, [head + A(sd * 1.0 * u, -.52 * u), head + A(sd * .7 * u, -.9 * u), head + A(sd * 1.0 * u, .4 * u), head + A(sd * 1.1 * u, .1 * u)], hc)
+        for sd in (-1, 1): poly(fr, [head + A(sd * 1.0 * u, -.52 * u), head + A(sd * .72 * u, -.88 * u), head + A(sd * .9 * u, .1 * u), head + A(sd * 1.0 * u, .72 * u), head + A(sd * 1.1 * u, .35 * u)], hc)
         line(fr, head + A(.15 * u, -1.03 * u), head + A(.05 * u, -.58 * u), hl, 2)
     elif c['pelo'] == 'coletas':
         ell(fr, head + A(0, -.5 * u), 1.0 * u, .52 * u, 0, hc, 180, 360)
@@ -220,7 +239,8 @@ CAST.update({
     'peaton2': dict(nombre='PEATÓN', alto=.95, cabeza=1.0, top=(110, 112, 120), pants=(50, 60, 90), shoe=(220, 220, 224), ropa='sudadera', pelo='corto', pelo_col=(150, 110, 60)),
     'novia':   dict(nombre='PAREJA', alto=.93, cabeza=1.0, top=(60, 110, 80), pants=(36, 40, 56), shoe=(90, 50, 40), ropa='sueter', pelo='melena', pelo_col=(30, 22, 20)),
     'mujer':   dict(nombre='MUJER', alto=.93, cabeza=1.0, top=(170, 120, 150), pants=(46, 46, 60), shoe=(70, 40, 40), ropa='liso', pelo='melena', pelo_col=(120, 80, 40)),
-    'hombre':  dict(nombre='HOMBRE', alto=1.0, cabeza=1.0, top=(220, 222, 226), pants=(64, 70, 80), shoe=(40, 36, 32), ropa='liso', pelo='revuelto', pelo_col=(40, 34, 30), sangre=True),
+    'hombre':  dict(nombre='HOMBRE', alto=1.0, cabeza=1.0, top=(200, 204, 210), pants=(64, 70, 80), shoe=(40, 36, 32), ropa='liso', pelo='corto', pelo_col=(60, 46, 36), sangre=True, rasgada=True, infectado=.5, piel=(232, 230, 222)),
+    'infectado': dict(nombre='INFECTADO', alto=1.0, cabeza=1.0, top=(96, 104, 92), pants=(52, 54, 60), shoe=(30, 28, 26), ropa='liso', pelo='revuelto', pelo_col=(46, 40, 36), sangre=True, rasgada=True, infectado=1., piel=(206, 212, 200)),
     'figura':  dict(nombre='FIGURA', alto=1.02, cabeza=1.0, top=(26, 26, 30), pants=(20, 20, 24), shoe=(14, 14, 16), ropa='liso', pelo='revuelto', pelo_col=(14, 14, 16), sombra=True),
     'presentadora': dict(nombre='NOTICIAS', alto=.94, cabeza=1.0, top=(40, 60, 120), pants=(30, 30, 40), shoe=(20, 20, 24), ropa='sueter', pelo='melena', pelo_col=(170, 120, 60)),
 })
@@ -296,7 +316,7 @@ def person_side(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=1):
         if g is not None: e, hd = ik_limb(S, reach(hd, g), 1.3 * u, 1.25 * u, (-f * .5, 1.))     # codo hacia abajo y atrás
         col = dark(top, shade)
         line(fr, S, e, dark(col, .62), lw + 5); line(fr, e, hd, dark(col, .62), lw + 4); line(fr, S, e, col, lw); line(fr, e, hd, col, lw * .92)
-        circ(fr, e, lw / 2, col); circ(fr, hd, .31 * u, dark((170, 172, 182), shade)); circ(fr, hd, .27 * u, dark(SKIN, shade)); return hd
+        circ(fr, e, lw / 2, col); circ(fr, hd, .31 * u, dark((170, 172, 182), shade)); circ(fr, hd, .27 * u, dark(c.get('piel', SKIN), shade)); return hd
     hands = {}
     near, far = ('R', 'L') if f > 0 else ('L', 'R')
     hands[far] = arm(far, .72); leg(far, .78)
@@ -323,14 +343,15 @@ def person_side(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=1):
     uh = u * c['cabeza']; head = neck + rot(A(f * .1 * uh, -1.0 * uh - .25 * u), p['tilt'])
     line(fr, neck + tv * .05 * u, head, (214, 214, 222), .34 * u)
     hc = c['pelo_col']
-    if c['pelo'] == 'melena': poly(fr, [head + A(-f * .2 * uh, -.7 * uh), head + A(-f * 1.12 * uh, -.1 * uh), head + A(-f * 1.0 * uh, 1.35 * uh), head + A(-f * .25 * uh, 1.3 * uh)], hc)
+    if c['pelo'] == 'melena': poly(fr, [head + A(-f * .2 * uh, -.75 * uh), head + A(-f * 1.12 * uh, -.15 * uh), head + A(-f * 1.05 * uh, .82 * uh), head + A(-f * .45 * uh, .78 * uh), head + A(-f * .25 * uh, .4 * uh)], hc)
     if c['pelo'] == 'coletas':
         b = head + A(-f * .95 * uh, -.25 * uh)
         poly(fr, [b, b + A(-f * .35 * uh, -.1 * uh), b + A(-f * .7 * uh, .5 * uh), b + A(-f * .55 * uh, 1.05 * uh), b + A(-f * .3 * uh, .55 * uh)], hc); circ(fr, b, .14 * uh, (240, 90, 150))
-    circ(fr, head, 1.0 * uh, (150, 154, 170)); circ(fr, head, .96 * uh, (204, 206, 218)); circ(fr, head + A(f * .05 * uh, -.06 * uh), .9 * uh, SKIN)
+    circ(fr, head, 1.0 * uh, (150, 154, 170)); circ(fr, head, .96 * uh, dark(c.get('piel', SKIN), .84)); circ(fr, head + A(f * .05 * uh, -.06 * uh), .9 * uh, c.get('piel', SKIN))
     if c.get('sombra'): circ(fr, head, 1.0 * uh, (20, 20, 24)); ell(fr, head + A(f * .55 * uh, -.05 * uh), .1 * uh, .05 * uh, 0, (230, 230, 200))
     else:
         e = head + A(f * .55 * uh, -.05 * uh + p['look'][1] * .2 * uh)                      # un solo ojo, hacia el frente
+        if c.get('infectado'): infected_marks(fr, e, uh, c['infectado'], sides=(1,), f=f)
         if p['blink'] > .5: line(fr, e - A(.08 * uh, 0), e + A(.08 * uh, 0), INK, .07 * uh)
         else: ell(fr, e, .09 * uh, .16 * uh, 0, INK); circ(fr, e + A(f * .03 * uh, -.06 * uh), .03 * uh, (250, 250, 255))
         fr_ = p['frown']; line(fr, e + A(-f * .2 * uh, -.42 * uh), e + A(f * .12 * uh, -.36 * uh + fr_ * .2 * uh), INK, .09 * uh)
