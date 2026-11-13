@@ -19,7 +19,7 @@ class S11(Shot):                                   # calle principal: autos, ár
         s.back, s.main, s.front = set_street(); s.clock = N.text_sprite('10:47 PM', 120, (255, 240, 210, 255), glow=(255, 160, 80), glow_r=18, spacing=8)
         s.title = N.text_sprite('EL DÍA QUE TODO TERMINÓ', 44, (230, 230, 240, 255), stroke=4, stroke_col=(0, 0, 0, 200), spacing=10)
     def draw(s, fr, t, d):
-        street_props(fr, t)
+        street_props(fr, t, trees=(1010,))
         for i, (x0, v, who) in enumerate([(-80, 150, 'peaton1'), (900, -130, 'mujer')]):
             x, p, feet, b = gait(t, x0, v, U(who, 330), 1440)
             person_side(fr, who, x, 1440 + b, 330, dict(p, blink=blink(t, i)), t, feet=feet, facing=1 if v > 0 else -1)
@@ -44,7 +44,7 @@ class S12(Shot):                                   # pareja entra a la tienda
         uH, uM = U('peaton1', 420), U('novia', 420)
         dh = lambda tt: min(420., 230 * tt) if tt < 2.0 else 420 + 60 * ease((tt - 2.0) / .6) + max(0, tt - 3.1) * 230
         dm = lambda tt: 230 * tt
-        for who, x0, dist, uu, sd in (('peaton1', 40, dh(t), uH, 7), ('novia', -60, dm(t), uM, 8)):
+        for who, x0, dist, uu, sd in (('peaton1', 40, dh(t), uH, 7), ('novia', -230, dm(t) * 1.12, uM, 8)):
             if who == 'novia' and x0 + dist > 640: continue                           # ya entró
             x, p, feet, b = gait(0, x0, 1, uu, 1490, dist=dist)
             if who == 'peaton1':                                                       # la mano va a la puerta y regresa (sin saltos)
