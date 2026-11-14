@@ -71,8 +71,8 @@ def run():
         prev = im
     diffs = np.array(diffs); med = float(np.median(diffs)) if len(diffs) else 0.; spikes = 0
     for k, dv in enumerate(diffs):
-        f = k + 1
-        if dv > max(LIM['diff_k'] * med, LIM['diff_min']) and f not in trans and f - 1 not in trans: spikes += 1; err('continuidad temporal', f, '-', f'salto de imagen {dv:.1f} (mediana {med:.2f})')
+        f = k + 1; nb = max(diffs[k - 1] if k > 0 else med, diffs[k + 1] if k + 1 < len(diffs) else med)   # pico respecto a los vecinos
+        if dv > max(LIM['diff_k'] * med, LIM['diff_min']) and dv > 2.5 * nb and f not in trans and f - 1 not in trans: spikes += 1; err('continuidad temporal', f, '-', f'salto de imagen {dv:.1f} (vecinos {nb:.1f}, mediana {med:.2f})')
     # ---------- PUNTUACION (fórmulas fijas)
     be = max(bone_err) if bone_err else 0.
     walk_frames = sum(1 for v in log.values() for r in v if r.get('tag') == 'camina')

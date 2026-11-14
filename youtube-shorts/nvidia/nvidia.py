@@ -312,9 +312,9 @@ class Photos(Sb):                                  # fotografías de Alice junto
         s.panel = gold_panel('FOTOGRAFÍAS JUNTOS', 'BANQUETES Y EVENTOS PRIVADOS', w=860, h=180)
     def draw(s, fr, t, d):
         for i, (x, y, ang) in enumerate(((310, 860, -6), (770, 1050, 5), (420, 1360, 3))):
-            k = ss(.2 + i * .5, .5 + i * .5, t)
+            k = ss(.2 + i * .5, .85 + i * .5, t)                              # entrada suave (sin arranque brusco)
             if k <= 0: continue
-            x = x + (1 - eOut(k)) * 600 * (1 if i % 2 else -1)
+            x = x + (1 - k) * 600 * (1 if i % 2 else -1)
             cv2.rectangle(fr, (int(x - 230), int(y - 200)), (int(x + 230), int(y + 230)), (240, 236, 226), -1)
             cv2.rectangle(fr, (int(x - 205), int(y - 175)), (int(x + 205), int(y + 160)), (60, 40, 30) if i != 1 else (50, 90, 60), -1)
             if i != 1: cv2.rectangle(fr, (int(x - 205), int(y + 80)), (int(x + 205), int(y + 160)), (150, 110, 80), -1)     # mesa de banquete
@@ -343,9 +343,9 @@ class Classified(Sb):                              # las pruebas siguen clasific
         s.t1 = chip('PRUEBAS NO PÚBLICAS', (255, 210, 90), w=600); s.t2 = chip('NO DEMOSTRADO PÚBLICAMENTE', (255, 210, 90), w=720)
     def draw(s, fr, t, d):
         blit(fr, s.pero, 540, 420, ss(0, .3, t) * (1 - ss(1.6, 2.0, t)))
-        k = ss(1.7, 2.3, t)
+        k = ss(1.5, 2.4, t)
         if k > 0:
-            dossier(fr, 540, lerp(1500, 1050, eOut(k)), 700, 820, t, 1., seed=7)
+            dossier(fr, 540, lerp(2400, 1050, k), 700, 820, t, 1., seed=7)       # entra desde fuera del cuadro
             stamp_in(fr, s.st, 540, 900, t, s.w('clasificadas'))
             if t > s.w('clasificadas') + .4: float_in(fr, s.t1, 540, 330, t, s.w('clasificadas') + .4)
             if t > s.w('demostrado') - .2: float_in(fr, s.t2, 540, 450, t, s.w('demostrado') - .2)

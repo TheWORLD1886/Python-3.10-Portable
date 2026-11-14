@@ -4,7 +4,7 @@
 # Mismas fórmulas que prueba/qc.py. Los planos sin personajes solo se evalúan en continuidad temporal.
 import os, sys, json, glob, math
 import numpy as np, cv2
-HERE = os.path.dirname(os.path.abspath(__file__)); O = os.path.join(HERE, 'out2')
+HERE = os.path.dirname(os.path.abspath(__file__)); O = os.path.join(HERE, 'out2', 'iter') if 'iter' in sys.argv else os.path.join(HERE, 'out2')
 LIM = dict(bone_tol=.02, pop=.35, slide_px=.5, floor_tol=.05, grip_px=3., diff_k=4., diff_min=6.)
 BONES = [('hipL', 'kneeL', 1.55), ('kneeL', 'ankleL', 1.55), ('hipR', 'kneeR', 1.55), ('kneeR', 'ankleR', 1.55),
          ('shL', 'elbowL', 1.3), ('elbowL', 'handL', 1.25), ('shR', 'elbowR', 1.3), ('elbowR', 'handR', 1.25)]
@@ -61,8 +61,9 @@ def evaluate(recs, diffs, excl):
                     p0, p1, p2 = (np.array(r['joints'][k]) for r in rs); acc = float(np.linalg.norm(p2 - 2 * p1 + p0))
                     if acc > LIM['pop'] * rs[2]['u']: pops += 1; err('movimiento de extremidades', f, i, f'{k} salta {acc:.1f}px ({acc / rs[2]["u"]:.2f}u)')
     dv = {f: v for f, v in diffs.items() if f not in excl}; med = float(np.median(list(dv.values()))) if dv else 0.; spikes = 0
-    for f, v in sorted(dv.items()):
-        if v > max(LIM['diff_k'] * med, LIM['diff_min']) and f not in trans and f - 1 not in trans: spikes += 1; err('continuidad temporal', f, '-', f'salto de imagen {v:.1f} (mediana {med:.2f})')
+    for f, v in sorted(dv.items()):                                        # salto = pico respecto a los fotogramas vecinos (un movimiento suave y continuo no es salto)
+        nb = max(diffs.get(f - 1, med), diffs.get(f + 1, med))
+        if v > max(LIM['diff_k'] * med, LIM['diff_min']) and v > 2.5 * nb and f not in trans and f - 1 not in trans: spikes += 1; err('continuidad temporal', f, '-', f'salto de imagen {v:.1f} (vecinos {nb:.1f}, mediana {med:.2f})')
     has_chars = bool(seq) and any(r['who'] != 'figura' and r['u'] >= 12 for r in recs)
     be = max(bone) if bone else 0.
     sc = {'Continuidad temporal': max(0., 10 - 1. * spikes)}
@@ -86,6 +87,7 @@ def main():
     for i, (a, b, sc_, g) in enumerate(shots):
         f0, f1 = int(math.ceil(a * FPS)), int(math.ceil(b * FPS))
         recs = [r for r in log if r['shot'] == i and f0 <= r['f'] < f1]
+        if 'iter' in sys.argv and not any(f0 <= f < f1 for f in diffs): continue
         excl = set(range(f0, f0 + int(.35 * FPS) + 1))                         # fundido planificado entre planos
         d = {f: v for f, v in diffs.items() if f0 <= f < f1}
         sc, med, E = evaluate(recs, d, excl)

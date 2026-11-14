@@ -95,8 +95,8 @@ class Relation(Sb):                                # Jensen llega, gira y descub
                 (tw, P(look=(.4, 0), frown=.25, brow_asym=.15)), (tw + .35, P(look=(.35, 0), frown=.45, brow_asym=.25, sh=-.25, lean=-.03, boca='tensa', hip_dx=-.06)),
                 (d, P(look=(.35, .05), frown=.5, brow_asym=.2, sh=-.15, lean=-.02, boca='tensa', hip_dx=-.06))]
         def j34(f_): p = RG.anim(keys, t); p['blink'] = blinkp(t, 1); return RG.person_34(f_, 'jensen', xJ, fy, hJ, p, t, feet=stance(xJ, uJ, fy), turn=1)
-        if t < 1.7: walk(fr, 'jensen', -160, xJ, 0, 1.7, fy, hJ, t)
-        elif t < 1.9: turn_blend(fr, (t - 1.7) / .2, lambda f_: walk(f_, 'jensen', -160, xJ, 0, 1.7, fy, hJ, 1.7), j34)
+        if t < 1.7: walk(fr, 'jensen', -160, xJ, -.6, 1.7, fy, hJ, t)
+        elif t < 1.9: turn_blend(fr, (t - 1.7) / .2, lambda f_: walk(f_, 'jensen', -160, xJ, -.6, 1.7, fy, hJ, 1.7), j34)
         else: j34(fr)
         k = ss(tm - .3, tm + .3, t)                                            # la silueta aparece; en «trabajaba» se revela Alice
         if k > 0:
@@ -123,18 +123,18 @@ class JensenIntro(Sb):                             # Jensen sale al escenario, s
             for k in range(10): cv2.line(fr, (90 + i * 190, 600 + k * 64), (240 + i * 190, 600 + k * 64), (40, 90, 40), 2)
         fbeam(fr, (540, 0), (s.x, 1600), 40, 360, (220, 255, 220), .12, 40)
         fy, h, x = 1680, s.h, s.x; u = U('jensen', h)
-        wave = (1.7 < t < 3.3); osc = math.sin((t - 1.7) * 2 * math.pi * 1.6) if wave else 0
-        keys = [(1.6, P(look=(0, 0), boca='sonrisa', frown=-.15)), (1.95, P(look=(0, 0), boca='sonrisa', frown=-.15, uR=2.4, lR=.5, sh=-.05)),
-                (3.2, P(look=(.05, 0), boca='sonrisa', frown=-.15, uR=2.4, lR=.5)),
-                (3.6, P(look=(.35, -.25), boca='sonrisa', frown=-.1, grip={'R': (x + 2.3 * u, fy - 7.4 * u, 1.)}, tz=.3)),
+        wave = (2.2 < t < 3.6); osc = math.sin((t - 2.2) * 2 * math.pi * 1.6) if wave else 0
+        keys = [(1.6, P(look=(0, 0), boca='sonrisa', frown=-.15)), (2.25, P(look=(0, 0), boca='sonrisa', frown=-.15, uR=2.4, lR=.5, sh=-.05)),
+                (3.55, P(look=(.05, 0), boca='sonrisa', frown=-.15, uR=2.4, lR=.5)),
+                (4.1, P(look=(.35, -.25), boca='sonrisa', frown=-.1, grip={'R': (x + 2.3 * u, fy - 7.4 * u, 1.)}, tz=.3)),
                 (d, P(look=(.4, -.3), boca='sonrisa', frown=-.1, grip={'R': (x + 2.35 * u, fy - 7.45 * u, 1.)}, tz=.3))]
-        if t < 1.45: walk(fr, 'jensen', -170, x, 0, 1.45, fy, h, t)
+        if t < 1.45: walk(fr, 'jensen', -170, x, -1.2, 1.45, fy, h, t)
         elif t < 1.65:
             def fb(f_): p = RG.anim(keys, t); return RG.person(f_, 'jensen', x, fy, h, p, t, feet=stance(x, u, fy, .38))
-            turn_blend(fr, (t - 1.45) / .2, lambda f_: walk(f_, 'jensen', -170, x, 0, 1.45, fy, h, 1.45), fb)
+            turn_blend(fr, (t - 1.45) / .2, lambda f_: walk(f_, 'jensen', -170, x, -1.2, 1.45, fy, h, 1.45), fb)
         else:
             p = RG.anim(keys, t); p['blink'] = blinkp(t, 4)
-            if wave: p['lR'] = .5 + .45 * osc                                  # saludo con el antebrazo
+            if wave: p['lR'] = .5 + .45 * osc * RG.ease((t - 2.2) / .35) * (1 - RG.ease((t - 3.2) / .35))   # saludo con el antebrazo (entra y sale suave)
             p['uR'] = p['uR'] if t < 3.4 else p['uR']
             RG.person(fr, 'jensen', x, fy, h, p, t, feet=stance(x, u, fy, .38))
         float_in(fr, s.card, 540, 330, t, .3)
@@ -155,10 +155,10 @@ class AliceIntro(Sb):                              # Alice camina a su marca, se
                 (2.75, P(look=(-.1, .15), tilt=.02, frown=.05, grip={'L': (x - .36 * u, fy - 4.9 * u, 1.), 'R': (x + .28 * u, fy - 4.9 * u, 1.)}, tz=.55)),
                 (3.25, P(look=(0, 0), frown=-.05, grip={'L': (x - .36 * u, fy - 4.9 * u, 0.), 'R': (x + .28 * u, fy - 4.9 * u, 0.)}, tz=.55)),
                 (d, P(look=(.02, 0), frown=-.1))]
-        if t < 1.55: walk(fr, 'alice', 1260, x, 0, 1.55, fy, h, t)
+        if t < 1.55: walk(fr, 'alice', 1260, x, -1.35, 1.55, fy, h, t)
         elif t < 1.75:
             def fb(f_): p = RG.anim(keys, t); return RG.person_34(f_, 'alice', x, fy, h, p, t, feet=stance(x, u, fy), turn=-1)
-            turn_blend(fr, (t - 1.55) / .2, lambda f_: walk(f_, 'alice', 1260, x, 0, 1.55, fy, h, 1.55), fb)
+            turn_blend(fr, (t - 1.55) / .2, lambda f_: walk(f_, 'alice', 1260, x, -1.35, 1.55, fy, h, 1.55), fb)
         else:
             p = RG.anim(keys, t); p['blink'] = blinkp(t, 6); RG.person_34(fr, 'alice', x, fy, h, p, t, feet=stance(x, u, fy), turn=-1)
         float_in(fr, s.card, 540, 330, t, .2)
@@ -218,17 +218,17 @@ class Surveil(Sb):                                 # el agente frente a los moni
         for i in range(4):
             x, y = 70 + (i % 2) * 290, 600 + (i // 2) * 290
             cv2.rectangle(fr, (x, y), (x + 270, y + 250), (12, 14, 18), -1); cv2.rectangle(fr, (x + 10, y + 10), (x + 260, y + 240), (30, 60, 80), -1)
-            RG.person(fr, 'alice' if i % 2 == 0 else 'figura', x + 135 + math.sin(t + i) * 40, y + 230, 190, P(look=(.2, 0), blink=blinkp(t, 20 + i)), t + i)
+            RG.person(fr, 'alice' if i % 2 == 0 else 'figura', x + 135, y + 230, 190, P(look=(.2, 0), blink=blinkp(t, 20 + i)), t + i)
             for k in range(0, 230, 6): cv2.line(fr, (x + 10, y + 10 + k), (x + 260, y + 10 + k), (20, 40, 54), 1)
             if (t * 2) % 1 < .6 and i == 0: blit(fr, s.rec, x + 210, y + 34)
         fy, h, x = 1700, 700, 800; u = U('agente', h)
-        ear = (x + .82 * u, fy - 6.95 * u); mon = (380, 900)
+        ear = (x + .82 * u, fy - 6.95 * u); mon = (x - 2.1 * u, fy - 5.7 * u)
         keys = [(0, P(look=(-.5, -.1), frown=.3)),
-                (.6, P(look=(-.5, -.1), frown=.3, grip={'R': ear + (0.,)}, tz=.3)),
-                (1.2, P(look=(-.45, -.1), frown=.4, grip={'R': ear + (1.,)}, tz=.3, tilt=.06)),                    # se toca el auricular: escucha
-                (2.4, P(look=(-.5, -.12), frown=.45, grip={'R': ear + (1.,)}, tz=.3, tilt=.06)),
-                (2.9, P(look=(-.6, -.15), frown=.5, lean=-.07, grip={'R': ear + (0.,), 'L': mon + (.0,)}, tz=.3)),
-                (3.5, P(look=(-.65, -.2), frown=.55, lean=-.08, grip={'L': mon + (1.,)}, tz=.2)),                  # se inclina y señala el monitor
+                (.3, P(look=(-.5, -.1), frown=.3, grip={'R': ear + (0.,)}, tz=.6)),
+                (1.4, P(look=(-.45, -.1), frown=.4, grip={'R': ear + (1.,)}, tz=.6, tilt=.06)),                    # se toca el auricular: escucha
+                (2.2, P(look=(-.5, -.12), frown=.45, grip={'R': ear + (1.,)}, tz=.6, tilt=.06)),
+                (3.2, P(look=(-.6, -.15), frown=.5, lean=-.07, grip={'R': ear + (0.,), 'L': mon + (.0,)}, tz=.4)),
+                (3.9, P(look=(-.65, -.2), frown=.55, lean=-.08, grip={'L': mon + (1.,)}, tz=.2)),                  # se inclina y señala el monitor
                 (d, P(look=(-.65, -.2), frown=.55, lean=-.08, grip={'L': mon + (1.,)}, tz=.2))]
         p = RG.anim(keys, t); p['blink'] = blinkp(t, 9); RG.person_34(fr, 'agente', x, fy, h, p, t, feet=stance(x, u, fy), turn=-1)
         float_in(fr, s.panel, 540, 330, t, .2)
@@ -242,25 +242,25 @@ class FBIWarn(Sb):                                 # el agente entrega la carpet
         s.panel = blue_panel('ADVERTENCIA DEL FBI', 'CASI UN AÑO ANTES DEL ESCÁNDALO', w=900, h=180)
         s.fbi = N.text_sprite('FBI', 56, (255, 230, 120, 255), stroke=4, stroke_col=(0, 0, 0, 220), spacing=8)
     def draw(s, fr, t, d):
-        fy = 1720; hA, xA = 620, 290; uA = U('agente', hA); hL, xL = 580, 690; uL_ = U('ejecutivo', hL); xJ = 900; uJ = U('jefe', 560)
+        fy = 1720; hA, xA = 620, 330; uA = U('agente', hA); hL, xL = 580, 620; uL_ = U('ejecutivo', hL); xJ = 870; uJ = U('jefe', 560)
         T1, T2, T3 = 1.0, 2.0, 2.4                                              # ofrece · el legislador la toma · el agente suelta
         hold = lambda cx, cy, w: {'L': (cx - w / 2, cy, 1.), 'R': (cx + w / 2, cy, 1.)}
-        cA0 = (xA + .25 * uA, fy - 4.45 * uA); cX = ((xA + xL) / 2 + 20, fy - 4.6 * uA); cL1 = (xL - .2 * uL_, fy - 4.4 * uL_)
+        cA0 = (xA + .25 * uA, fy - 4.45 * uA); cX = ((xA + xL) / 2, fy - 4.6 * uA); cL1 = (xL - .2 * uL_, fy - 4.4 * uL_)
         k1 = RG.ease((t - T1) / (T2 - T1)); k3 = RG.ease((t - T3) / .5)
         if t < T1: fc = cA0
         elif t < T2: fc = (lerp(cA0[0], cX[0], k1), lerp(cA0[1], cX[1], k1))
         elif t < T3 + .2: fc = cX
         else: k = RG.ease((t - T3 - .2) / .5); fc = (lerp(cX[0], cL1[0], k), lerp(cX[1], cL1[1], k))
-        wF = 140
+        wF = 120
         gA = hold(fc[0], fc[1], wF) if t < T3 else {kk: v[:2] + (1 - k3,) for kk, v in hold(cX[0], cX[1], wF).items()}
         pA = P(look=(.3 if t < 3 else .4, .1), frown=.35, grip=gA, tz=.9, blink=blinkp(t, 10))
         handsA, _ = RG.person_34(fr, 'agente', xA, fy, hA, pA, t, feet=stance(xA, uA, fy), turn=1)
         kr = RG.ease((t - (T2 - .6)) / .6)                                      # el legislador alcanza la carpeta
         gL = {kk: (v[0], v[1], kr) for kk, v in hold(fc[0], fc[1], wF).items()}
-        worry = RG.ease((t - 3.4) / .5); look_each = RG.ease((t - 4.3) / .4)
+        worry = RG.ease((t - 3.2) / 1.1); look_each = RG.ease((t - 4.3) / .4)
         pL = P(look=(-.35 + .7 * look_each, .25 * (1 - look_each)), frown=.25 - .65 * worry, brow_up=.35 * worry, grip=gL, tz=.9, blink=blinkp(t, 11))
         handsL, _ = RG.person_34(fr, 'ejecutivo', xL, fy, hL, pL, t, feet=stance(xL, uL_, fy), turn=-1)
-        pJ = P(look=(-.5 - .2 * look_each, .1), frown=.2 - .6 * worry, brow_up=.3 * worry, grip={'L': (xJ - .1 * uJ, fy - 6.3 * uJ, worry)}, tz=.4, blink=blinkp(t, 12))
+        pJ = P(look=(-.5 - .2 * look_each, .1), frown=.2 - .6 * worry, brow_up=.3 * worry, grip={'L': (xJ - .1 * uJ, fy - 6.3 * uJ, worry)}, tz=.8, blink=blinkp(t, 12))
         RG.person_34(fr, 'jefe', xJ, fy, 560, pJ, t, feet=stance(xJ, uJ, fy), turn=-1)
         hs = handsA if t < T3 + .2 else handsL
         if t >= T3 + .2 or t < T3 + .2:
@@ -307,8 +307,8 @@ class Board(Sb):                                   # PLANO DE PRUEBA aprobado: J
         def j34(f_):
             p = RG.anim(keys, t); p['blink'] = 0. if top - .1 < t < top + .6 else blinkp(t, 5)
             return RG.person_34(f_, 'jensen', s.x_stop, s.fy, s.hJ, p, t, feet=s.feet34(t, top), turn=1)[0]
-        if t < TS - .2: walk(fr, 'jensen', x0, s.x_stop, 0, TS - .2, s.fy, s.hJ, t)
-        elif t < TS: hands = turn_blend(fr, (t - TS + .2) / .2, lambda f_: walk(f_, 'jensen', x0, s.x_stop, 0, TS - .2, s.fy, s.hJ, TS - .2), j34)
+        if t < TS - .2: walk(fr, 'jensen', x0, s.x_stop, -1.1, TS - .2, s.fy, s.hJ, t)
+        elif t < TS: hands = turn_blend(fr, (t - TS + .2) / .2, lambda f_: walk(f_, 'jensen', x0, s.x_stop, -1.1, TS - .2, s.fy, s.hJ, TS - .2), j34)
         else: hands = j34(fr)
         lift = RG.ease((t - (TS + 1.0)) / .5) if t > TS + 1.0 else 0.
         if t < TS + 1.0 or not hands: c = s.doc0; w, h_, up = 120, 28, 0.
@@ -359,8 +359,8 @@ class Investors(Sb):                               # la gráfica cae; los invers
         pline(fr, q, (255, 70, 60) if n > 34 else (120, 240, 140), 6)
         tg = s.w('golpeó'); wk = RG.ease((t - tg) / .6); fy = 1760
         for i, (x, w_, gesture) in enumerate(((240, 'ejecutivo', 'frente'), (540, 'directora', 'pecho'), (840, 'jefe', 'cruza'))):
-            h = 520; u = U(w_, h); d_ = RG.ease((t - tg - i * .15) / .6)        # cada uno reacciona con un pequeño desfase
-            if gesture == 'frente': g = {'R': (x + .3 * u, fy - 7.0 * u, d_)}; tz = .5
+            h = 520; u = U(w_, h); d_ = RG.ease((t - tg - i * .15) / 1.4)        # cada uno reacciona con un pequeño desfase
+            if gesture == 'frente': g = {'R': (x + .3 * u, fy - 7.0 * u, d_)}; tz = .8
             elif gesture == 'pecho': g = {'L': (x - .05 * u, fy - 4.9 * u, d_)}; tz = .9
             else: g = {'L': (x + .5 * u, fy - 4.75 * u, d_), 'R': (x - .42 * u, fy - 4.55 * u, d_)}; tz = .7
             p = P(look=(0, -.35 + .5 * d_), frown=.1 - .6 * d_, brow_up=.3 * d_, boca='triste' if d_ > .5 else 'neutra', sh=-.15 * d_, grip=g, tz=tz, blink=blinkp(t, 14 + i),
@@ -413,9 +413,9 @@ class Resign(Sb):                                  # Jensen deja el gafete y sal
         s.hJ = 640; s.xJ = snap(560, 'jensen', s.hJ); s.hC = 620; s.xC = snap(700, 'colette', s.hC)
     def draw(s, fr, t, d):
         tg, tr, tc = s.w('golpe'), s.w('renunció'), s.w('colette'); fy = 1700; uJ = U('jensen', s.hJ); xJ = s.xJ
-        poly(fr, [(80, 1420), (520, 1420), (540, 1470), (60, 1470)], (74, 50, 34)); cv2.rectangle(fr, (60, 1470), (540, 1490), (46, 30, 20), -1)   # mesa
-        for xx in (80, 520): cv2.rectangle(fr, (xx - 10, 1490), (xx + 10, 1610), (40, 26, 18), -1)
-        badge_t = (430, 1440); t_put, t_turn, t_walk = tr + .1, tr + 1.0, tr + 1.25
+        poly(fr, [(240, 1380), (600, 1380), (620, 1430), (220, 1430)], (74, 50, 34)); cv2.rectangle(fr, (220, 1430), (620, 1450), (46, 30, 20), -1)   # mesa
+        for xx in (240, 600): cv2.rectangle(fr, (xx - 10, 1450), (xx + 10, 1590), (40, 26, 18), -1)
+        badge_t = (515, 1392); t_put, t_turn, t_walk = tr + .1, tr + 1.0, tr + 1.25
         keys = [(0, P(look=(-.2, .1), frown=-.3, boca='triste', grip={'R': (xJ - .1 * uJ, fy - 5.0 * uJ, 1.)}, tz=.9)),           # gafete en la mano, a la altura del pecho
                 (t_put - .5, P(look=(-.3, .3), frown=-.35, boca='triste', grip={'R': (xJ - .1 * uJ, fy - 5.0 * uJ, 1.)}, tz=.9)),
                 (t_put, P(look=(-.35, .45), tilt=.05, lean=-.05, frown=-.4, boca='triste', grip={'R': badge_t + (1.,)}, tz=.9)),    # lo deja sobre la mesa
@@ -427,12 +427,12 @@ class Resign(Sb):                                  # Jensen deja el gafete y sal
             return RG.person_34(f_, 'jensen', xJ, fy, s.hJ, p, t, feet=stance(xJ, uJ, fy), turn=-1)[0]
         hands = None
         if t < t_turn: hands = jJ(fr)
-        elif t < t_turn + .2: turn_blend(fr, (t - t_turn) / .2, jJ, lambda f_: walk(f_, 'jensen', xJ, xJ - 900, t_walk, t_walk + 2.2, fy, s.hJ, t_walk, mode='sale'))
-        elif t < t_walk + 2.2: walk(fr, 'jensen', xJ, xJ - 900, t_walk, t_walk + 2.2, fy, s.hJ, max(t, t_walk), mode='sale')
+        elif t < t_turn + .2: turn_blend(fr, (t - t_turn) / .2, jJ, lambda f_: walk(f_, 'jensen', xJ, xJ - 900, t_walk, t_walk + 3.4, fy, s.hJ, t_walk, mode='sale'))
+        elif t < t_walk + 3.4: walk(fr, 'jensen', xJ, xJ - 900, t_walk, t_walk + 3.4, fy, s.hJ, max(t, t_walk), mode='sale')
         bx, by = (badge_t if badge_on_table else (hands['R'] if hands else badge_t))
         cv2.rectangle(fr, (int(bx - 26), int(by - 18)), (int(bx + 26), int(by + 18)), (236, 236, 240), -1); cv2.rectangle(fr, (int(bx - 26), int(by - 18)), (int(bx + 26), int(by - 8)), GREEN, -1)
         if hands and not badge_on_table: hands_on_top(fr, {'R': hands['R']}, 'jensen', s.hJ)
-        uC = U('colette', s.hC); ca, cb = tc - 1.6, tc - .1                   # Colette entra caminando, se detiene, gira y asiente
+        uC = U('colette', s.hC); ca, cb = tc - 2.6, tc - .1                   # Colette entra caminando, se detiene, gira y asiente
         nod = math.sin((t - cb - .5) * 2 * math.pi * 1.2) * .06 * (1 - RG.ease((t - cb - 1.4) / .4)) if t > cb + .5 else 0
         kC = [(cb + .2, P(look=(-.3, 0), frown=-.1)), (cb + .6, P(look=(-.1, 0), frown=-.15, boca='sonrisa')), (d, P(look=(-.05, 0), frown=-.15, boca='sonrisa'))]
         def jC(f_): p = RG.anim(kC, t); p['tilt'] = nod; p['blink'] = blinkp(t, 22); return RG.person_34(f_, 'colette', s.xC, fy, s.hC, p, t, feet=stance(s.xC, uC, fy), turn=-1)
@@ -518,7 +518,7 @@ def main():
     elif mode in ('seg', 'qcshot'):
         if mode == 'seg': f0, f1 = int(sys.argv[2]), int(sys.argv[3]); tag = f'{f0:05d}'
         else: i = int(sys.argv[2]); f0, f1 = int(math.ceil(shots[i][0] * FPS)), int(math.ceil(shots[i][1] * FPS)); tag = f'shot{i:02d}'
-        os.makedirs(f'{OUT2}/thumbs', exist_ok=True)
+        D_ = OUT2 if mode == 'seg' else f'{OUT2}/iter'; os.makedirs(f'{D_}/thumbs', exist_ok=True)
         p = None
         if mode == 'seg':
             p = subprocess.Popen(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-',
@@ -531,10 +531,10 @@ def main():
             small = cv2.resize(clean, (270, 480), interpolation=cv2.INTER_AREA).astype(np.float32)
             if prev is not None: diffs[f] = float(np.abs(small - prev).mean())
             prev = small
-            if f % 3 == 0: cv2.imwrite(f'{OUT2}/thumbs/t_{f:05d}.jpg', cv2.resize(clean, (180, 320), interpolation=cv2.INTER_AREA)[:, :, ::-1], [cv2.IMWRITE_JPEG_QUALITY, 80])
+            if f % 3 == 0: cv2.imwrite(f'{D_}/thumbs/t_{f:05d}.jpg', cv2.resize(clean, (180, 320), interpolation=cv2.INTER_AREA)[:, :, ::-1], [cv2.IMWRITE_JPEG_QUALITY, 80])
             if p: p.stdin.write(np.ascontiguousarray(fr).tobytes())
         if p: p.stdin.close(); p.wait()
-        json.dump(dict(log=CTX['log'], diffs=diffs, f0=f0, f1=f1), open(f'{OUT2}/qc_{tag}.json', 'w'))
+        json.dump(dict(log=CTX['log'], diffs=diffs, f0=f0, f1=f1), open(f'{D_}/qc_{tag}.json', 'w'))
         print('SEG' if mode == 'seg' else 'QCSHOT', f0, f1, flush=True)
     elif mode == 'audio':
         subprocess.run(['cp', f'{NV.OUT}/audio.wav', f'{OUT2}/audio_prev.wav'], check=False); NV.synth_audio(f'{OUT2}/audio.wav'); print('audio ok')
