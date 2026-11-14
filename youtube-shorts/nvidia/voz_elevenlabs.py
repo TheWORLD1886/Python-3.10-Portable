@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # Voz con ElevenLabs (Brian C.) + tiempos por palabra. La clave la pone el proxy del entorno.
 import json, base64, re, subprocess
-txt = open('guion_voz.txt').read().replace('\n\n', ' ').replace('\n', ' ')
+from voz_prueba import para_voz
+txt = para_voz(open('guion_voz.txt').read().replace('\n\n', ' ').replace('\n', ' '))
+print('NVIDIA restantes:', len(re.findall(r'\bnvidia\b', txt, re.I)), '· Envidia:', len(re.findall(r'\bEnvidia\b', txt)))
 txt = re.sub(r'<break time="([\d.]+)s" />', lambda m: f'<break time="{float(m.group(1)) * .45:.2f}s" />', txt)   # pausas más cortas
 body = {'text': txt, 'model_id': 'eleven_multilingual_v2',
         'voice_settings': {'stability': .45, 'similarity_boost': .75, 'style': .25, 'use_speaker_boost': True, 'speed': 1.2}}

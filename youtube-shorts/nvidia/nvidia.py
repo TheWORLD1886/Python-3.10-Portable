@@ -18,7 +18,7 @@ def T(word, after=-1.):
         if w[1] >= after and _clean(w[0]).startswith(word.lower()): return w[1]
     raise KeyError(word)
 DUR = int(math.ceil(WORDS[-1][2] + 2.0))
-SC_T = [0, T('el', 15) - .3, T('según', 44) - .3, T('el', 83) - .3, T('washington') - .3, T('y', 132) - .3, T('pero', 150) - .3, DUR]
+SC_T = [0, T('el', 15) - .3, T('según', 44) - .3, T('el', 82) - .3, T('washington') - .3, T('y', 132) - .3, T('pero', 149) - .3, DUR]
 class Sb(Shot):
     a = 0.
     def w(s, word): return T(word, s.a - .6) - s.a
@@ -544,10 +544,10 @@ def tl():
         (T('megaspeed', 35) - .25, Buyer(), 1), (T('pero', 39) - .25, Suspicion(), 1),
         (SC_T[2], Surveil(), 4), (T('mediante') - .25, Intercept(), 4), (T('el', 57.5) - .25, FBIWarn(), 4), (T('después') - .25, Photos(), 2),
         (T('la', 69.5) - .25, NatSec(), 4), (T('pero', 74) - .25, Classified(), 4),
-        (SC_T[3], Problem(), 3), (T('sus', 85.5) - .25, ExportWall(), 3), (T('la', 95.8) - .25, Board(), 2), (T('la', 102.6) - .25, Statement(), 1),
-        (T('sin', 109.5) - .25, Investors(), 3),
-        (SC_T[4], Capitol(), 1), (T('la', 116.3) - .25, Questions(), 1), (T('legisladores', 125) - .25, Lawmakers(), 2), (T('mientras') - .25, Beijing(), 3),
-        (SC_T[5], Resign(), 3), (T('el', 141.3) - .25, Infidelity(), 4),
+        (SC_T[3], Problem(), 3), (T('sus', 84) - .25, ExportWall(), 3), (T('la', 95) - .25, Board(), 2), (T('la', 100.8) - .25, Statement(), 1),
+        (T('sin', 108.5) - .25, Investors(), 3),
+        (SC_T[4], Capitol(), 1), (T('la', 115) - .25, Questions(), 1), (T('legisladores', 123) - .25, Lawmakers(), 2), (T('mientras') - .25, Beijing(), 3),
+        (SC_T[5], Resign(), 3), (T('el', 140.5) - .25, Infidelity(), 4),
         (SC_T[6], Close(), 4),
     ]
     out = []
