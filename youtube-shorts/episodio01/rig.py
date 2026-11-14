@@ -54,7 +54,8 @@ def ik2(root, target, l1, l2, bend_sign):
     base = math.atan2(d[1], d[0]); ang = base + a * bend_sign
     return root + A(math.cos(ang), math.sin(ang)) * l1
 
-def ik_limb(root, target, l1, l2, prefer):
+IK_CACHE = {}
+def ik_limb(root, target, l1, l2, prefer, key=None):
     """IK de dos huesos robusto: (1) el objetivo se acerca a lo alcanzable, así ningún hueso cambia de largo;
     (2) de las dos soluciones posibles se elige la anatómica (codo hacia afuera y abajo, rodilla hacia adelante)."""
     root, target = A(*root), A(*target); d = target - root; n = np.linalg.norm(d)
@@ -63,8 +64,29 @@ def ik_limb(root, target, l1, l2, prefer):
     a = math.acos(max(-1, min(1, (l1 * l1 + D * D - l2 * l2) / (2 * l1 * D)))); base = math.atan2(d[1], d[0])
     cands = [root + A(math.cos(base + a * sg), math.sin(base + a * sg)) * l1 for sg in (1, -1)]
     mid = (root + end) / 2; pv = A(*prefer)
-    e = max(cands, key=lambda c: float(np.dot(c - mid, pv)))
+    prev = IK_CACHE.get(key) if key is not None else None
+    if prev is not None and np.linalg.norm(prev[1] - root) < 3 * (l1 + l2):
+        e = min(cands, key=lambda c: float(np.linalg.norm((c - root) - (prev[0] - prev[1]))))   # coherencia temporal: no salta de lado
+    else: e = max(cands, key=lambda c: float(np.dot(c - mid, pv)))
+    if key is not None: IK_CACHE[key] = (e, root)
     return e, end
+def ik3d(root2, target2, l1, l2, pole, tz):
+    """IK de dos huesos en 3D (z hacia la cámara) proyectada en pantalla: el codo puede irse hacia atrás en profundidad,
+    así el brazo se ve escorzado en vez de abrirse como «ala de pollo». Devuelve codo y mano en 2D y sus profundidades."""
+    R = np.array([root2[0], root2[1], 0.]); Tt = np.array([target2[0], target2[1], tz]); d = Tt - R; n = np.linalg.norm(d)
+    if n < 1e-6: d, n = np.array([0., 1., 0.]), 1.
+    dn = d / n; D = min(max(n, abs(l1 - l2) + 1e-3), (l1 + l2) * .995); end = R + dn * D
+    a = math.acos(max(-1, min(1, (l1 * l1 + D * D - l2 * l2) / (2 * l1 * D))))
+    pv = np.array(pole, float); pv = pv - np.dot(pv, dn) * dn; pn = pv / max(1e-6, np.linalg.norm(pv))
+    e = R + l1 * (math.cos(a) * dn + math.sin(a) * pn)
+    return A(e[0], e[1]), A(end[0], end[1]), float(e[2]), float(end[2])
+def lower_hip_for_feet(hip_y, hips_x, feet, u, l=3.1):
+    """baja la cadera lo justo para que cada pie apoyado alcance el suelo sin estirar huesos (las rodillas se flexionan)."""
+    reach = l * u * .985
+    for hx, (fx, fy_) in zip(hips_x, feet):
+        ay = fy_ - .22 * u; dx = abs(fx - hx)
+        if dx < reach: hip_y = max(hip_y, ay - math.sqrt(reach * reach - dx * dx) + 1.)
+    return hip_y
 
 def reach(fk_hand, g):
     """objetivo de la mano: g = (x, y) o (x, y, peso). Con peso < 1 la mano viaja suavemente desde su pose natural."""
@@ -76,6 +98,7 @@ def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
     c = CAST[who]; u = hgt * c['alto'] / 8.; p = dict(NEUTRA, **pose)
     br = math.sin(t * 2.1) * u * .04                                   # respiración
     hip = A(x + p['hip_dx'] * u, fy - 3.35 * u + br * .3)
+    if feet: hip[1] = lower_hip_for_feet(hip[1], [hip[0] + sd * (.42 if facing == 0 else .16) * u for sd in (-1, 1) if ('L' if sd < 0 else 'R') in feet], [feet[k] for k in ('L', 'R') if k in feet], u)
     tv = A(math.sin(p['lean']), -math.cos(p['lean']))                  # eje del torso (hacia arriba)
     tn = A(math.cos(p['lean']), math.sin(p['lean']))                   # perpendicular (hacia la derecha)
     neck = hip + tv * (2.45 * u) + A(0, br - p['sh'] * .18 * u)
@@ -86,7 +109,7 @@ def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
         hp = hip + tn * (sd * (.42 if facing == 0 else .16) * u); L1 = L2 = 1.55 * u
         key = 'L' if sd < 0 else 'R'
         if feet and key in feet:
-            kn, an = ik_limb(hp, A(*feet[key]) - A(0, .22 * u), L1, L2, (sd, -.15) if facing == 0 else (facing, -.1))
+            kn, an = ik_limb(hp, A(*feet[key]) - A(0, .22 * u), L1, L2, (sd, -.15) if facing == 0 else (facing, -.1), key=(p.get('ikid'), 'pierna', key) if p.get('ikid') else None)
         else:
             kn = hp + down(th) * L1; an = kn + down(th + sn) * L2
         col = c['pants']; w = lw * (1.25 if c['ropa'] == 'franela' else 1.12 if who == 'laura' else 1.0)
@@ -99,17 +122,20 @@ def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
         toe = an + A(fo * .2 * u if facing else sd * .14 * u, .14 * u)
         ell(fr, toe, .5 * u, .25 * u, 0, c['shoe']); ell(fr, toe + A(0, .1 * u), .5 * u, .12 * u, 0, dark(c['shoe'], .6), 0, 180)
         if who == 'sofia': ell(fr, toe + A(0, -.02 * u), .5 * u, .25 * u, 0, (200, 120, 200), 200, 340, 3)
-        joints['knee' + key], joints['ankle' + key] = kn, an
+        joints['knee' + key], joints['ankle' + key], joints['hip' + key] = kn, an, hp
     # ---------------- brazos (codo y muñeca articulados); de perfil, el brazo que va hacia atrás queda detrás del torso
     hands = {}; arm_geo = []
-    spread = .86 if facing == 0 else .5
+    fem = c.get('fem', False); spread = (.76 if fem else .86) if facing == 0 else .5
     for sd, ua, la in ((-1, p['uL'], p['lL']), (1, p['uR'], p['lR'])):
         S = shY + tn * (sd * spread * u) + tv * (p['sh'] * .2 * u)
         g = p['grip'] and p['grip'].get('L' if sd < 0 else 'R')
         e = S + down(ua + p['lean']) * 1.3 * u; hd = e + down(ua + la + p['lean']) * 1.25 * u
-        if g is not None: e, hd = ik_limb(S, reach(hd, g), 1.3 * u, 1.25 * u, (sd, -.1) if p.get('codo_afuera') else (sd * .55, 1.))   # codo hacia abajo y un poco afuera
+        if g is not None and p.get('ik3d'):                               # brazo en 3D: codo hacia abajo y atrás, mano delante del cuerpo
+            e, hd, ez, hz = ik3d(S, reach(hd, g), 1.3 * u, 1.25 * u, (sd * .35, 1., -1.2), p.get('tz', .8) * u)
+            joints.setdefault('z', {}).update({'elbow' + ('L' if sd < 0 else 'R'): ez, 'hand' + ('L' if sd < 0 else 'R'): hz})
+        elif g is not None: e, hd = ik_limb(S, reach(hd, g), 1.3 * u, 1.25 * u, (sd, -.1) if p.get('codo_afuera') else (sd * .55, 1.), key=(p.get('ikid'), 'brazo', sd) if p.get('ikid') else None)   # codo hacia abajo y un poco afuera
         behind = facing != 0 and (hd[0] - S[0]) * facing < 0
-        arm_geo.append((sd, S, e, hd, behind))
+        arm_geo.append((sd, S, e, hd, behind)); k_ = 'L' if sd < 0 else 'R'; joints['sh' + k_], joints['elbow' + k_], joints['hand' + k_] = S, e, hd
     def draw_arm(sd, S, e, hd):
         col = c['top']; dk = dark(col, .62)
         line(fr, S, e, dk, lw + 5); line(fr, e, hd, dk, lw + 4); line(fr, S, e, col, lw); line(fr, e, hd, col, lw * .92)
@@ -122,11 +148,14 @@ def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
     # ---------------- torso
     top = c['top']; ta = neck - tv * (.25 * u); tb = hip
     def torso_mask():
-        pts = [shY - tn * .95 * u, shY + tn * .95 * u, hip + tn * .92 * u + tv * -.25 * u, hip - tn * .92 * u + tv * -.25 * u]
+        ws, wh = (.84, .9) if fem else (.95, .92)                       # silueta femenina: hombros más angostos
+        pts = [shY - tn * ws * u, shY + tn * ws * u, hip + tn * wh * u + tv * -.25 * u, hip - tn * wh * u + tv * -.25 * u]
         return pts
     tp = torso_mask(); poly(fr, tp, dark(top, .62))
-    tp2 = [shY - tn * .9 * u, shY + tn * .9 * u, hip + tn * .87 * u - tv * .2 * u, hip - tn * .87 * u - tv * .2 * u]; poly(fr, tp2, top)
-    ell(fr, (shY + hip) / 2, .95 * u, 1.35 * u, math.degrees(p['lean']), top)
+    ws2, wh2, we = (.79, .85, .8) if fem else (.9, .87, .95)
+    tp2 = [shY - tn * ws2 * u, shY + tn * ws2 * u, hip + tn * wh2 * u - tv * .2 * u, hip - tn * wh2 * u - tv * .2 * u]; poly(fr, tp2, top)
+    ell(fr, (shY + hip) / 2, we * u, 1.35 * u, math.degrees(p['lean']), top)
+    if fem: [ell(fr, shY + (hip - shY) * .55 + tn * sd * .86 * u, .16 * u, .5 * u, 0, BGK) for sd in (-1, 1)] if False else None
     if c['ropa'] == 'franela':
         for k in np.linspace(-.7, .7, 5): line(fr, shY + tn * k * u, hip + tn * k * u, c['plaid'], .1 * u)
         for k in np.linspace(.3, .95, 4): q = shY + (hip - shY) * k; line(fr, q - tn * .9 * u, q + tn * .9 * u, c['plaid'], .08 * u)
@@ -200,7 +229,7 @@ def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
     else: face(fr, c, head, uh, p, who)
     hair_front(fr, c, head, uh, p)
     head_extras(fr, c, head, uh, p, 0)
-    joints.update(head=head, hip=hip, neck=neck); return hands, joints
+    joints.update(head=head, hip=hip, neck=neck, u=u, hand_r=.31 * u, fy=fy, view='frente'); return hands, joints
 
 def infected_marks(fr, fc, u, k, sides=(-1, 1), f=None):
     """rasgos de infección (k = 0..1): ojeras hundidas, venas oscuras, manchas en la boca."""
@@ -224,10 +253,15 @@ def face(fr, c, head, u, p, who):
             sy = .165 * (1 - p['blink'] * 1.6 if p['blink'] < .5 else .2)
             big = 1.18 if p['boca'] in ('o', 'grito') else 1.
             ell(fr, e, .1 * u * big, max(.02, sy) * u * big, 0, INK); circ(fr, e + A(-.03 * u, -.06 * u), .03 * u, (250, 250, 255))
-        fr_ = p['frown']; line(fr, fc + A(sd * .54 * u, -.45 * u - (fr_ < 0) * .06 * u), fc + A(sd * .16 * u, -.47 * u + fr_ * .24 * u), INK, .09 * u)
+        fr_ = p['frown']; by = -(p.get('brow_up', 0.) + sd * p.get('brow_asym', 0.)) * .16 * u
+        line(fr, fc + A(sd * .54 * u, -.45 * u - (fr_ < 0) * .06 * u + by), fc + A(sd * .16 * u, -.47 * u + fr_ * .24 * u + by), INK, .09 * u)
     m = fc + A(0, .42 * u); b = p['boca']
     if b == 'sonrisa': ell(fr, m - A(0, .06 * u), .26 * u, .16 * u, 0, INK, 0, 180, max(2, int(.08 * u)))
     elif b == 'o': ell(fr, m, .1 * u, .13 * u, 0, INK)
+    elif b == 'habla':
+        k = max(0., min(1., p.get('abre', 0.)))
+        if k < .08: line(fr, m - A(.18 * u, 0), m + A(.18 * u, 0), INK, .08 * u)
+        else: ell(fr, m, (.16 + .04 * k) * u, (.03 + .14 * k) * u, 0, INK); ell(fr, m + A(0, (.02 + .08 * k) * u), .09 * u, .04 * k * u + 1e-3, 0, (190, 70, 80))
     elif b == 'grito': ell(fr, m, .16 * u, .2 * u, 0, INK); ell(fr, m + A(0, .08 * u), .1 * u, .07 * u, 0, (190, 70, 80))
     elif b == 'tensa': pts = [m + A(-.2 * u, .02 * u), m + A(-.07 * u, -.03 * u), m + A(.07 * u, .03 * u), m + A(.2 * u, -.02 * u)]; [line(fr, a, b_, INK, .07 * u) for a, b_ in zip(pts[:-1], pts[1:])]
     elif b == 'triste': ell(fr, m + A(0, .08 * u), .2 * u, .1 * u, 0, INK, 180, 360, max(2, int(.07 * u)))
@@ -343,6 +377,7 @@ def person_side(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=1):
     c = CAST[who]; u = hgt * c['alto'] / 8.; p = dict(NEUTRA, **pose); f = 1 if facing >= 0 else -1
     br = math.sin(t * 2.1) * u * .04
     hip = A(x, fy - 3.35 * u + br * .3)
+    if feet: hip[1] = lower_hip_for_feet(hip[1], [x for k in ('L', 'R') if k in feet], [feet[k] for k in ('L', 'R') if k in feet], u)
     tv = A(math.sin(p['lean']), -math.cos(p['lean'])); tn = A(math.cos(p['lean']), math.sin(p['lean']))
     neck = hip + tv * 2.45 * u + A(0, br - p['sh'] * .18 * u); shY = neck - tv * .3 * u
     lw = u * .5; top, pants = c['top'], c['pants']; joints = {}
@@ -351,23 +386,23 @@ def person_side(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=1):
         if feet and key in feet: an = A(*feet[key]) - A(0, .22 * u)
         else:
             th = p['thL'] if key == 'L' else p['thR']; an = hip + down(th) * 3.05 * u
-        kn, an = ik_limb(hip, an, L1, L2, (f, -.1))                     # rodilla hacia adelante
+        kn, an = ik_limb(hip, an, L1, L2, (f, -.1), key=(p.get('ikid'), 'pierna_perfil', key) if p.get('ikid') else None)                     # rodilla hacia adelante
         col = dark(pants, shade); w = lw * 1.15
         for a_, b_ in ((hip, kn), (kn, an)): line(fr, a_, b_, dark(col, .68), w + 4)
         for a_, b_ in ((hip, kn), (kn, an)): line(fr, a_, b_, col, w)
         circ(fr, kn, w / 2, col)
         sh = dark(c['shoe'], shade); toe = an + A(f * .22 * u, .16 * u)
         ell(fr, toe, .52 * u, .22 * u, 0, sh); ell(fr, toe + A(0, .08 * u), .52 * u, .1 * u, 0, dark(sh, .6), 0, 180)
-        joints['knee' + key], joints['ankle' + key] = kn, an
+        joints['knee' + key], joints['ankle' + key], joints['hip' + key] = kn, an, hip
     def arm(key, shade):
         S = shY + tn * (-f * .05 * u)
         ua = p['uL'] if key == 'L' else p['uR']; la = abs(p['lL'] if key == 'L' else p['lR'])
         g = p['grip'] and p['grip'].get(key)
         e = S + down(ua + p['lean']) * 1.3 * u; hd = e + down(ua + p['lean'] + f * la) * 1.25 * u   # el codo solo dobla hacia adelante
-        if g is not None: e, hd = ik_limb(S, reach(hd, g), 1.3 * u, 1.25 * u, (-f * .5, 1.))     # codo hacia abajo y atrás
+        if g is not None: e, hd = ik_limb(S, reach(hd, g), 1.3 * u, 1.25 * u, (-f * .5, 1.), key=(p.get('ikid'), 'brazo_perfil', key) if p.get('ikid') else None)     # codo hacia abajo y atrás
         col = dark(top, shade)
         line(fr, S, e, dark(col, .62), lw + 5); line(fr, e, hd, dark(col, .62), lw + 4); line(fr, S, e, col, lw); line(fr, e, hd, col, lw * .92)
-        circ(fr, e, lw / 2, col)
+        circ(fr, e, lw / 2, col); joints['sh' + key], joints['elbow' + key], joints['hand' + key] = S, e, hd
         if c['ropa'] == 'sin_camisa': tat_limb(fr, S, e, lw, u); tat_limb(fr, e, hd, lw * .92, u)
         circ(fr, hd, .31 * u, dark((170, 172, 182), shade)); circ(fr, hd, .27 * u, dark(c.get('piel', SKIN), shade)); return hd
     hands = {}
@@ -442,15 +477,19 @@ def person_side(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=1):
         if c.get('infectado'): infected_marks(fr, e, uh, c['infectado'], sides=(1,), f=f)
         if p['blink'] > .5: line(fr, e - A(.08 * uh, 0), e + A(.08 * uh, 0), INK, .07 * uh)
         else: ell(fr, e, .09 * uh, .16 * uh, 0, INK); circ(fr, e + A(f * .03 * uh, -.06 * uh), .03 * uh, (250, 250, 255))
-        fr_ = p['frown']; line(fr, e + A(-f * .2 * uh, -.42 * uh), e + A(f * .12 * uh, -.36 * uh + fr_ * .2 * uh), INK, .09 * uh)
+        fr_ = p['frown']; by = -(p.get('brow_up', 0.) + p.get('brow_asym', 0.)) * .16 * uh
+        line(fr, e + A(-f * .2 * uh, -.42 * uh + by), e + A(f * .12 * uh, -.36 * uh + fr_ * .2 * uh + by), INK, .09 * uh)
         m = head + A(f * .62 * uh, .42 * uh); bo = p['boca']
         if bo == 'sonrisa': ell(fr, m, .16 * uh, .1 * uh, 0, INK, 0, 180, max(2, int(.07 * uh)))
         elif bo in ('o', 'grito'): ell(fr, m, .08 * uh, .12 * uh * (1.3 if bo == 'grito' else 1), 0, INK)
+        elif bo == 'habla' and p.get('abre', 0.) >= .08: ell(fr, m, .1 * uh, (.03 + .12 * p['abre']) * uh, 0, INK)
+        elif bo == 'tensa': line(fr, m - A(f * .12 * uh, -.02 * uh), m + A(f * .08 * uh, .02 * uh), INK, .07 * uh)
+        elif bo == 'triste': ell(fr, m + A(0, .06 * uh), .1 * uh, .06 * uh, 0, INK, 180, 360, max(2, int(.06 * uh)))
         else: line(fr, m - A(f * .12 * uh, 0), m + A(f * .08 * uh, 0), INK, .07 * uh)
         if who == 'sofia': ell(fr, head + A(f * .45 * uh, .25 * uh), .14 * uh, .08 * uh, 0, (250, 196, 196))
     hair_profile(fr, c, L, uh, f, hc)
     head_extras(fr, c, head, uh, p, f)
-    joints.update(head=head, hip=hip, neck=neck); return hands, joints
+    joints.update(head=head, hip=hip, neck=neck, u=u, hand_r=.31 * u, fy=fy, view='perfil'); return hands, joints
 def step_len(u, run=False): return (2.1 if run else 1.45) * u
 
 
@@ -465,6 +504,14 @@ def head_extras(fr, c, head, u, p, f):
             cv2.ellipse(fr, P8(fc + A(0, .02 * u)), (int(.8 * u * 8), int(.78 * u * 8)), 0, 25, 155, bc, max(2, int(.2 * u)), cv2.LINE_AA, 3)
             cv2.ellipse(fr, P8(fc + A(0, .3 * u)), (int(.22 * u * 8), int(.06 * u * 8)), 0, 180, 360, bc, max(2, int(.05 * u)), cv2.LINE_AA, 3)   # bigote fino (arriba de la boca)
         else: pass                                                            # de perfil: ver beard_profile
+    if c.get('auricular'):
+        if f == 0:
+            es = p.get('ear_side', 1); ea = head + A(es * .97 * u, .05 * u); circ(fr, ea, .09 * u, (30, 32, 38))
+            pts = [ea, ea + A(es * .08 * u, .35 * u), ea + A(-es * .05 * u, .7 * u), ea + A(-es * .2 * u, 1.05 * u)]
+            for a_, b_ in zip(pts[:-1], pts[1:]): line(fr, a_, b_, (200, 206, 216), .035 * u)
+        else:
+            ea = head + A(-f * .28 * u, .06 * u); circ(fr, ea, .08 * u, (30, 32, 38))
+            for a_, b_ in ((ea, ea + A(-f * .05 * u, .4 * u)), (ea + A(-f * .05 * u, .4 * u), ea + A(-f * .15 * u, .95 * u))): line(fr, a_, b_, (200, 206, 216), .035 * u)
     if c.get('gafas'):
         if f == 0:
             for sd in (-1, 1): ell(fr, fc + A(sd * .34 * u, -.04 * u), .24 * u, .17 * u, 0, (16, 18, 24)); ell(fr, fc + A(sd * .34 * u - .07 * u, -.1 * u), .07 * u, .04 * u, 0, (90, 96, 110))
@@ -501,11 +548,11 @@ CAST.update({
     'soldado':   dict(nombre='SOLDADO', alto=1.0, cabeza=1.0, top=(92, 104, 64), pants=(72, 82, 52), shoe=(26, 26, 26), ropa='militar', pelo='corto', pelo_col=(40, 32, 26), casco=(70, 82, 50)),
     'reo':       dict(nombre='DETENIDO', alto=.98, cabeza=1.0, top=(122, 126, 132), pants=(110, 114, 120), shoe=(40, 40, 44), ropa='gris', pelo='rapado', pelo_col=(200, 196, 190)),
     'jensen':    dict(nombre='JENSEN HUANG', alto=1.0, cabeza=1.0, top=(30, 30, 34), pants=(24, 24, 28), shoe=(12, 12, 14), ropa='cuero', pelo='peinado', pelo_col=(196, 198, 204)),
-    'alice':     dict(nombre='ALICE HUANG', alto=.94, cabeza=1.0, top=(222, 214, 200), pants=(40, 34, 40), shoe=(20, 16, 18), ropa='traje', pelo='melena', pelo_col=(22, 18, 20)),
-    'colette':   dict(nombre='COLETTE KRESS', alto=.95, cabeza=1.0, top=(34, 46, 76), pants=(28, 34, 52), shoe=(18, 18, 22), ropa='traje', pelo='melena', pelo_col=(196, 164, 112)),
-    'agente':    dict(nombre='AGENTE', alto=1.0, cabeza=1.0, top=(22, 24, 30), pants=(20, 22, 28), shoe=(10, 10, 12), ropa='traje', corbata=(14, 14, 18), pelo='corto', pelo_col=(30, 24, 20), gafas=True),
+    'alice':     dict(fem=True, nombre='ALICE HUANG', alto=.94, cabeza=1.0, top=(222, 214, 200), pants=(40, 34, 40), shoe=(20, 16, 18), ropa='traje', pelo='melena', pelo_col=(22, 18, 20)),
+    'colette':   dict(fem=True, nombre='COLETTE KRESS', alto=.95, cabeza=1.0, top=(34, 46, 76), pants=(28, 34, 52), shoe=(18, 18, 22), ropa='traje', pelo='melena', pelo_col=(196, 164, 112)),
+    'agente':    dict(nombre='AGENTE', alto=1.0, cabeza=1.0, top=(22, 24, 30), pants=(20, 22, 28), shoe=(10, 10, 12), ropa='traje', corbata=(14, 14, 18), pelo='corto', pelo_col=(30, 24, 20), gafas=True, auricular=True),
     'portavoz':  dict(nombre='PORTAVOZ', alto=.98, cabeza=1.0, top=(44, 46, 54), pants=(36, 38, 44), shoe=(14, 14, 16), ropa='traje', corbata=(150, 30, 36), pelo='corto', pelo_col=(20, 18, 18)),
-    'directora': dict(nombre='DIRECTORA', alto=.95, cabeza=1.0, top=(84, 86, 94), pants=(50, 52, 60), shoe=(20, 18, 20), ropa='traje', pelo='cola', pelo_col=(70, 46, 32)),
+    'directora': dict(fem=True, nombre='DIRECTORA', alto=.95, cabeza=1.0, top=(84, 86, 94), pants=(50, 52, 60), shoe=(20, 18, 20), ropa='traje', pelo='cola', pelo_col=(70, 46, 32)),
     'pandillero': dict(nombre='PANDILLERO', alto=.98, cabeza=1.0, top=SKIN, pants=(34, 36, 42), shoe=(236, 236, 240), ropa='sin_camisa', pelo='calvo', pelo_col=(60, 56, 54), tatuajes=True),
     'jefe':      dict(nombre='JEFE', alto=1.0, cabeza=1.0, top=(40, 78, 178), pants=(24, 28, 48), shoe=(14, 14, 18), ropa='traje', pelo='peinado', pelo_col=(60, 46, 36), corbata=(200, 170, 60)),
     'ejecutivo': dict(nombre='EJECUTIVO', alto=1.0, cabeza=1.0, top=(34, 38, 60), pants=(28, 31, 48), shoe=(14, 14, 18), ropa='traje', pelo='corto', pelo_col=(70, 60, 50), corbata=(190, 32, 36)),
@@ -608,3 +655,45 @@ def beard_profile(fr, col, L):
     pts = _arc(L, 25, 118, .99) + [L(-.4, .55), L(-.22, .2), L(.1, .5), L(.42, .58), L(.7, .5)]
     poly(fr, pts, col)
     line(fr, L(.48, .31), L(.74, .33), col, .07 * L(1, 0)[0] * 0 + 4)
+
+
+# ================================================================ VISTA DE TRES CUARTOS
+def person_34(fr, who, x, fy, hgt, pose, t=0., feet=None, turn=1):
+    """tres cuartos: el cuerpo frontal se escorza sin simetría: el lado cercano conserva casi su ancho (0.92) y el lejano
+    se comprime (0.6), como un cilindro girado. La cabeza no se escorza: se redibuja redonda, con la cara desplazada hacia
+    donde mira y la oreja del lado contrario visible. turn = +1 (mira a la derecha de la pantalla) / -1."""
+    c = CAST[who]; u = hgt * c['alto'] / 8.; near, far = .92, .6
+    x0, x1 = int(max(0, x - hgt * .8)), int(min(fr.shape[1], x + hgt * .8)); y0, y1 = int(max(0, fy - hgt * 1.25)), int(min(fr.shape[0], fy + hgt * .1))
+    if x1 <= x0 or y1 <= y0: return {}, {}
+    sc_ = lambda d: near if d * turn > 0 else far                             # escala según el lado
+    fwd = lambda dx: dx * (near if dx * turn > 0 else far)                    # espacio frontal → pantalla
+    inv = lambda dx: dx / (near if dx * turn > 0 else far)                    # pantalla → espacio frontal
+    p = dict(NEUTRA, **pose); p['look'] = (p['look'][0] + turn * .9, p['look'][1])
+    pl = dict(p); g = pl.get('grip')
+    if g: pl['grip'] = {k: (x + inv(v[0] - x) - x0, v[1] - y0) + tuple(v[2:]) for k, v in g.items()}
+    ft = {k: (x + inv(v[0] - x) - x0, v[1] - y0) for k, v in feet.items()} if feet else None
+    blk = np.zeros((y1 - y0, x1 - x0, 3), np.uint8); wht = np.full_like(blk, 255)
+    hands, j = person(blk, who, x - x0, fy - y0, hgt, pl, t, feet=ft); person(wht, who, x - x0, fy - y0, hgt, pl, t, feet=ft)
+    raw = {k: v + A(x0, y0) for k, v in j.items() if isinstance(v, np.ndarray) and v.shape == (2,)}   # sin escorzo: para medir huesos
+    al = np.clip(1. - (wht.astype(np.float32) - blk.astype(np.float32)).mean(2) / 255., 0, 1)
+    col = np.where(al[..., None] > 1e-3, blk.astype(np.float32) / np.maximum(al[..., None], 1e-3), 0)
+    xs = np.arange(x0, x1, dtype=np.float32) - x                               # columnas de pantalla → columnas fuente
+    src = np.array([x + inv(d) for d in xs], np.float32) - x0
+    mx = np.repeat(src[None, :], y1 - y0, 0); my = np.repeat(np.arange(y1 - y0, dtype=np.float32)[:, None], x1 - x0, 1)
+    col = cv2.remap(col, mx, my, cv2.INTER_LINEAR, borderValue=0); al = cv2.remap(al, mx, my, cv2.INTER_LINEAR, borderValue=0)
+    dst = fr[y0:y1, x0:x1].astype(np.float32); A_ = al[..., None]
+    fr[y0:y1, x0:x1] = np.clip(dst * (1 - A_) + col * A_, 0, 255).astype(np.uint8)
+    S_ = lambda q: A(x + fwd(q[0] + x0 - x), q[1] + y0)
+    j = {k: (S_(v) if isinstance(v, np.ndarray) and v.shape == (2,) else v) for k, v in j.items()}
+    hands = {k: S_(v) for k, v in hands.items()}
+    for hd in hands.values(): circ(fr, hd, .31 * u, (170, 172, 182)); circ(fr, hd, .27 * u, c.get('piel', SKIN))   # las manos no se escorzan: mismo tamaño en todas las vistas
+    head = j['head']; uh = u * c['cabeza']                                     # la cabeza no se escorza: se redibuja redonda
+    hair_back(fr, c, head - A(turn * .12 * uh, 0), uh, p)
+    circ(fr, head, 1.0 * uh, (150, 154, 170)); circ(fr, head, .96 * uh, dark(c.get('piel', SKIN), .84)); circ(fr, head + A(turn * .05 * uh, -.06 * uh), .9 * uh, c.get('piel', SKIN))
+    face(fr, c, head, uh, p, who)
+    hair_front(fr, c, head - A(turn * .12 * uh, 0), uh, p)
+    if c['pelo'] not in ('melena', 'gorro', 'cola', 'coletas'):                 # oreja del lado lejano, al borde de la cabeza
+        ea = head + A(-turn * .9 * uh, .08 * uh); circ(fr, ea, .17 * uh, dark(c.get('piel', SKIN), .78)); circ(fr, ea, .13 * uh, c.get('piel', SKIN))
+        cv2.ellipse(fr, P8(ea), (int(.07 * uh * 8), int(.09 * uh * 8)), 0, 200 if turn < 0 else -20, 340 if turn < 0 else 160, dark(c.get('piel', SKIN), .7), max(1, int(.03 * uh)), cv2.LINE_AA, 3)
+    p['ear_side'] = -turn; head_extras(fr, c, head, uh, p, 0)
+    j.update(view='tres_cuartos', u=u, hand_r=.31 * u, fy=fy, raw=raw, z=j.get('z', {})); return hands, j

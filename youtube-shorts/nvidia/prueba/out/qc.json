@@ -1,0 +1,46 @@
+{
+ "frames": 216,
+ "personajes": [
+  "jensen",
+  "junta0",
+  "junta1"
+ ],
+ "errores": [],
+ "medidas": {
+  "error_max_hueso_pct": 0.0,
+  "saltos_articulacion": 0,
+  "deslizamientos": 0,
+  "flotando": 0,
+  "atraviesa_suelo": 0,
+  "fotogramas_caminando": 72,
+  "radios_mano": [
+   17.302,
+   18.212,
+   24.8
+  ],
+  "bocas_hablando_sin_dialogo": 0,
+  "agarres_medidos": 270,
+  "agarres_fuera": 0,
+  "diff_mediana": 2.056,
+  "diff_max": 3.441,
+  "saltos_imagen": 0,
+  "fotogramas_transicion": [
+   72,
+   73,
+   74,
+   75,
+   76,
+   77
+  ]
+ },
+ "puntuacion": {
+  "Continuidad corporal": 10.0,
+  "Movimiento de extremidades": 10.0,
+  "Naturalidad de caminata": 10.0,
+  "Consistencia visual": 10.0,
+  "Sincronización labial": 10.0,
+  "Interacción con objetos": 10.0,
+  "Continuidad temporal": 10.0
+ },
+ "aprobado": true
+}
