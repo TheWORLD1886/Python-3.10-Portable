@@ -273,7 +273,7 @@ class FBIWarn(Sb):                                 # el agente entrega la carpet
 class Board(Sb):                                   # PLANO DE PRUEBA aprobado: Jensen recibe el expediente y se sorprende en «operación extranjera»
     def __init__(s):
         s.back, s.main = NV.office(31); s.front = [(bokeh_layer(8, (150, 240, 110), 431, ymin=200, ymax=1100), 1.7)]
-        s.panel = gold_panel('INVESTIGACIÓN INDEPENDIENTE', '¿FUE OBJETIVO DE UNA OPERACIÓN EXTRANJERA?', w=960, h=180)
+        s.panel = gold_panel('INVESTIGACIÓN', 'INDEPENDIENTE', w=560, h=150)   # dentro del encuadre cerrado (zoom 1.34–1.44)
         s.hJ = 640; s.uJ = U('jensen', s.hJ); s.st = RG.step_len(s.uJ); s.x_stop = 4 * s.st; s.fy = 1640
         s.doc0 = A(545, 1352); s.cL0, s.cR0 = (490, 1352), (600, 1352); s.cL1, s.cR1 = (480, 1300), (590, 1300)
     def feet34(s, t, top):
@@ -319,7 +319,7 @@ class Board(Sb):                                   # PLANO DE PRUEBA aprobado: J
             for i in range(4): cv2.rectangle(fr, (int(x0_ + 14), int(yt + 22 + i * 24)), (int(x1_ - 14 - (i % 2) * 30), int(yt + 34 + i * 24)), (14, 14, 16) if i % 2 else (120, 110, 90), -1)
             cv2.putText(fr, 'CONFIDENCIAL', (int(x0_ + 10), int(yt + 16)), cv2.FONT_HERSHEY_DUPLEX, .45, (200, 40, 40), 1, cv2.LINE_AA)
         if hands and t >= TS + .55: hands_on_top(fr, hands, 'jensen', s.hJ)
-        float_in(fr, s.panel, 540, 330, t, .3)
+        float_in(fr, s.panel, 540, 720, t, .3)
     def cam(s, t, d): return lerp(1.34, 1.44, RG.ease(t / d)), lerp(430, 560, RG.ease(t / 2.4)), 1250, 0, 0
 
 class Statement(Sb):                               # Colette lee el comunicado en un atril y levanta la vista
@@ -410,7 +410,7 @@ class Resign(Sb):                                  # Jensen deja el gafete y sal
         s.golpe = N.text_sprite('OTRO GOLPE', 110, (255, 236, 220, 255), glow=(255, 60, 40), glow_r=16, stroke=4, stroke_col=(0, 0, 0, 200))
         s.date = N.stamp('12 NOV 2026', (255, 59, 42), w=520, h=110, px=60); s.res = label('JENSEN HUANG RENUNCIA', 40, (255, 220, 210))
         s.card = green_panel('COLETTE KRESS', 'DIRECTORA EJECUTIVA INTERINA', w=820, h=180)
-        s.hJ = 640; s.xJ = snap(560, 'jensen', s.hJ); s.hC = 620; s.xC = snap(700, 'colette', s.hC)
+        s.hJ = 640; s.xJ = snap(560, 'jensen', s.hJ); s.hC = 620; s.xC = snap(870, 'colette', s.hC)
     def draw(s, fr, t, d):
         tg, tr, tc = s.w('golpe'), s.w('renunció'), s.w('colette'); fy = 1700; uJ = U('jensen', s.hJ); xJ = s.xJ
         poly(fr, [(240, 1380), (600, 1380), (620, 1430), (220, 1430)], (74, 50, 34)); cv2.rectangle(fr, (220, 1430), (620, 1450), (46, 30, 20), -1)   # mesa
@@ -427,12 +427,12 @@ class Resign(Sb):                                  # Jensen deja el gafete y sal
             return RG.person_34(f_, 'jensen', xJ, fy, s.hJ, p, t, feet=stance(xJ, uJ, fy), turn=-1)[0]
         hands = None
         if t < t_turn: hands = jJ(fr)
-        elif t < t_turn + .2: turn_blend(fr, (t - t_turn) / .2, jJ, lambda f_: walk(f_, 'jensen', xJ, xJ - 900, t_walk, t_walk + 3.4, fy, s.hJ, t_walk, mode='sale'))
-        elif t < t_walk + 3.4: walk(fr, 'jensen', xJ, xJ - 900, t_walk, t_walk + 3.4, fy, s.hJ, max(t, t_walk), mode='sale')
+        elif t < t_turn + .2: turn_blend(fr, (t - t_turn) / .2, jJ, lambda f_: walk(f_, 'jensen', xJ, xJ - 760, t_walk, t_walk + 3.0, fy, s.hJ, t_walk, mode='sale'))
+        elif t < t_walk + 3.0: walk(fr, 'jensen', xJ, xJ - 760, t_walk, t_walk + 3.0, fy, s.hJ, max(t, t_walk), mode='sale')
         bx, by = (badge_t if badge_on_table else (hands['R'] if hands else badge_t))
         cv2.rectangle(fr, (int(bx - 26), int(by - 18)), (int(bx + 26), int(by + 18)), (236, 236, 240), -1); cv2.rectangle(fr, (int(bx - 26), int(by - 18)), (int(bx + 26), int(by - 8)), GREEN, -1)
         if hands and not badge_on_table: hands_on_top(fr, {'R': hands['R']}, 'jensen', s.hJ)
-        uC = U('colette', s.hC); ca, cb = tc - 2.6, tc - .1                   # Colette entra caminando, se detiene, gira y asiente
+        uC = U('colette', s.hC); ca, cb = tc - 2.4, tc - .1                   # Colette entra caminando, se detiene, gira y asiente
         nod = math.sin((t - cb - .5) * 2 * math.pi * 1.2) * .06 * (1 - RG.ease((t - cb - 1.4) / .4)) if t > cb + .5 else 0
         kC = [(cb + .2, P(look=(-.3, 0), frown=-.1)), (cb + .6, P(look=(-.1, 0), frown=-.15, boca='sonrisa')), (d, P(look=(-.05, 0), frown=-.15, boca='sonrisa'))]
         def jC(f_): p = RG.anim(kC, t); p['tilt'] = nod; p['blink'] = blinkp(t, 22); return RG.person_34(f_, 'colette', s.xC, fy, s.hC, p, t, feet=stance(s.xC, uC, fy), turn=-1)

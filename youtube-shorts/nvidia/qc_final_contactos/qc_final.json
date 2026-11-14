@@ -1,0 +1,925 @@
+{
+ "fotogramas_video": 4890,
+ "fotogramas_con_diff": 4889,
+ "planos": [
+  {
+   "n": 1,
+   "nombre": "Scandal",
+   "inicio": 0,
+   "fin": 4.14,
+   "fotogramas": 125,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.04,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 2,
+   "nombre": "Relation",
+   "inicio": 4.14,
+   "fin": 11.76,
+   "fotogramas": 228,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": null
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "alice",
+     "figura",
+     "jensen"
+    ],
+    "registros": 398,
+    "err_hueso_max_pct": 0.01,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 51,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 1.84,
+    "picos_imagen": 0,
+    "fotogramas_giro": 15
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 3,
+   "nombre": "Secrets",
+   "inicio": 11.76,
+   "fin": 16.93,
+   "fotogramas": 155,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.82,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 4,
+   "nombre": "JensenIntro",
+   "inicio": 16.93,
+   "fin": 22.03,
+   "fotogramas": 153,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "jensen"
+    ],
+    "registros": 159,
+    "err_hueso_max_pct": 0.009,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 44,
+    "agarres": 28,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.35,
+    "picos_imagen": 0,
+    "fotogramas_giro": 6
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 5,
+   "nombre": "ChipsAI",
+   "inicio": 22.03,
+   "fin": 27.06,
+   "fotogramas": 151,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 3.32,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 6,
+   "nombre": "AliceIntro",
+   "inicio": 27.06,
+   "fin": 33.09,
+   "fotogramas": 181,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "alice"
+    ],
+    "registros": 187,
+    "err_hueso_max_pct": 0.011,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 47,
+    "agarres": 28,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.07,
+    "picos_imagen": 0,
+    "fotogramas_giro": 6
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 7,
+   "nombre": "DataCenter",
+   "inicio": 33.09,
+   "fin": 36.63,
+   "fotogramas": 106,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 3.16,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 8,
+   "nombre": "Buyer",
+   "inicio": 36.63,
+   "fin": 40.31,
+   "fotogramas": 111,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "alice"
+    ],
+    "registros": 111,
+    "err_hueso_max_pct": 0.01,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 222,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.36,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 9,
+   "nombre": "Suspicion",
+   "inicio": 40.31,
+   "fin": 46.11,
+   "fotogramas": 174,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "alice"
+    ],
+    "registros": 174,
+    "err_hueso_max_pct": 0.012,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 296,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.07,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 10,
+   "nombre": "Surveil",
+   "inicio": 46.11,
+   "fin": 51.75,
+   "fotogramas": 169,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "agente",
+     "alice",
+     "figura"
+    ],
+    "registros": 845,
+    "err_hueso_max_pct": 0.034,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 75,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.0,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 11,
+   "nombre": "Intercept",
+   "inicio": 51.75,
+   "fin": 58.3,
+   "fotogramas": 196,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 3.77,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 12,
+   "nombre": "FBIWarn",
+   "inicio": 58.3,
+   "fin": 64.96,
+   "fotogramas": 200,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "agente",
+     "ejecutivo",
+     "jefe"
+    ],
+    "registros": 600,
+    "err_hueso_max_pct": 0.011,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 497,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.06,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 13,
+   "nombre": "Photos",
+   "inicio": 64.96,
+   "fin": 69.7,
+   "fotogramas": 143,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": null
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "alice",
+     "jensen"
+    ],
+    "registros": 732,
+    "err_hueso_max_pct": 0.025,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 3.05,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 14,
+   "nombre": "NatSec",
+   "inicio": 69.7,
+   "fin": 73.76,
+   "fotogramas": 121,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 1.78,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 15,
+   "nombre": "Classified",
+   "inicio": 73.76,
+   "fin": 82.17,
+   "fotogramas": 253,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 1.89,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 16,
+   "nombre": "Problem",
+   "inicio": 82.17,
+   "fin": 84.54,
+   "fotogramas": 71,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.72,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 17,
+   "nombre": "ExportWall",
+   "inicio": 84.54,
+   "fin": 95.08,
+   "fotogramas": 316,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.46,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 18,
+   "nombre": "Board",
+   "inicio": 95.08,
+   "fin": 100.88,
+   "fotogramas": 174,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "directora",
+     "ejecutivo",
+     "jensen"
+    ],
+    "registros": 528,
+    "err_hueso_max_pct": 0.016,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 39,
+    "agarres": 220,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.23,
+    "picos_imagen": 0,
+    "fotogramas_giro": 6
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 19,
+   "nombre": "Statement",
+   "inicio": 100.88,
+   "fin": 108.88,
+   "fotogramas": 240,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "colette"
+    ],
+    "registros": 240,
+    "err_hueso_max_pct": 0.01,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 480,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 1.78,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 20,
+   "nombre": "Investors",
+   "inicio": 108.88,
+   "fin": 112.89,
+   "fotogramas": 120,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "directora",
+     "ejecutivo",
+     "jefe"
+    ],
+    "registros": 360,
+    "err_hueso_max_pct": 0.015,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 113,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.52,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 21,
+   "nombre": "Capitol",
+   "inicio": 112.89,
+   "fin": 115.2,
+   "fotogramas": 69,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.46,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 22,
+   "nombre": "Questions",
+   "inicio": 115.2,
+   "fin": 124.22,
+   "fotogramas": 271,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 1.97,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 23,
+   "nombre": "Lawmakers",
+   "inicio": 124.22,
+   "fin": 127.68,
+   "fotogramas": 104,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "directora",
+     "ejecutivo",
+     "jefe",
+     "jensen"
+    ],
+    "registros": 416,
+    "err_hueso_max_pct": 0.018,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 383,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.5,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 24,
+   "nombre": "Beijing",
+   "inicio": 127.68,
+   "fin": 132.01,
+   "fotogramas": 130,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "portavoz"
+    ],
+    "registros": 130,
+    "err_hueso_max_pct": 0.011,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 52,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 1.97,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 25,
+   "nombre": "Resign",
+   "inicio": 132.01,
+   "fin": 140.49,
+   "fotogramas": 254,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "colette",
+     "jensen"
+    ],
+    "registros": 410,
+    "err_hueso_max_pct": 0.012,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 160,
+    "agarres": 135,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.15,
+    "picos_imagen": 0,
+    "fotogramas_giro": 12
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 26,
+   "nombre": "Infidelity",
+   "inicio": 140.49,
+   "fin": 149.62,
+   "fotogramas": 274,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 1.92,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 27,
+   "nombre": "Close",
+   "inicio": 149.62,
+   "fin": 163,
+   "fotogramas": 401,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": null
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "figura",
+     "jensen"
+    ],
+    "registros": 810,
+    "err_hueso_max_pct": 0.009,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 1.85,
+    "picos_imagen": 0,
+    "fotogramas_giro": 8
+   },
+   "errores": [],
+   "n_errores": 0
+  }
+ ]
+}

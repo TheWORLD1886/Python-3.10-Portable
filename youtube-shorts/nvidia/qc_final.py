@@ -13,7 +13,7 @@ FPS = 30
 
 def load():
     log, diffs = [], {}
-    for p in sorted(glob.glob(os.path.join(O, 'qc_*.json'))):
+    for p in sorted([p for p in glob.glob(os.path.join(O, 'qc_*.json')) if not p.endswith('qc_final.json')]):
         d = json.load(open(p)); log += d['log']; diffs.update({int(k): v for k, v in d['diffs'].items()})
     return log, diffs
 
