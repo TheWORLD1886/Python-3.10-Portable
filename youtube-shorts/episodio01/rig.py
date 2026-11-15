@@ -549,8 +549,9 @@ def head_extras(fr, c, head, u, p, f):
         else:                                                             # de perfil: un lente sobre el ojo y la patilla hasta la oreja
             e = head + A(f * .55 * u, -.05 * u + ly * .2 * u)
             ell(fr, e, .21 * u, .23 * u, 0, RIM); ell(fr, e, .185 * u, .205 * u, 0, GL); ell(fr, e + A(-f * .05 * u, -.09 * u), .06 * u, .035 * u, 0, SHN)
-            line(fr, e + A(-f * .19 * u, -.06 * u), head + A(-f * .2 * u, -.04 * u), RIM, .05 * u)
-            line(fr, head + A(-f * .2 * u, -.04 * u), head + A(-f * .3 * u, .1 * u), RIM, .05 * u)            # gancho detrás de la oreja
+            top = head + A(-f * .22 * u, -.17 * u)                                                         # pasa por encima de la oreja
+            line(fr, e + A(-f * .19 * u, -.08 * u), top, RIM, .055 * u)
+            line(fr, top, head + A(-f * .4 * u, -.1 * u), RIM, .055 * u); line(fr, head + A(-f * .4 * u, -.1 * u), head + A(-f * .47 * u, .04 * u), RIM, .055 * u)   # gancho detrás de la oreja
     if c.get('tatuajes'):
         if f == 0:
             tat_text(fr, 'MS', fc + A(0, -.72 * u), .56 * u)                                           # frente, arriba de las cejas
@@ -667,7 +668,7 @@ def hair_profile(fr, c, L, uh, f, hc):
             front = {'peinado': [L(.45, -.78), L(.75, -.72)], 'corto': [L(.5, -.66), L(.82, -.6)], 'melena': [L(.45, -.64), L(.8, -.58)]}.get(st, [L(.45, -.68), L(.78, -.62)])
             nape = [L(-1.3, .25), L(-.62, .26), L(-.5, .2)] if st != 'melena' else [L(-1.3, .7), L(-.7, .7), L(-.55, .3)]
             if st in ('corto', 'peinado', 'revuelto', 'rapado'):              # rodea la oreja por arriba y baja en patilla delante de ella
-                line_ = [L(-.47, -.12), L(-.32, -.24), L(-.15, -.21), L(-.14, .02), L(-.09, .08), L(-.03, .0), L(-.02, -.48), L(.1, -.64)]
+                line_ = [L(-.47, -.12), L(-.32, -.24), L(-.15, -.21), L(-.15, .0), L(-.03, .0), L(-.02, -.48), L(.1, -.64)]
             else: line_ = [L(-.47, -.12), L(-.32, -.26), L(-.12, -.46), L(.1, -.64)]
             poly(fr, _arc(L, -36, -200, 1.3) + nape + line_ + front, col)
             hl = tuple(min(255, int(v * 1.35)) for v in col)
@@ -683,10 +684,16 @@ def hair_profile(fr, c, L, uh, f, hc):
         cv2.ellipse(fr, P8(e0), (int(.08 * uh * 8), int(.1 * uh * 8)), 0, 200 if f > 0 else -20, 340 if f > 0 else 160, dark(c.get('piel', SKIN), .7), max(1, int(.03 * uh)), cv2.LINE_AA, 3)
 
 def beard_profile(fr, col, L):
-    """barba de perfil: solo la mandíbula (de la patilla a la barbilla), deja libre la boca; bigote corto."""
-    pts = _arc(L, 20, 112, .99) + _arc(L, 112, 20, .8)
-    poly(fr, pts, col)
-    line(fr, L(.48, .31), L(.74, .33), col, .07 * L(1, 0)[0] * 0 + 4)
+    """barba de perfil: nace en la patilla (delante de la oreja), cubre la mejilla baja y la mandíbula hasta la barbilla
+    y deja libre la boca; bigote corto y grueso encima de la boca. Todo recortado al contorno de la cabeza."""
+    uh = float(np.linalg.norm(L(1, 0) - L(0, 0)))
+    def body():
+        back = [L(-.15, -.02), L(-.2, .55)]                                       # baja desde la patilla, delante de la oreja
+        outer = _arc(L, 112, 30, 1.3)                                             # mandíbula hasta la barbilla (se recorta al contorno)
+        inner = _arc(L, 32, 92, .76) + [L(.0, .45), L(-.03, -.02)]               # borde interior: deja libres boca y mejilla
+        poly(fr, back + outer + inner, col)
+    clip_to_head(fr, L(0, 0), .97 * uh, body)
+    ell(fr, L(.6, .35), .17 * uh, .05 * uh, 0, col)                              # bigote, pegado encima de la boca
 
 
 # ================================================================ VISTA DE TRES CUARTOS

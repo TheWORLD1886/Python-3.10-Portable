@@ -61,7 +61,8 @@ Resultado: todos los planos aprobados. Medidos 4319 de 4320 fotogramas.
 - El pelo se dibujaba con formas fijas (casco, picos laterales, copete) que se salían del contorno de la cabeza y, en 3/4, iban desplazadas: parecía flotar. Ahora el pelo se recorta siempre al cráneo real, con el nacimiento curvo por arriba de las cejas.
 - De perfil: se quitaron el pico de la frente y la masa de pelo de la nuca. El nacimiento rodea la oreja y baja en una patilla unida al pelo, delante de la oreja.
 - Lentes oscuros: de perfil, el lente estaba dibujado en el centro de la cabeza (un error de escala); ahora va sobre el ojo, con la patilla hasta la oreja. En 3/4, el lente lejano se estrecha y se ve la patilla del lado cercano. Se añadieron marco y brillo.
-- Barba del capo: sigue la mandíbula y se recorta al contorno de la cara (en 3/4 se salía).
+- Barba del capo: de frente y en 3/4 sigue la mandíbula y se recorta al contorno de la cara (en 3/4 se salía). De perfil era un arco suelto en el borde de la cabeza: ahora nace en la patilla, delante de la oreja, baja por la mandíbula hasta la barbilla y deja libres la boca y la mejilla; el bigote va pegado encima de la boca.
+- Lentes de perfil: la patilla pasa por encima de la oreja (antes la atravesaba) y engancha detrás de ella. Detalle en `correccion_perfil_barba_lentes.jpg`.
 - Comparación por personaje (frente · 3/4 · perfil): `correccion_pelo_lentes.jpg`.
 
 ## Audio
