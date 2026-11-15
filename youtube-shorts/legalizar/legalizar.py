@@ -10,7 +10,7 @@ import nvidia2 as N2
 from nvidia2 import *
 NV = N2.NV; RG = N2.RG; CTX = N2.CTX
 OUTL = os.path.join(HERE_L, 'out'); os.makedirs(OUTL, exist_ok=True)
-WORDS = json.load(open(os.path.join(HERE_L, 'words.json')))
+WORDS = json.load(open(os.path.join(HERE_L, 'words.json'))); VOZ = os.path.join(HERE_L, 'voz.mp3')
 MAT = {m['id']: m for m in json.load(open(os.path.join(HERE_L, 'material.json')))}
 import unicodedata
 def _n(x): return ''.join(c for c in unicodedata.normalize('NFD', x.lower()) if unicodedata.category(c) != 'Mn' and c.isalnum() or c == '-')
@@ -588,6 +588,30 @@ KEYW = {'méxico', 'legalizara', 'cocaína', 'heroína', 'metanfetamina', 'fenta
         'prevención', 'adicciones', 'desafío', 'vigilar', 'corrupción', 'legal', 'unidos', 'frontera', 'diplomáticas', 'despenalizar', 'personal', 'autorización', 'evidencia',
         'regular', 'prohibición', 'amigo', 'complicada'}
 
+# ---------------------------------------------------------------- audio: voz de Brian + música original sintetizada + efectos discretos
+def audio_plan():
+    sh = tl(); st = {type(sc).__name__: a for a, b, sc, g in sh}
+    secs = [(0, 'tension', 1), (st['License'], 'tension', 2), (st['OtherSide'], 'misterio', 2), (st['Challenge'], 'epico', 2), (st['NotSame'], 'misterio', 1), (st['WhatNow'], 'esperanza', 1)]
+    ef = [[0, 'boom', .7], [.2, 'latido', .3]]
+    for a, b, sc, g in sh[1:]: ef += [[a - .25, 'whoosh', .22]]                       # transición suave entre planos
+    W_ = lambda w, after=-1: T(w, after)
+    ef += [[W_('cocaína') - .05, 'pop', .12], [W_('heroína') - .05, 'pop', .12], [W_('metanfetamina') - .05, 'pop', .12], [W_('fentanilo') - .05, 'impacto', .35],
+           [W_('perder'), 'dinero', .22], [W_('crisis'), 'alarma', .05, 1.6], [W_('error'), 'impacto', .4],
+           [W_('licencias') - .05, 'impacto', .3], [W_('legalmente') - .4, 'ding', .15], [W_('pelear'), 'latido', .4], [W_('extorsión'), 'impacto', .35], [W_('secuestro'), 'impacto', .35],
+           [W_('menores') - .1, 'beep', .1], [W_('mortal'), 'boom', .5], [W_('grave'), 'impacto', .35],
+           [W_('laboratorios'), 'beep', .08], [W_('empresas', 77), 'beep', .08], [W_('distribuidores'), 'beep', .08], [W_('puntos'), 'beep', .08],
+           [W_('corrupción'), 'caida', .25], [W_('unidos'), 'impacto', .35], [W_('diplomáticas'), 'impacto', .35], [W_('despenalizar'), 'ding', .2],
+           [W_('sanciones'), 'ding', .15], [W_('evidencia'), 'latido', .35], [W_('regular') - .1, 'pop', .12], [W_('mantener') - .1, 'pop', .12],
+           [W_('mándaselo') - 1.6, 'riser', .14, 1.6], [W_('complicada'), 'boom', .5], [W_('parece') + .4, 'ding', .25]]
+    return secs, sorted(ef, key=lambda e: e[0])
+def synth_all(path):
+    secs, ef = audio_plan(); src = CH._src
+    a = src.index('secs = ['); b = src.index(']', src.index("1)]", a)) + 1; src = src[:a] + 'secs = ' + repr(secs) + src[b:]
+    a = src.index('    EF = ['); b = src.index(']]', a) + 2; src = src[:a] + '    EF = ' + repr(ef) + src[b:]
+    src = src.replace("env / (env.max() * .25)", "env / (env.max() * .25 + 1e-9)").replace("duck = 1 - .55 * env", "duck = 1 - .7 * env").replace(
+        "out = np.tanh((mus * .75 * duck + fx * .6 * (1 - .35 * env)) * 1.1) * .8 + vv * .92", "out = np.tanh((mus * .65 * duck + fx * .42 * (1 - .5 * env)) * 1.1) * .7 + vv * .95")
+    g = dict(globals()); g.update(EMOJIS=[], DUR=DUR, VOZ=VOZ, OUT=OUTL); exec(src, g); g['synth_audio'](path)
+
 def make_frame():
     NV.TR.DUR = DUR; NV.TR.KEY = KEYW
     subs = [(a, b, y, sub_sprite(c)) for a, b, y, c in NV.TR.build_subs(WORDS)]
@@ -633,5 +657,6 @@ def main():
         if p: p.stdin.close(); p.wait()
         json.dump(dict(log=CTX['log'], diffs=diffs, f0=f0, f1=f1), open(f'{D_}/qc_{tag_}.json', 'w'))
         print('SEG' if mode == 'seg' else 'QCSHOT', f0, f1, flush=True)
+    elif mode == 'audio': synth_all(f'{OUTL}/audio.wav'); print('audio ok')
 
 if __name__ == '__main__': main()

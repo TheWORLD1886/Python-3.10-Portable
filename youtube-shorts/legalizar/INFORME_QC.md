@@ -1,6 +1,6 @@
-# Informe de control de calidad · prueba sin audio
+# Informe de control de calidad · video final
 
-Archivo: `legalizar_prueba_sin_audio.mp4`. Comprobado con ffprobe y con una decodificación completa: H.264, 1080×1920, 30 fps, 4320 fotogramas, 144 s, sin pista de audio (a propósito, es la prueba).
+Archivo: `legalizar_drogas_mexico.mp4`. Comprobado con ffprobe y con una decodificación completa: H.264, 1080×1920, 30 fps, 4320 fotogramas, 144 s; audio AAC estéreo a 48 kHz, −14.5 LUFS integrado, pico −1.2 dBFS.
 
 El sistema de medición es el mismo de NVIDIA v2 e Internet: el rig registra cada personaje en cada fotograma, y la diferencia de imagen se mide entre fotogramas consecutivos.
 Fórmulas fijas, mínimo 9 de 10. En los planos documentales y gráficos (sin personajes) solo se puede medir la continuidad temporal.
@@ -14,7 +14,7 @@ Fórmulas fijas, mínimo 9 de 10. En los planos documentales y gráficos (sin pe
 6. Un logotipo de hotel aparecía en la última foto: se cambió por otra vista aérea del mismo autor.
 7. Una sola foto ocupaba 9 s: se dividió en dos planos (decomiso de metanfetamina y Guardia Nacional).
 
-## Puntuación por plano
+## Puntuación por plano (render final, con pelo y lentes corregidos)
 
 | # | Plano | Inicio | Fin | Puntuaciones | Errores |
 |---|---|---|---|---|---|
@@ -49,7 +49,7 @@ Fórmulas fijas, mínimo 9 de 10. En los planos documentales y gráficos (sin pe
 | 29 | Friend | 133.33 | 138.31 | Continuidad temporal: 10.0, Continuidad corporal: 10.0, Movimiento de extremidades: 10.0, Naturalidad de caminata: 10.0, Consistencia visual: 10.0, Sincronización labial: 10.0, Interacción con objetos: 10.0 | 0 |
 | 30 | Reality | 138.31 | 144 | Continuidad temporal: 10.0 | 0 |
 
-Resultado: todos los planos aprobados. Medidos 4319 de 4320 fotogramas (el primero no tiene uno anterior con qué compararse).
+Resultado: todos los planos aprobados. Medidos 4319 de 4320 fotogramas.
 
 ## Revisión documental
 - Cada imagen real corresponde a lo que dice la voz. Fecha y lugar salen de la ficha del archivo y se rotulan en pantalla.
@@ -57,6 +57,16 @@ Resultado: todos los planos aprobados. Medidos 4319 de 4320 fotogramas (el prime
 - No se muestra ninguna cifra inventada. La tabla de dosis es la del art. 479 de la Ley General de Salud. El dato de potencia del fentanilo es de la OMS.
 - Las fotos de fábricas farmacéuticas (Japón, Reino Unido) se descartaron porque no corresponden a México y podían inducir a error.
 
-## Pendiente para la versión final
-- Voz (ya generada: `voz.mp3`), música original y efectos.
-- Hojas de contacto de cada plano: `qc_contactos/`.
+## Personajes: pelo, barba y lentes (corregido en el rig compartido, sirve para todos los videos)
+- El pelo se dibujaba con formas fijas (casco, picos laterales, copete) que se salían del contorno de la cabeza y, en 3/4, iban desplazadas: parecía flotar. Ahora el pelo se recorta siempre al cráneo real, con el nacimiento curvo por arriba de las cejas.
+- De perfil: se quitaron el pico de la frente y la masa de pelo de la nuca. El nacimiento rodea la oreja y baja en una patilla unida al pelo, delante de la oreja.
+- Lentes oscuros: de perfil, el lente estaba dibujado en el centro de la cabeza (un error de escala); ahora va sobre el ojo, con la patilla hasta la oreja. En 3/4, el lente lejano se estrecha y se ve la patilla del lado cercano. Se añadieron marco y brillo.
+- Barba del capo: sigue la mandíbula y se recorta al contorno de la cara (en 3/4 se salía).
+- Comparación por personaje (frente · 3/4 · perfil): `correccion_pelo_lentes.jpg`.
+
+## Audio
+- Voz: ElevenLabs Brian (`voz.mp3`); los subtítulos salen de los mismos tiempos por palabra.
+- Música original sintetizada (sin material de terceros), con un ánimo por sección: tensión, misterio, épico, misterio y esperanza.
+- Efectos discretos sincronizados con la voz y con los planos: transiciones, impactos, alarma en «crisis», latido en «pelear», pitidos de verificación del inspector, golpe en «mortal», ascenso antes del cierre.
+- Mezcla: la música baja automáticamente cuando habla Brian y queda 17 dB por debajo de la voz (medido: voz −20.1 dB, fondo −37.5 dB al hablar, −33.3 dB en pausas). Normalizado a −14 LUFS.
+- Audio final suelto: `audio_final.mp3`. Hojas de contacto de cada plano: `qc_contactos/`.

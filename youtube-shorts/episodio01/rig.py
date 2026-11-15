@@ -283,9 +283,9 @@ def face(fr, c, head, u, p, who):
 def hair_back(fr, c, head, u, p):
     hc = c['pelo_col']
     if c['pelo'] == 'melena':                                            # melena hasta los hombros, por detrás de la cabeza
-        poly(fr, [head + A(-1.08 * u, -.3 * u), head + A(1.08 * u, -.3 * u), head + A(1.12 * u, .55 * u), head + A(.92 * u, .86 * u), head + A(.55 * u, .78 * u), head + A(-.55 * u, .78 * u), head + A(-.92 * u, .86 * u), head + A(-1.12 * u, .55 * u)], hc)
+        poly(fr, [head + A(-1.0 * u, -.3 * u), head + A(1.0 * u, -.3 * u), head + A(1.1 * u, .45 * u), head + A(.95 * u, .82 * u), head + A(.5 * u, .9 * u), head + A(-.5 * u, .9 * u), head + A(-.95 * u, .82 * u), head + A(-1.1 * u, .45 * u)], hc)
     if c['pelo'] == 'cola':
-        tb_ = head + A(.86 * u, -.35 * u)
+        tb_ = head + A(.8 * u, -.5 * u)
         poly(fr, [tb_ + A(-.1 * u, 0), tb_ + A(.24 * u, -.05 * u), tb_ + A(.5 * u, .7 * u), tb_ + A(.42 * u, 1.5 * u), tb_ + A(.22 * u, 1.7 * u), tb_ + A(.16 * u, .9 * u)], hc)
         circ(fr, tb_ + A(.1 * u, .05 * u), .14 * u, (150, 30, 50))
     if c['pelo'] == 'coletas':
@@ -294,36 +294,49 @@ def hair_back(fr, c, head, u, p):
             poly(fr, [b, b + A(sd * .35 * u, -.1 * u), b + A(sd * .7 * u, .5 * u), b + A(sd * .55 * u, 1.05 * u), b + A(sd * .3 * u, .55 * u)], hc)
             circ(fr, b + A(sd * .1 * u, 0), .14 * u, (240, 90, 150))
 
-def hair_front(fr, c, head, u, p):
-    hc = c['pelo_col']; hl = tuple(min(255, int(v * 1.35)) for v in hc)
-    if c['pelo'] == 'gorro':
-        ell(fr, head + A(0, -.5 * u), 1.02 * u, .58 * u, 0, hc, 180, 360); line(fr, head + A(-.98 * u, -.5 * u), head + A(.98 * u, -.5 * u), dark(hc, .8), .12 * u)
-    elif c['pelo'] == 'revuelto':
-        for k in range(7):
-            a_ = math.pi * (1.05 + k * .15); circ(fr, head + A(math.cos(a_) * .82 * u, math.sin(a_) * .72 * u - .12 * u), .32 * u, hc)
-    elif c['pelo'] == 'peinado':                                          # peinado hacia atrás con copete, frente despejada
-        ell(fr, head + A(0, -.6 * u), 1.0 * u, .48 * u, 0, hc, 180, 360); ell(fr, head + A(.15 * u, -.98 * u), .78 * u, .2 * u, -4, hc)
-        for sd in (-1, 1): poly(fr, [head + A(sd * .99 * u, -.6 * u), head + A(sd * .9 * u, -.1 * u), head + A(sd * .98 * u, -.3 * u)], hc)
-        for k in range(3): line(fr, head + A((-.5 + k * .35) * u, -1.05 * u), head + A((-.2 + k * .35) * u, -.68 * u), hl, 2)
-    elif c['pelo'] == 'rapado':                                           # cabeza rapada: sombra de pelo muy corto
-        ell(fr, head + A(0, -.58 * u), .96 * u, .44 * u, 0, c.get('rapado_col', tuple(int(v * .82) for v in c.get('piel', SKIN))), 180, 360)
-    elif c['pelo'] == 'cola':                                             # recogido en cola de caballo, raya en medio
-        ell(fr, head + A(0, -.56 * u), 1.0 * u, .48 * u, 0, hc, 180, 360)
-        for sd in (-1, 1): poly(fr, [head + A(sd * .99 * u, -.56 * u), head + A(sd * .76 * u, -.86 * u), head + A(sd * .92 * u, -.15 * u)], hc)
-        line(fr, head + A(0, -1.02 * u), head + A(.04 * u, -.62 * u), hl, 2)
-    elif c['pelo'] == 'corto':
-        ell(fr, head + A(0, -.55 * u), 1.0 * u, .5 * u, 0, hc, 180, 360)
-        poly(fr, [head + A(-.98 * u, -.56 * u), head + A(-.18 * u, -.66 * u), head + A(-.55 * u, -.57 * u), head + A(-.96 * u, -.44 * u)], hc)   # flequillo de lado (arriba de las cejas)
-        for sd in (-1, 1): poly(fr, [head + A(sd * .99 * u, -.55 * u), head + A(sd * .86 * u, -.08 * u), head + A(sd * .97 * u, -.2 * u)], hc)
-        line(fr, head + A(-.3 * u, -1.0 * u), head + A(.2 * u, -.62 * u), hl, 2)
-    elif c['pelo'] == 'melena':
-        ell(fr, head + A(0, -.52 * u), 1.03 * u, .54 * u, 0, hc, 180, 360)
-        for sd in (-1, 1): poly(fr, [head + A(sd * 1.0 * u, -.52 * u), head + A(sd * .72 * u, -.88 * u), head + A(sd * .9 * u, .1 * u), head + A(sd * 1.0 * u, .72 * u), head + A(sd * 1.1 * u, .35 * u)], hc)
-        line(fr, head + A(.15 * u, -1.03 * u), head + A(.05 * u, -.58 * u), hl, 2)
-    elif c['pelo'] == 'coletas':
-        ell(fr, head + A(0, -.5 * u), 1.0 * u, .52 * u, 0, hc, 180, 360)
-        poly(fr, [head + A(-.95 * u, -.52 * u), head + A(.95 * u, -.52 * u), head + A(.6 * u, -.58 * u), head + A(0, -.62 * u), head + A(-.6 * u, -.58 * u)], hc)   # flequillo (arriba de las cejas)
-        line(fr, head + A(0, -1.02 * u), head + A(0, -.62 * u), hl, 2)
+def clip_to_head(fr, center, r, draw):
+    """dibuja draw() y conserva solo lo que cae dentro del círculo del cráneo (borde suave): el pelo nunca queda flotando."""
+    cx, cy = float(center[0]), float(center[1]); R = int(r * 1.8) + 4
+    x0, x1 = max(0, int(cx) - R), min(fr.shape[1], int(cx) + R); y0, y1 = max(0, int(cy) - R), min(fr.shape[0], int(cy) + R)
+    if x1 <= x0 or y1 <= y0: draw(); return
+    save = fr[y0:y1, x0:x1].astype(np.float32); draw()
+    yy, xx = np.mgrid[y0:y1, x0:x1].astype(np.float32); a = np.clip(r - np.sqrt((xx - cx) ** 2 + (yy - cy) ** 2) + .5, 0, 1)[..., None]
+    fr[y0:y1, x0:x1] = (fr[y0:y1, x0:x1].astype(np.float32) * a + save * (1 - a)).astype(np.uint8)
+
+def _cap(fr, head, u, hc, top=-.62, temple=-.36, part=0.):
+    """casquete que sigue el cráneo: de sien a sien por arriba, con nacimiento curvo arriba de las cejas."""
+    pts = [head + A(math.cos(math.radians(a_)) * 1.2 * u, math.sin(math.radians(a_)) * 1.2 * u) for a_ in np.linspace(195, 345, 16)]
+    hl = [head + A(1.05 * u, temple * u), head + A(.8 * u, (temple + top) / 2 * u - .06 * u), head + A(.4 * u, top * u), head + A(part * u, (top - .02) * u),
+          head + A(-.4 * u, top * u), head + A(-.8 * u, (temple + top) / 2 * u - .06 * u), head + A(-1.05 * u, temple * u)]
+    poly(fr, pts + hl, hc)
+
+def hair_front(fr, c, head, u, p, clip=None):
+    """pelo de frente y de 3/4. clip = centro real del cráneo (en 3/4 el pelo se desplaza para girar con la cara)."""
+    hc = c['pelo_col']; hl = tuple(min(255, int(v * 1.35)) for v in hc); st = c['pelo']; cc = head if clip is None else clip
+    def body():
+        if st == 'gorro':
+            _cap(fr, head, u, hc, top=-.5, temple=-.42); line(fr, head + A(-1.0 * u, -.46 * u), head + A(1.0 * u, -.46 * u), dark(hc, .8), .1 * u)
+        elif st == 'revuelto':
+            _cap(fr, head, u, hc, top=-.5, temple=-.3)
+            for k in range(5): circ(fr, head + A((-.7 + k * .35) * u, -.55 * u), .2 * u, hc)
+        elif st == 'peinado':                                                 # hacia atrás, frente despejada
+            _cap(fr, head, u, hc, top=-.72, temple=-.42)
+            for k in range(3): line(fr, head + A((-.5 + k * .35) * u, -.98 * u), head + A((-.25 + k * .35) * u, -.74 * u), hl, 2)
+        elif st == 'rapado':
+            _cap(fr, head, u, c.get('rapado_col', tuple(int(v * .82) for v in c.get('piel', SKIN))), top=-.62, temple=-.4)
+        elif st == 'cola':                                                    # recogido, raya en medio
+            _cap(fr, head, u, hc, top=-.6, temple=-.3); line(fr, head + A(0, -1.0 * u), head + A(.03 * u, -.62 * u), hl, 2)
+        elif st == 'corto':                                                   # fleco de lado, arriba de las cejas
+            _cap(fr, head, u, hc, top=-.6, temple=-.36)
+            poly(fr, [head + A(-.95 * u, -.5 * u), head + A(-.2 * u, -.66 * u), head + A(.3 * u, -.6 * u), head + A(-.4 * u, -.52 * u)], hc)
+            line(fr, head + A(-.3 * u, -.98 * u), head + A(.2 * u, -.66 * u), hl, 2)
+        elif st == 'melena':
+            _cap(fr, head, u, hc, top=-.58, temple=-.1, part=.1)
+            for sd in (-1, 1): poly(fr, [head + A(sd * .55 * u, -.62 * u), head + A(sd * 1.1 * u, -.5 * u), head + A(sd * 1.1 * u, .4 * u), head + A(sd * .9 * u, .3 * u), head + A(sd * .78 * u, -.2 * u)], hc)
+            line(fr, head + A(.12 * u, -1.0 * u), head + A(.08 * u, -.6 * u), hl, 2)
+        elif st == 'coletas':
+            _cap(fr, head, u, hc, top=-.6, temple=-.3); line(fr, head + A(0, -1.0 * u), head + A(0, -.62 * u), hl, 2)
+    clip_to_head(fr, cc, 1.04 * u, body)
 
 # ================================================================ extras (mismo estilo y rig)
 CAST.update({
@@ -509,8 +522,10 @@ def head_extras(fr, c, head, u, p, f):
     else: fc = head + A(f * .45 * u, ly * .2 * u)
     if c.get('barba'):                                                    # barba corta que sigue la mandíbula; la boca queda libre
         bc = c['barba']
-        if f == 0:
-            cv2.ellipse(fr, P8(fc + A(0, .02 * u)), (int(.8 * u * 8), int(.78 * u * 8)), 0, 25, 155, bc, max(2, int(.2 * u)), cv2.LINE_AA, 3)
+        if f == 0:                                                        # barba que sigue la mandíbula, recortada al contorno de la cara
+            jaw = [head + A(math.cos(math.radians(a_)) * 1.1 * u, math.sin(math.radians(a_)) * 1.1 * u) for a_ in np.linspace(15, 165, 20)]
+            inner = [head + A(math.cos(math.radians(a_)) * .8 * u, .14 * u + math.sin(math.radians(a_)) * .66 * u) for a_ in np.linspace(165, 15, 20)]
+            clip_to_head(fr, head, .97 * u, lambda: poly(fr, jaw + inner, bc))
             cv2.ellipse(fr, P8(fc + A(0, .3 * u)), (int(.22 * u * 8), int(.06 * u * 8)), 0, 180, 360, bc, max(2, int(.05 * u)), cv2.LINE_AA, 3)   # bigote fino (arriba de la boca)
         else: pass                                                            # de perfil: ver beard_profile
     if c.get('auricular'):
@@ -522,11 +537,20 @@ def head_extras(fr, c, head, u, p, f):
             ea = head + A(-f * .28 * u, .06 * u); circ(fr, ea, .08 * u, (30, 32, 38))
             for a_, b_ in ((ea, ea + A(-f * .05 * u, .4 * u)), (ea + A(-f * .05 * u, .4 * u), ea + A(-f * .15 * u, .95 * u))): line(fr, a_, b_, (200, 206, 216), .035 * u)
     if c.get('gafas'):
-        if f == 0:
-            for sd in (-1, 1): ell(fr, fc + A(sd * .34 * u, -.04 * u), .24 * u, .17 * u, 0, (16, 18, 24)); ell(fr, fc + A(sd * .34 * u - .07 * u, -.1 * u), .07 * u, .04 * u, 0, (90, 96, 110))
-            line(fr, fc + A(-.11 * u, -.08 * u), fc + A(.11 * u, -.08 * u), (16, 18, 24), .05 * u)
-        else:
-            ell(fr, head + A(f * .56 * 1, -.04 * u), .2 * u, .17 * u, 0, (16, 18, 24)); line(fr, head + A(f * .4 * u, -.08 * u), head + A(-f * .2 * u, -.02 * u), (16, 18, 24), .05 * u)
+        GL, RIM, SHN = (16, 18, 24), (52, 54, 62), (96, 102, 116)
+        if f == 0:                                                        # de frente / 3/4: centradas en los ojos; en 3/4 el lente lejano se estrecha
+            tn = p.get('_turn34', 0)
+            for sd in (-1, 1):
+                far = tn != 0 and sd == -tn; w_ = .17 if far else .23; cx_ = sd * (.31 if far else .34)
+                e = fc + A(cx_ * u, -.04 * u)
+                ell(fr, e, (w_ + .025) * u, .2 * u, 0, RIM); ell(fr, e, w_ * u, .175 * u, 0, GL); ell(fr, e + A(-.35 * w_ * u, -.07 * u), .3 * w_ * u, .035 * u, -15, SHN)
+            line(fr, fc + A(-.11 * u, -.09 * u), fc + A(.11 * u, -.09 * u), RIM, .05 * u)                  # puente
+            if tn: line(fr, fc + A(tn * .58 * u, -.1 * u), head + A(tn * .93 * u, -.06 * u), RIM, .05 * u)  # patilla visible del lado cercano
+        else:                                                             # de perfil: un lente sobre el ojo y la patilla hasta la oreja
+            e = head + A(f * .55 * u, -.05 * u + ly * .2 * u)
+            ell(fr, e, .21 * u, .23 * u, 0, RIM); ell(fr, e, .185 * u, .205 * u, 0, GL); ell(fr, e + A(-f * .05 * u, -.09 * u), .06 * u, .035 * u, 0, SHN)
+            line(fr, e + A(-f * .19 * u, -.06 * u), head + A(-f * .2 * u, -.04 * u), RIM, .05 * u)
+            line(fr, head + A(-f * .2 * u, -.04 * u), head + A(-f * .3 * u, .1 * u), RIM, .05 * u)            # gancho detrás de la oreja
     if c.get('tatuajes'):
         if f == 0:
             tat_text(fr, 'MS', fc + A(0, -.72 * u), .56 * u)                                           # frente, arriba de las cejas
@@ -634,34 +658,33 @@ def _arc(L, a0, a1, r=1.0, n=24):
     return [L(math.cos(math.radians(a)) * r, math.sin(math.radians(a)) * r) for a in np.linspace(a0, a1, n)]
 
 def hair_profile(fr, c, L, uh, f, hc):
-    """pelo de perfil: sigue la forma del cráneo, con la línea del nacimiento curva por ARRIBA de la ceja
-    y la nuca detrás de la oreja (sin bloques cuadrados)."""
-    st = c['pelo']
-    if st in ('corto', 'peinado', 'coletas', 'cola', 'melena', 'rapado'):
-        col = c.get('rapado_col', tuple(int(v * .82) for v in c.get('piel', SKIN))) if st == 'rapado' else hc
-        arc = _arc(L, -38, -222, 1.03)                                        # de la frente, por la coronilla, hasta la nuca
-        inner = [L(-.6, .55), L(-.5, .18), L(-.32, -.22), L(-.05, -.5), L(.3, -.64), L(.62, -.66)]
-        if st == 'melena': arc = _arc(L, -38, -210, 1.04); inner = [L(-.75, .62), L(-.55, .2), L(-.3, -.25)] + inner[3:]
-        poly(fr, arc + inner, col)
-        hl = tuple(min(255, int(v * 1.35)) for v in col)
-        for k in range(3): line(fr, L(-.1 - k * .25, -.98 + k * .06), L(.25 - k * .25, -.8 + k * .05), hl, max(1, int(.02 * uh)))   # brillo / mechones
-        if st == 'peinado': ell(fr, L(.32, -.92), .62 * uh, .2 * uh, -6 * f, hc)                      # copete
-        if st == 'corto': poly(fr, [L(.55, -.66), L(.9, -.62), L(.62, -.56)], hc)                        # punta del fleco
-        if st in ('corto', 'peinado'): poly(fr, [L(-.14, -.2), L(-.06, -.18), L(-.09, .02), L(-.17, 0)], col)   # patilla corta (solo hombres)
-    elif st == 'gorro':
-        poly(fr, _arc(L, -36, -205, 1.05) + [L(-.85, .3), L(-.5, -.1), L(-.1, -.5), L(.35, -.66), L(.68, -.68)], hc)
-        rim = [L(-.82, .28), L(-.48, -.12), L(-.08, -.52), L(.35, -.68), L(.68, -.7)]
-        for a_, b_ in zip(rim[:-1], rim[1:]): line(fr, a_, b_, dark(hc, .8), max(2, int(.06 * uh)))   # borde del gorro, arriba de la ceja
-    elif st == 'revuelto':
-        for k in range(7):
-            a_ = math.radians(-40 - k * 27); circ(fr, L(math.cos(a_) * .82, math.sin(a_) * .72 - .1), .32 * uh, hc)
+    """pelo de perfil: casquete que sigue el cráneo, nacimiento curvo por arriba de la ceja y nuca detrás de la oreja,
+    recortado al contorno de la cabeza (nada sobresale ni flota)."""
+    st = c['pelo']; ctr = L(0, 0)
+    def body():
+        if st in ('corto', 'peinado', 'coletas', 'cola', 'melena', 'rapado', 'revuelto'):
+            col = c.get('rapado_col', tuple(int(v * .82) for v in c.get('piel', SKIN))) if st == 'rapado' else hc
+            front = {'peinado': [L(.45, -.78), L(.75, -.72)], 'corto': [L(.5, -.66), L(.82, -.6)], 'melena': [L(.45, -.64), L(.8, -.58)]}.get(st, [L(.45, -.68), L(.78, -.62)])
+            nape = [L(-1.3, .25), L(-.62, .26), L(-.5, .2)] if st != 'melena' else [L(-1.3, .7), L(-.7, .7), L(-.55, .3)]
+            if st in ('corto', 'peinado', 'revuelto', 'rapado'):              # rodea la oreja por arriba y baja en patilla delante de ella
+                line_ = [L(-.47, -.12), L(-.32, -.24), L(-.15, -.21), L(-.14, .02), L(-.09, .08), L(-.03, .0), L(-.02, -.48), L(.1, -.64)]
+            else: line_ = [L(-.47, -.12), L(-.32, -.26), L(-.12, -.46), L(.1, -.64)]
+            poly(fr, _arc(L, -36, -200, 1.3) + nape + line_ + front, col)
+            hl = tuple(min(255, int(v * 1.35)) for v in col)
+            for k in range(3): line(fr, L(-.1 - k * .25, -.94 + k * .06), L(.22 - k * .25, -.78 + k * .05), hl, max(1, int(.02 * uh)))
+        elif st == 'gorro':
+            poly(fr, _arc(L, -34, -205, 1.3) + [L(-1.3, .3), L(-.75, .3), L(-.45, -.1), L(-.05, -.52), L(.35, -.62), L(.75, -.6)], hc)
+            rim = [L(-.75, .28), L(-.45, -.12), L(-.05, -.54), L(.35, -.64), L(.75, -.62)]
+            for a_, b_ in zip(rim[:-1], rim[1:]): line(fr, a_, b_, dark(hc, .8), max(2, int(.06 * uh)))
+    clip_to_head(fr, ctr, 1.04 * uh, body)
+    if st == 'peinado': clip_to_head(fr, ctr + (L(0, -.12) - ctr), 1.06 * uh, lambda: ell(fr, L(.15, -.9), .55 * uh, .18 * uh, -6 * f, hc))   # copete pegado al cráneo
     if st not in ('melena', 'gorro', 'sombra'):                              # oreja con detalle
         e0 = L(-.28, .06); circ(fr, e0, .17 * uh, dark(c.get('piel', SKIN), .78)); circ(fr, e0, .14 * uh, c.get('piel', SKIN))
         cv2.ellipse(fr, P8(e0), (int(.08 * uh * 8), int(.1 * uh * 8)), 0, 200 if f > 0 else -20, 340 if f > 0 else 160, dark(c.get('piel', SKIN), .7), max(1, int(.03 * uh)), cv2.LINE_AA, 3)
 
 def beard_profile(fr, col, L):
     """barba de perfil: solo la mandíbula (de la patilla a la barbilla), deja libre la boca; bigote corto."""
-    pts = _arc(L, 25, 118, .99) + [L(-.4, .55), L(-.22, .2), L(.1, .5), L(.42, .58), L(.7, .5)]
+    pts = _arc(L, 20, 112, .99) + _arc(L, 112, 20, .8)
     poly(fr, pts, col)
     line(fr, L(.48, .31), L(.74, .33), col, .07 * L(1, 0)[0] * 0 + 4)
 
@@ -697,12 +720,12 @@ def person_34(fr, who, x, fy, hgt, pose, t=0., feet=None, turn=1):
     hands = {k: S_(v) for k, v in hands.items()}
     for hd in hands.values(): circ(fr, hd, .31 * u, (170, 172, 182)); circ(fr, hd, .27 * u, c.get('piel', SKIN))   # las manos no se escorzan: mismo tamaño en todas las vistas
     head = j['head']; uh = u * c['cabeza']                                     # la cabeza no se escorza: se redibuja redonda
-    hair_back(fr, c, head - A(turn * .12 * uh, 0), uh, p)
+    hair_back(fr, c, head - A(turn * .06 * uh, 0), uh, p)
     circ(fr, head, 1.0 * uh, (150, 154, 170)); circ(fr, head, .96 * uh, dark(c.get('piel', SKIN), .84)); circ(fr, head + A(turn * .05 * uh, -.06 * uh), .9 * uh, c.get('piel', SKIN))
     face(fr, c, head, uh, p, who)
-    hair_front(fr, c, head - A(turn * .12 * uh, 0), uh, p)
+    hair_front(fr, c, head + A(turn * .08 * uh, 0), uh, p, clip=head)
     if c['pelo'] not in ('melena', 'gorro', 'cola', 'coletas'):                 # oreja del lado lejano, al borde de la cabeza
         ea = head + A(-turn * .9 * uh, .08 * uh); circ(fr, ea, .17 * uh, dark(c.get('piel', SKIN), .78)); circ(fr, ea, .13 * uh, c.get('piel', SKIN))
         cv2.ellipse(fr, P8(ea), (int(.07 * uh * 8), int(.09 * uh * 8)), 0, 200 if turn < 0 else -20, 340 if turn < 0 else 160, dark(c.get('piel', SKIN), .7), max(1, int(.03 * uh)), cv2.LINE_AA, 3)
-    p['ear_side'] = -turn; head_extras(fr, c, head, uh, p, 0)
+    p['ear_side'] = -turn; p['_turn34'] = turn; head_extras(fr, c, head, uh, p, 0); p.pop('_turn34', None)
     j.update(view='tres_cuartos', u=u, hand_r=.31 * u, fy=fy, raw=raw, z=j.get('z', {})); return hands, j
