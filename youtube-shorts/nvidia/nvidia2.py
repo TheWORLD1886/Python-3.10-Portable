@@ -49,7 +49,8 @@ def snap(x, who, h): s = RG.step_len(U(who, h)); return round(x / s) * s        
 def walk(fr, who, x0, x1, t0, t1, fy, h, t, look=None, mode='llega', **pose):
     """camina de x0 a x1 entre t0 y t1 (perfil, pies fijos). mode: 'llega' frena al final, 'sale' arranca desde parado."""
     u = U(who, h); d = 1 if x1 > x0 else -1; k = min(1., max(0., (t - t0) / (t1 - t0)))
-    e = k * (2 - k) if mode == 'llega' else k * k; de = 2 * (1 - k) if mode == 'llega' else 2 * k
+    if mode == 'suave': e, de = k * k * (3 - 2 * k), 6 * k * (1 - k)            # arranca y frena (pasos cortos, filas)
+    else: e = k * (2 - k) if mode == 'llega' else k * k; de = 2 * (1 - k) if mode == 'llega' else 2 * k
     x = x0 + (x1 - x0) * e; v = abs(x1 - x0) * de / (t1 - t0); kv = min(1., v / (1.6 * RG.step_len(u)))
     gp, feet, bob = RG.gait_x(x, d, u, fy)
     gp.update(uL=gp['uL'] * kv, uR=gp['uR'] * kv, lean=gp['lean'] * kv, look=look or (.55 * d, .05), blink=RG.blink(t, 5))

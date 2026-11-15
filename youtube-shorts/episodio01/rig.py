@@ -70,14 +70,19 @@ def ik_limb(root, target, l1, l2, prefer, key=None):
     else: e = max(cands, key=lambda c: float(np.dot(c - mid, pv)))
     if key is not None: IK_CACHE[key] = (e, root)
     return e, end
-def ik3d(root2, target2, l1, l2, pole, tz):
+def ik3d(root2, target2, l1, l2, pole, tz, alt=(1., 0., 0.)):
     """IK de dos huesos en 3D (z hacia la cámara) proyectada en pantalla: el codo puede irse hacia atrás en profundidad,
     así el brazo se ve escorzado en vez de abrirse como «ala de pollo». Devuelve codo y mano en 2D y sus profundidades."""
     R = np.array([root2[0], root2[1], 0.]); Tt = np.array([target2[0], target2[1], tz]); d = Tt - R; n = np.linalg.norm(d)
     if n < 1e-6: d, n = np.array([0., 1., 0.]), 1.
     dn = d / n; D = min(max(n, abs(l1 - l2) + 1e-3), (l1 + l2) * .995); end = R + dn * D
     a = math.acos(max(-1, min(1, (l1 * l1 + D * D - l2 * l2) / (2 * l1 * D))))
-    pv = np.array(pole, float); pv = pv - np.dot(pv, dn) * dn; pn = pv / max(1e-6, np.linalg.norm(pv))
+    pv = np.array(pole, float); pv /= max(1e-6, np.linalg.norm(pv)); pv = pv - np.dot(pv, dn) * dn
+    m = np.linalg.norm(pv)                                                    # si el polo casi coincide con el brazo, la solución es inestable:
+    if m < .95:                                                               # se mezcla de forma continua (y desde antes) con un polo alternativo (codo hacia afuera)
+        av = np.array(alt, float); av /= np.linalg.norm(av); av = av - np.dot(av, dn) * dn; av /= max(1e-6, np.linalg.norm(av))
+        k = ((.95 - m) / .95) ** .7; pv = (1 - k) * pv / max(1e-6, m) + k * av
+    pn = pv / max(1e-6, np.linalg.norm(pv))
     e = R + l1 * (math.cos(a) * dn + math.sin(a) * pn)
     return A(e[0], e[1]), A(end[0], end[1]), float(e[2]), float(end[2])
 def lower_hip_for_feet(hip_y, hips_x, feet, u, l=3.1):
@@ -131,7 +136,11 @@ def person(fr, who, x, fy, hgt, pose, t=0., feet=None, facing=0):
         g = p['grip'] and p['grip'].get('L' if sd < 0 else 'R')
         e = S + down(ua + p['lean']) * 1.3 * u; hd = e + down(ua + la + p['lean']) * 1.25 * u
         if g is not None and p.get('ik3d'):                               # brazo en 3D: codo hacia abajo y atrás, mano delante del cuerpo
-            e, hd, ez, hz = ik3d(S, reach(hd, g), 1.3 * u, 1.25 * u, (sd * .35, 1., -1.2), p.get('tz', .8) * u)
+            w_ = ease(max(0., min(1., g[2]))) if len(g) > 2 else 1.          # al empezar un gesto el brazo parte EXACTAMENTE de su pose libre
+            fk = np.array([e[0] - S[0], e[1] - S[1], 0.]); fk /= max(1e-6, np.linalg.norm(fk))
+            an = np.array([sd * .35, 1., -1.2]); an /= np.linalg.norm(an); pole = (1 - w_) * fk + w_ * an
+            zt = p.get('tz', .8) * u * w_ + 1.1 * u * math.sin(math.pi * w_)   # durante el gesto la mano viaja en arco por delante del cuerpo (nunca atraviesa el hombro)
+            e, hd, ez, hz = ik3d(S, reach(hd, g), 1.3 * u, 1.25 * u, tuple(pole), zt, alt=(sd, .3, -.2))
             joints.setdefault('z', {}).update({'elbow' + ('L' if sd < 0 else 'R'): ez, 'hand' + ('L' if sd < 0 else 'R'): hz})
         elif g is not None: e, hd = ik_limb(S, reach(hd, g), 1.3 * u, 1.25 * u, (sd, -.1) if p.get('codo_afuera') else (sd * .55, 1.), key=(p.get('ikid'), 'brazo', sd) if p.get('ikid') else None)   # codo hacia abajo y un poco afuera
         behind = facing != 0 and (hd[0] - S[0]) * facing < 0
