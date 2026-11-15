@@ -1,0 +1,836 @@
+{
+ "fotogramas_video": 3360,
+ "fotogramas_con_diff": 3359,
+ "planos": [
+  {
+   "n": 1,
+   "nombre": "Wake",
+   "inicio": 0,
+   "fin": 4.19,
+   "fotogramas": 126,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "peaton1"
+    ],
+    "registros": 126,
+    "err_hueso_max_pct": 0.01,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 55,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.12,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 2,
+   "nombre": "Apps",
+   "inicio": 4.19,
+   "fin": 11.34,
+   "fotogramas": 215,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 1.79,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 3,
+   "nombre": "Beginning",
+   "inicio": 11.34,
+   "fin": 13.77,
+   "fotogramas": 73,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.19,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 4,
+   "nombre": "Streets",
+   "inicio": 13.77,
+   "fin": 17.39,
+   "fotogramas": 108,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "peaton2",
+     "vecina",
+     "vecino"
+    ],
+    "registros": 297,
+    "err_hueso_max_pct": 0.013,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 135,
+    "agarres": 19,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.5,
+    "picos_imagen": 0,
+    "fotogramas_giro": 18
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 5,
+   "nombre": "ATM",
+   "inicio": 17.39,
+   "fin": 20.57,
+   "fotogramas": 96,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "jefe",
+     "peaton1",
+     "vecina"
+    ],
+    "registros": 288,
+    "err_hueso_max_pct": 0.012,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 208,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.17,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 6,
+   "nombre": "Banks",
+   "inicio": 20.57,
+   "fin": 24.42,
+   "fotogramas": 115,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 15.98,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 7,
+   "nombre": "Lines",
+   "inicio": 24.42,
+   "fin": 28.04,
+   "fotogramas": 109,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": null
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "jefe",
+     "mujer",
+     "peaton1",
+     "peaton2",
+     "vecina",
+     "vecino"
+    ],
+    "registros": 654,
+    "err_hueso_max_pct": 0.016,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 360,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 3.4,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 8,
+   "nombre": "Register",
+   "inicio": 28.04,
+   "fin": 32.91,
+   "fotogramas": 146,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "mujer",
+     "vecino"
+    ],
+    "registros": 292,
+    "err_hueso_max_pct": 0.014,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 584,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 1.98,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 9,
+   "nombre": "HowLong",
+   "inicio": 32.91,
+   "fin": 35.2,
+   "fotogramas": 68,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "laura"
+    ],
+    "registros": 68,
+    "err_hueso_max_pct": 0.009,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 30,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.95,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 10,
+   "nombre": "Office",
+   "inicio": 35.2,
+   "fin": 38.33,
+   "fotogramas": 94,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "directora",
+     "ejecutivo"
+    ],
+    "registros": 182,
+    "err_hueso_max_pct": 0.012,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 48,
+    "agarres": 210,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.26,
+    "picos_imagen": 0,
+    "fotogramas_giro": 6
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 11,
+   "nombre": "Hospital",
+   "inicio": 38.33,
+   "fin": 41.93,
+   "fotogramas": 108,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "doctora"
+    ],
+    "registros": 108,
+    "err_hueso_max_pct": 0.012,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 216,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.17,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 12,
+   "nombre": "Airport",
+   "inicio": 41.93,
+   "fin": 47.24,
+   "fotogramas": 160,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "peaton2"
+    ],
+    "registros": 89,
+    "err_hueso_max_pct": 0.012,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 89,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.37,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 13,
+   "nombre": "StillMoving",
+   "inicio": 47.24,
+   "fin": 50.86,
+   "fotogramas": 108,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.81,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 14,
+   "nombre": "Coordination",
+   "inicio": 50.86,
+   "fin": 55.41,
+   "fotogramas": 137,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.65,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 15,
+   "nombre": "Danger",
+   "inicio": 55.41,
+   "fin": 58.26,
+   "fotogramas": 85,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.21,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 16,
+   "nombre": "Rumors",
+   "inicio": 58.26,
+   "fin": 64.01,
+   "fotogramas": 173,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "mujer",
+     "peaton1",
+     "vecino"
+    ],
+    "registros": 519,
+    "err_hueso_max_pct": 0.012,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 32,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 1.91,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 17,
+   "nombre": "Unknown",
+   "inicio": 64.01,
+   "fin": 68.98,
+   "fotogramas": 149,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "figura"
+    ],
+    "registros": 1341,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.08,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 18,
+   "nombre": "Government",
+   "inicio": 68.98,
+   "fin": 74.17,
+   "fotogramas": 156,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "portavoz",
+     "vecina",
+     "vecino"
+    ],
+    "registros": 468,
+    "err_hueso_max_pct": 0.02,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 227,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.09,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 19,
+   "nombre": "Button",
+   "inicio": 74.17,
+   "fin": 77.63,
+   "fotogramas": 103,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 9.5
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "medico"
+    ],
+    "registros": 103,
+    "err_hueso_max_pct": 0.01,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 35,
+    "agarres_fuera": 2,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 1.87,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [
+    {
+     "cat": "interacción con objetos",
+     "frame": 2294,
+     "id": "18:medico:0",
+     "msg": "mano R a 3.3px del objeto"
+    },
+    {
+     "cat": "interacción con objetos",
+     "frame": 2295,
+     "id": "18:medico:0",
+     "msg": "mano R a 3.2px del objeto"
+    }
+   ],
+   "n_errores": 2
+  },
+  {
+   "n": 20,
+   "nombre": "NotOneMachine",
+   "inicio": 77.63,
+   "fin": 79.73,
+   "fotogramas": 63,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 3.22,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 21,
+   "nombre": "Infra",
+   "inicio": 79.73,
+   "fin": 87.51,
+   "fotogramas": 234,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.28,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 22,
+   "nombre": "Extreme",
+   "inicio": 87.51,
+   "fin": 94.41,
+   "fotogramas": 207,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 2.0,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 23,
+   "nombre": "SevenDays",
+   "inicio": 94.41,
+   "fin": 101.87,
+   "fotogramas": 224,
+   "puntuacion": {
+    "Continuidad temporal": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [],
+    "registros": 0,
+    "err_hueso_max_pct": 0.0,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 0,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 1.97,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  },
+  {
+   "n": 24,
+   "nombre": "Friend",
+   "inicio": 101.87,
+   "fin": 112,
+   "fotogramas": 303,
+   "puntuacion": {
+    "Continuidad temporal": 10.0,
+    "Continuidad corporal": 10.0,
+    "Movimiento de extremidades": 10.0,
+    "Naturalidad de caminata": 10.0,
+    "Consistencia visual": 10.0,
+    "Sincronización labial": 10.0,
+    "Interacción con objetos": 10.0
+   },
+   "aprobado": true,
+   "medidas": {
+    "personajes": [
+     "peaton2"
+    ],
+    "registros": 303,
+    "err_hueso_max_pct": 0.011,
+    "saltos": 0,
+    "deslizamientos": 0,
+    "flotando": 0,
+    "bajo_suelo": 0,
+    "fotogramas_caminando": 0,
+    "agarres": 421,
+    "agarres_fuera": 0,
+    "bocas_sin_dialogo": 0,
+    "diff_mediana": 1.89,
+    "picos_imagen": 0,
+    "fotogramas_giro": 0
+   },
+   "errores": [],
+   "n_errores": 0
+  }
+ ]
+}

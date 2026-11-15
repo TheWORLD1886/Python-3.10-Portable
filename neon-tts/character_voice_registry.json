@@ -1,0 +1,381 @@
+{
+  "registry_version": 1,
+  "studio": "NEON CINEMATIC STUDIO",
+  "default_locale": "es-MX",
+  "policy": {
+    "voice_lock": "Una vez aprobado (approval_status = approved), el voice_id de un personaje no cambia nunca de forma automática. Solo una persona puede cambiarlo editando este archivo y subiendo voice_version.",
+    "unapproved_use": "Los personajes con approval_status distinto de approved solo pueden generarse en modo casting o test, nunca en producción.",
+    "styles": "Un estilo de mstts:express-as solo se usa si aparece en supported_styles (lista real devuelta por la API voices/list). Si no aparece, la emoción se interpreta solo con prosodia (velocidad, tono, volumen) y pausas."
+  },
+  "emotion_presets": {
+    "neutral": {
+      "styles": [],
+      "styledegree": 1.0,
+      "rate": "0%",
+      "pitch": "0%",
+      "volume": "0%",
+      "pause_before_ms": 0,
+      "pause_after_ms": 350
+    },
+    "calma": {
+      "styles": [
+        "calm",
+        "gentle",
+        "friendly"
+      ],
+      "styledegree": 0.9,
+      "rate": "-4%",
+      "pitch": "-1%",
+      "volume": "0%",
+      "pause_before_ms": 0,
+      "pause_after_ms": 400
+    },
+    "alegria": {
+      "styles": [
+        "cheerful",
+        "happy",
+        "joyful"
+      ],
+      "styledegree": 1.0,
+      "rate": "+4%",
+      "pitch": "+3%",
+      "volume": "0%",
+      "pause_before_ms": 0,
+      "pause_after_ms": 300
+    },
+    "preocupacion": {
+      "styles": [
+        "sad",
+        "worried",
+        "gentle"
+      ],
+      "styledegree": 0.8,
+      "rate": "-6%",
+      "pitch": "-1%",
+      "volume": "-5%",
+      "pause_before_ms": 150,
+      "pause_after_ms": 450
+    },
+    "miedo": {
+      "styles": [
+        "fearful",
+        "terrified",
+        "whispering"
+      ],
+      "styledegree": 1.2,
+      "rate": "-6%",
+      "pitch": "+2%",
+      "volume": "-8%",
+      "pause_before_ms": 250,
+      "pause_after_ms": 500
+    },
+    "desesperacion": {
+      "styles": [
+        "fearful",
+        "shouting",
+        "terrified"
+      ],
+      "styledegree": 1.5,
+      "rate": "+8%",
+      "pitch": "+5%",
+      "volume": "+10%",
+      "pause_before_ms": 0,
+      "pause_after_ms": 300
+    },
+    "tristeza": {
+      "styles": [
+        "sad",
+        "depressed"
+      ],
+      "styledegree": 1.1,
+      "rate": "-12%",
+      "pitch": "-3%",
+      "volume": "-6%",
+      "pause_before_ms": 300,
+      "pause_after_ms": 600
+    },
+    "susurro": {
+      "styles": [
+        "whispering",
+        "softvoice"
+      ],
+      "styledegree": 1.0,
+      "rate": "-10%",
+      "pitch": "-2%",
+      "volume": "-20%",
+      "pause_before_ms": 300,
+      "pause_after_ms": 500
+    },
+    "enojo": {
+      "styles": [
+        "angry",
+        "determined"
+      ],
+      "styledegree": 1.2,
+      "rate": "+3%",
+      "pitch": "-2%",
+      "volume": "+8%",
+      "pause_before_ms": 0,
+      "pause_after_ms": 300
+    },
+    "grito": {
+      "styles": [
+        "shouting",
+        "angry"
+      ],
+      "styledegree": 1.6,
+      "rate": "+6%",
+      "pitch": "+6%",
+      "volume": "+20%",
+      "pause_before_ms": 0,
+      "pause_after_ms": 300
+    },
+    "narracion_terror": {
+      "styles": [
+        "narration-serious",
+        "serious",
+        "documentary-narration",
+        "narrator"
+      ],
+      "styledegree": 1.0,
+      "rate": "-10%",
+      "pitch": "-4%",
+      "volume": "0%",
+      "pause_before_ms": 200,
+      "pause_after_ms": 700
+    },
+    "narracion_calida": {
+      "styles": [
+        "narration-relaxed",
+        "narrator",
+        "calm"
+      ],
+      "styledegree": 1.0,
+      "rate": "-5%",
+      "pitch": "-1%",
+      "volume": "0%",
+      "pause_before_ms": 0,
+      "pause_after_ms": 500
+    }
+  },
+  "characters": [
+    {
+      "character_id": "narrator",
+      "nombre": "Narrador",
+      "aliases": [
+        "NARRADOR",
+        "NARRATOR",
+        "VOZ EN OFF"
+      ],
+      "engine": "azure",
+      "voice_id": "es-MX-JorgeNeural",
+      "casting_candidates": [
+        "es-MX-JorgeNeural",
+        "es-MX-GerardoNeural",
+        "es-MX-LibertoNeural"
+      ],
+      "idioma": "es-MX",
+      "descripcion_vocal": "Hombre adulto, grave y cálido. Ritmo deliberado, con silencios que crean tensión. Nunca sobreactuado.",
+      "velocidad_predeterminada": "0%",
+      "tono": "-2%",
+      "volumen": "0%",
+      "personalidad": "Testigo omnisciente y sereno; sabe que algo terrible viene y lo deja sentir.",
+      "parametros_emocionales": {
+        "default_emotion": "narracion_terror",
+        "max_styledegree": 1.3,
+        "allowed_emotions": [
+          "neutral",
+          "calma",
+          "narracion_terror",
+          "narracion_calida",
+          "preocupacion",
+          "tristeza",
+          "susurro"
+        ]
+      },
+      "supported_styles": null,
+      "voice_version": 0,
+      "approval_status": "pending_casting"
+    },
+    {
+      "character_id": "daniel",
+      "nombre": "Daniel",
+      "aliases": [
+        "DANIEL"
+      ],
+      "engine": "azure",
+      "voice_id": "es-MX-CecilioNeural",
+      "casting_candidates": [
+        "es-MX-CecilioNeural",
+        "es-MX-LucianoNeural",
+        "es-MX-YagoNeural"
+      ],
+      "idioma": "es-MX",
+      "descripcion_vocal": "Hombre de 32 años, voz media, protectora y contenida. Cuando tiene miedo baja el volumen en vez de gritar.",
+      "velocidad_predeterminada": "0%",
+      "tono": "0%",
+      "volumen": "0%",
+      "personalidad": "Padre protector y tranquilo; intenta calmar a su familia aunque él también tiene miedo.",
+      "parametros_emocionales": {
+        "default_emotion": "calma",
+        "max_styledegree": 1.5,
+        "allowed_emotions": [
+          "neutral",
+          "calma",
+          "alegria",
+          "preocupacion",
+          "miedo",
+          "desesperacion",
+          "susurro",
+          "enojo",
+          "grito",
+          "tristeza"
+        ]
+      },
+      "supported_styles": null,
+      "voice_version": 0,
+      "approval_status": "pending_casting"
+    },
+    {
+      "character_id": "laura",
+      "nombre": "Laura",
+      "aliases": [
+        "LAURA"
+      ],
+      "engine": "azure",
+      "voice_id": "es-MX-DaliaNeural",
+      "casting_candidates": [
+        "es-MX-DaliaNeural",
+        "es-MX-RenataNeural",
+        "es-MX-LarissaNeural"
+      ],
+      "idioma": "es-MX",
+      "descripcion_vocal": "Mujer de 31 años, voz cálida y clara; en tensión se vuelve baja e íntima.",
+      "velocidad_predeterminada": "0%",
+      "tono": "0%",
+      "volumen": "0%",
+      "personalidad": "Observadora e intuitiva; percibe el peligro antes que los demás.",
+      "parametros_emocionales": {
+        "default_emotion": "calma",
+        "max_styledegree": 1.5,
+        "allowed_emotions": [
+          "neutral",
+          "calma",
+          "alegria",
+          "preocupacion",
+          "miedo",
+          "desesperacion",
+          "susurro",
+          "tristeza",
+          "grito"
+        ]
+      },
+      "supported_styles": null,
+      "voice_version": 0,
+      "approval_status": "pending_casting"
+    },
+    {
+      "character_id": "sofia",
+      "nombre": "Sofía",
+      "aliases": [
+        "SOFIA",
+        "SOFÍA"
+      ],
+      "engine": "azure",
+      "voice_id": "es-MX-MarinaNeural",
+      "casting_candidates": [
+        "es-MX-MarinaNeural",
+        "es-MX-NuriaNeural",
+        "es-MX-CandelaNeural"
+      ],
+      "idioma": "es-MX",
+      "descripcion_vocal": "Niña de 9 años, voz aguda y espontánea. Debe ser una voz infantil real, no una voz adulta con el tono subido.",
+      "velocidad_predeterminada": "+3%",
+      "tono": "0%",
+      "volumen": "0%",
+      "personalidad": "Inquieta, curiosa y alegre; con miedo se refugia en su mamá.",
+      "parametros_emocionales": {
+        "default_emotion": "alegria",
+        "max_styledegree": 1.2,
+        "allowed_emotions": [
+          "neutral",
+          "alegria",
+          "preocupacion",
+          "miedo",
+          "tristeza",
+          "susurro"
+        ]
+      },
+      "supported_styles": null,
+      "voice_version": 0,
+      "approval_status": "pending_casting",
+      "notas": "Verificar en voices/list que la voz elegida esté marcada como infantil. Si Azure no tiene una voz infantil es-MX adecuada, este personaje es el primer candidato para Chatterbox con una voz de referencia autorizada."
+    },
+    {
+      "character_id": "marcos",
+      "nombre": "Marcos",
+      "aliases": [
+        "MARCOS"
+      ],
+      "engine": "azure",
+      "voice_id": "es-MX-PelayoNeural",
+      "casting_candidates": [
+        "es-MX-PelayoNeural",
+        "es-MX-LibertoNeural"
+      ],
+      "idioma": "es-MX",
+      "descripcion_vocal": "Hermano de Daniel; voz más rápida y nerviosa. Se escucha por teléfono (filtro de línea telefónica en postproducción).",
+      "velocidad_predeterminada": "+6%",
+      "tono": "+1%",
+      "volumen": "0%",
+      "personalidad": "Impulsivo y leal.",
+      "parametros_emocionales": {
+        "default_emotion": "desesperacion",
+        "max_styledegree": 1.6,
+        "allowed_emotions": [
+          "neutral",
+          "desesperacion",
+          "miedo",
+          "grito"
+        ]
+      },
+      "post_fx": "telefono",
+      "supported_styles": null,
+      "voice_version": 0,
+      "approval_status": "pending_casting"
+    },
+    {
+      "character_id": "hombre_puerta",
+      "nombre": "Hombre en la puerta",
+      "aliases": [
+        "HOMBRE",
+        "DESCONOCIDO"
+      ],
+      "engine": "azure",
+      "voice_id": "es-MX-GerardoNeural",
+      "casting_candidates": [
+        "es-MX-GerardoNeural",
+        "es-MX-LibertoNeural"
+      ],
+      "idioma": "es-MX",
+      "descripcion_vocal": "Desconocido herido, suplicante y agotado; detrás de una puerta (filtro de puerta en postproducción).",
+      "velocidad_predeterminada": "+4%",
+      "tono": "+2%",
+      "volumen": "0%",
+      "personalidad": "Desesperado; algo en él ya no es del todo humano.",
+      "parametros_emocionales": {
+        "default_emotion": "desesperacion",
+        "max_styledegree": 1.8,
+        "allowed_emotions": [
+          "desesperacion",
+          "grito",
+          "miedo"
+        ]
+      },
+      "post_fx": "detras_de_puerta",
+      "supported_styles": null,
+      "voice_version": 0,
+      "approval_status": "pending_casting"
+    }
+  ]
+}

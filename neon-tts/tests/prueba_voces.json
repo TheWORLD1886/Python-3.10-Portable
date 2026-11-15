@@ -1,0 +1,21 @@
+{
+  "episode_id": "T001",
+  "title": "Prueba de voces: narrador, Daniel, Laura y Sofía",
+  "language": "es-MX",
+  "scenes": [
+    {"scene_id": "SC001", "lines": [
+      {"character_id": "narrator", "emotion": "narracion_terror", "intensity": 1.0, "intent": "Presentar la calma antes del desastre",
+       "text": "10:47 de la noche. En una pequeña ciudad de Estados Unidos, todo parece normal… Pero en el hospital, los médicos intentan contener algo que todavía no comprenden."}
+    ]},
+    {"scene_id": "SC002", "lines": [
+      {"character_id": "sofia", "emotion": "alegria", "intent": "Vida normal, cariño familiar", "text": "¡Papá, mira! Ya terminé toda mi cena."},
+      {"character_id": "daniel", "emotion": "calma", "intent": "Tranquilizar a su familia", "text": "Tranquilas. Seguro es algo lejos de aquí. No pasa nada."},
+      {"character_id": "laura", "emotion": "preocupacion", "intensity": 0.9, "intent": "Intuye el peligro", "text": "Daniel… dicen que no salgamos de casa."}
+    ]},
+    {"scene_id": "SC005", "lines": [
+      {"character_id": "sofia", "emotion": "miedo", "intensity": 1.2, "intent": "Pánico infantil", "text": "Mamá… tengo miedo."},
+      {"character_id": "daniel", "emotion": "miedo", "intensity": 1.1, "pause_before_ms": 400, "intent": "Miedo contenido, protege", "text": "Quédense detrás de mí. No hagan ruido."},
+      {"character_id": "laura", "emotion": "susurro", "intensity": 1.0, "intent": "Advertencia íntima", "text": "Daniel… no lo dejes entrar."}
+    ]}
+  ]
+}

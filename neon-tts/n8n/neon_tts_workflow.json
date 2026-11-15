@@ -1,0 +1,1128 @@
+{
+  "name": "NEON TTS · doblaje multipersona",
+  "nodes": [
+    {
+      "id": "c725969b-2010-537b-b044-9e8d42966ac4",
+      "name": "Webhook: recibir guion",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "neon-tts",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "c6cfd424-6718-5e64-b70f-917a33797eaf",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "NEON webhook token"
+        }
+      }
+    },
+    {
+      "id": "c8256fe3-7f0f-5893-9349-a0793771a39d",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        300
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "azure_region",
+              "value": "eastus",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "drive_folder_id",
+              "value": "PEGA_AQUI_ID_CARPETA_DRIVE",
+              "type": "string"
+            },
+            {
+              "id": "a3",
+              "name": "registry_file_id",
+              "value": "PEGA_AQUI_ID_DE_character_voice_registry.json",
+              "type": "string"
+            },
+            {
+              "id": "a4",
+              "name": "worker_url",
+              "value": "https://neon-audio-worker-XXXX.a.run.app",
+              "type": "string"
+            },
+            {
+              "id": "a5",
+              "name": "episode_id",
+              "value": "={{ $json.body.episode_id || ($json.body.script && $json.body.script.episode_id) || 'E001' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "66eba36c-d6c3-5b0f-95af-045202df1168",
+      "name": "Descargar registro de voces",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        440,
+        300
+      ],
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.registry_file_id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "",
+          "name": "Google Drive NEON"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "4f794339-4cb2-5839-a67a-8e7c15ac37c3",
+      "name": "Registro a JSON",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        660,
+        300
+      ],
+      "parameters": {
+        "operation": "fromJson",
+        "options": {}
+      }
+    },
+    {
+      "id": "2003a0e4-62dc-5a74-becf-a1cf4fd01a9c",
+      "name": "Buscar manifiesto",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        880,
+        300
+      ],
+      "parameters": {
+        "resource": "fileFolder",
+        "searchMethod": "name",
+        "queryString": "={{ $('Config').first().json.episode_id }}_manifest.json",
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "={{ $('Config').first().json.drive_folder_id }}",
+            "mode": "id"
+          }
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "",
+          "name": "Google Drive NEON"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "85226fe3-b6ee-50f3-bc70-525106dfa112",
+      "name": "¿Existe manifiesto?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "17763c92-4ee6-54d8-aa71-3be6ccc891a7",
+      "name": "Descargar manifiesto",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1320,
+        200
+      ],
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "",
+          "name": "Google Drive NEON"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "e18956e3-59ae-5f63-8aa8-ffad29fb1e5f",
+      "name": "Manifiesto a JSON",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        200
+      ],
+      "parameters": {
+        "operation": "fromJson",
+        "options": {}
+      }
+    },
+    {
+      "id": "186f0631-c2fb-5a1f-8982-0d93e17a7fdd",
+      "name": "Sin manifiesto previo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        420
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { data: null } }];"
+      }
+    },
+    {
+      "id": "943a3802-e240-5fe2-829b-ec37667d1d89",
+      "name": "Plan: validar, asignar voces y SSML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// NEON TTS · lógica de planeación (la misma que tools/neon_tts.py, para el nodo Code de n8n).\n// Recibe el guion, el registro de voces y el manifiesto anterior; devuelve un item por intervención\n// con su voz, dirección de doblaje, SSML, hash y acción: generate | skip.\nconst OUTPUT_FORMAT = 'riff-48khz-16bit-mono-pcm';\n\nfunction norm(s) { return s.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }\nfunction pct(s) { return parseFloat(String(s).replace('%', '')) || 0; }\nfunction fmtPct(v) { const r = Math.round(v); return (r >= 0 ? '+' : '') + r + '%'; }\nfunction addPct(...xs) { return fmtPct(xs.reduce((a, x) => a + pct(x), 0)); }\nfunction cyrb53(str, seed = 0) {\n  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;\n  for (let i = 0; i < str.length; i++) { const c = str.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); }\n  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);\n  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);\n  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16);\n}\nfunction escapeXml(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }\nfunction ssmlBody(text) {\n  return escapeXml(text).replace(/\\[pausa (\\d+)ms\\]/g, '<break time=\"$1ms\"/>').replace(/(…|\\.\\.\\.)/g, '$1<break time=\"350ms\"/>');\n}\n// JSON.stringify igual al de Python (ensure_ascii=False, separators=(',', ':'))\nfunction pyJson(x) { return JSON.stringify(x); }\n\nconst DIRECTION_EMOTION = { susurro: 'susurro', susurra: 'susurro', grita: 'grito', gritando: 'grito', llorando: 'tristeza', triste: 'tristeza',\n  miedo: 'miedo', asustad: 'miedo', desesper: 'desesperacion', enojad: 'enojo', furios: 'enojo', alegre: 'alegria',\n  calma: 'calma', tranquil: 'calma', preocupad: 'preocupacion', terror: 'narracion_terror' };\n\nfunction parseText(txt, registry, episodeId = 'E001') {\n  const alias = {}; for (const c of registry.characters) for (const a of [...c.aliases, c.nombre]) alias[norm(a)] = c.character_id;\n  const scenes = []; let cur = null; const unknown = new Set();\n  for (const raw of txt.split(/\\r?\\n/)) {\n    if (!raw.trim()) continue;\n    let m = raw.match(/^\\s*(?:ESCENA|SCENE)\\s+(\\d+)/i);\n    if (m) { cur = { scene_id: 'SC' + String(parseInt(m[1])).padStart(3, '0'), lines: [] }; scenes.push(cur); continue; }\n    m = raw.match(/^\\s*([A-ZÁÉÍÓÚÑÜ][A-ZÁÉÍÓÚÑÜ _]{1,40})\\s*(?:\\(([^)]*)\\))?\\s*:\\s*(.+)$/);\n    if (!m) continue;\n    const who = norm(m[1].trim()), direction = (m[2] || '').toLowerCase(), text = m[3].trim().replace(/^[“”\"]+|[“”\"]+$/g, '');\n    const cid = alias[who]; if (!cid) { unknown.add(m[1].trim()); continue; }\n    const emo = Object.entries(DIRECTION_EMOTION).find(([k]) => direction.includes(k));\n    if (!cur) { cur = { scene_id: 'SC001', lines: [] }; scenes.push(cur); }\n    const line = { character_id: cid, text }; if (emo) line.emotion = emo[1]; if (direction) line.direction = direction;\n    cur.lines.push(line);\n  }\n  return { episode_id: episodeId, language: 'es-MX', scenes, unknown_speakers: [...unknown].sort() };\n}\n\nfunction resolveLine(line, ch, presets) {\n  const emo = line.emotion || ch.parametros_emocionales.default_emotion;\n  if (!presets[emo]) throw new Error(`emoción desconocida: ${emo}`);\n  const allowed = ch.parametros_emocionales.allowed_emotions;\n  if (allowed && !allowed.includes(emo)) throw new Error(`${ch.character_id}: la emoción «${emo}» no está permitida para este personaje`);\n  const pr = presets[emo], k = parseFloat(line.intensity ?? 1.0), sup = ch.supported_styles || [];\n  const style = pr.styles.find(s => sup.includes(s)) || null;                // solo estilos reales de la voz\n  const degree = style ? (Math.round(Math.min(ch.parametros_emocionales.max_styledegree ?? 2.0, Math.max(.01, pr.styledegree * k)) * 100) / 100).toFixed(2) : null;\n  const scale = v => fmtPct(pct(v) * k);\n  return { emotion: emo, intensity: k, style, styledegree: degree, interpretation: style ? 'style+prosody' : 'prosody_only',\n    speaking_rate: line.rate || addPct(ch.velocidad_predeterminada, scale(pr.rate)),\n    pitch: line.pitch || addPct(ch.tono, scale(pr.pitch)),\n    volume: line.volume || addPct(ch.volumen || '0%', scale(pr.volume)),\n    pause_before_ms: parseInt(line.pause_before_ms ?? pr.pause_before_ms), pause_after_ms: parseInt(line.pause_after_ms ?? pr.pause_after_ms),\n    intent: line.intent || '' };\n}\n\nfunction buildSsml(text, ch, d, locale = 'es-MX') {\n  let body = `<prosody rate=\"${d.speaking_rate}\" pitch=\"${d.pitch}\" volume=\"${d.volume}\">${ssmlBody(text)}</prosody>`;\n  if (d.style) body = `<mstts:express-as style=\"${d.style}\" styledegree=\"${d.styledegree}\">${body}</mstts:express-as>`;\n  return `<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xmlns:mstts=\"https://www.w3.org/2001/mstts\" xml:lang=\"${locale}\"><voice name=\"${ch.voice_id}\">${body}</voice></speak>`;\n}\n\nfunction planAll(script, registry, oldManifest, opts = {}) {\n  const mode = opts.mode || 'production', only = opts.clip_ids ? new Set(opts.clip_ids) : null;\n  const chars = Object.fromEntries(registry.characters.map(c => [c.character_id, c])), presets = registry.emotion_presets;\n  const old = Object.fromEntries(((oldManifest && oldManifest.clips) || []).map(c => [c.clip_id, c]));\n  const out = [], errors = []; let seq = 0;\n  if (script.unknown_speakers && script.unknown_speakers.length) errors.push(`personajes sin voz registrada: ${script.unknown_speakers.join(', ')}`);\n  for (const sc of script.scenes) {\n    const count = {};\n    for (const line of sc.lines) {\n      const cid = line.character_id, ch = chars[cid];\n      if (!ch) { errors.push(`${sc.scene_id}: personaje no registrado «${cid}»`); continue; }\n      if (mode === 'production' && ch.approval_status !== 'approved') { errors.push(`${cid}: voz no aprobada (estado ${ch.approval_status})`); continue; }\n      count[cid] = (count[cid] || 0) + 1; seq += 1;\n      const clip_id = `${script.episode_id}_${sc.scene_id}_${cid.toUpperCase()}_${String(count[cid]).padStart(3, '0')}`;\n      let d; try { d = resolveLine(line, ch, presets); } catch (e) { errors.push(`${clip_id}: ${e.message}`); continue; }\n      const ssml = buildSsml(line.text, ch, d, script.language || 'es-MX');\n      const content_hash = cyrb53(pyJson([ch.engine, ch.voice_id, ch.voice_version, ssml, OUTPUT_FORMAT]));\n      const prev = old[clip_id]; let take = prev ? prev.take : 1, action = 'generate';\n      const rejected = prev && prev.generation_status === 'rejected';\n      if (only) { if (!only.has(clip_id)) action = 'skip'; else if (prev) take += 1; }\n      else if (rejected) take += 1;\n      else if (prev && prev.content_hash === content_hash && ['generated', 'needs_review', 'approved'].includes(prev.generation_status)) action = 'skip';\n      const output_file = clip_id + (take > 1 ? `_T${String(take).padStart(2, '0')}` : '') + '.wav';\n      out.push({ episode_id: script.episode_id, scene_id: sc.scene_id, clip_id, sequence: seq, character_id: cid, voice_id: ch.voice_id,\n        voice_version: ch.voice_version, engine: ch.engine, text: line.text, ...d, post_fx: ch.post_fx || null, ssml, content_hash, take,\n        output_file: action === 'skip' && prev ? prev.output_file : output_file, action, previous: action === 'skip' ? (prev || null) : null });\n    }\n  }\n  return { clips: out, errors };\n}\n\n\n\n// ---------------------------------------------------------------- nodo n8n\nconst body = $('Webhook: recibir guion').first().json.body || {};\nconst registry = $('Registro a JSON').first().json.data;\nconst old = $input.first().json.data || null;\nlet script = body.script;\nif (!script && body.script_text) script = parseText(body.script_text, registry, body.episode_id || 'E001');\nif (!script) return [{ json: { _validation_errors: ['El cuerpo debe traer \"script\" (estructurado) o \"script_text\" (texto con PERSONAJE: línea).'] } }];\nconst { clips, errors } = planAll(script, registry, old, { mode: body.mode || 'production', clip_ids: body.clip_ids });\nif (errors.length) return [{ json: { _validation_errors: errors } }];\nreturn clips.map(c => ({ json: c }));\n"
+      }
+    },
+    {
+      "id": "b1fecabc-d931-518d-9b67-c2df8cd3e16f",
+      "name": "¿Guion válido?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "v1",
+              "leftValue": "={{ $json._validation_errors }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "080b7425-8f87-50c6-a594-56d1726933c3",
+      "name": "Responder: guion inválido",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2200,
+        480
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, errors: $json._validation_errors } }}",
+        "options": {
+          "responseCode": 422
+        }
+      }
+    },
+    {
+      "id": "75d8bb6b-23cc-58c0-b45a-526b3880ca99",
+      "name": "Lote (1 clip por vuelta)",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2200,
+        200
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "5ab8d45f-7236-5af8-8b9f-59ff6946c26f",
+      "name": "¿Generar este clip?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2420,
+        120
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "g1",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "generate",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "c8e13815-11a6-5998-8011-899140419d51",
+      "name": "Fila: omitido (ya existe)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        360
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(i => ({ json: { ...i.json.previous, ...i.json, ssml: undefined, previous: undefined, generation_status: (i.json.previous || {}).generation_status || 'skipped' } }));"
+      }
+    },
+    {
+      "id": "6a1c367c-ac2c-5e6b-b197-8b67256db52a",
+      "name": "Azure TTS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2640,
+        40
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://{{ $('Config').first().json.azure_region }}.tts.speech.microsoft.com/cognitiveservices/v1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Microsoft-OutputFormat",
+              "value": "riff-48khz-16bit-mono-pcm"
+            },
+            {
+              "name": "User-Agent",
+              "value": "neon-tts-n8n"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/ssml+xml",
+        "body": "={{ $json.ssml }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "data"
+            }
+          },
+          "timeout": 60000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Azure Speech key (Ocp-Apim-Subscription-Key)"
+        }
+      },
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "46d1823d-430f-59bf-9ad2-2e4709b0c94d",
+      "name": "Worker: normalizar y medir (FFmpeg)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2860,
+        40
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.worker_url }}/process",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "audio",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Lote (1 clip por vuelta)').item.json.text }}"
+            },
+            {
+              "name": "speaking_rate",
+              "value": "={{ $('Lote (1 clip por vuelta)').item.json.speaking_rate }}"
+            },
+            {
+              "name": "post_fx",
+              "value": "={{ $('Lote (1 clip por vuelta)').item.json.post_fx || '' }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "NEON audio-worker token (X-Worker-Token)"
+        }
+      },
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "f0334433-19cf-54f3-96f2-34f570486bc1",
+      "name": "Preparar audio para STT",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3080,
+        40
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(i => ({ json: { ...i.json, audio_b64: undefined }, binary: { stt: { data: i.json.stt16k_b64, mimeType: 'audio/wav', fileName: 'stt.wav' } } }));"
+      }
+    },
+    {
+      "id": "76049746-54da-596e-bc6f-5ad930302e69",
+      "name": "Azure STT (verificar texto)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3300,
+        40
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://{{ $('Config').first().json.azure_region }}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=es-MX&format=simple",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "audio/wav; codecs=audio/pcm; samplerate=16000"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "stt",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Azure Speech key (Ocp-Apim-Subscription-Key)"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "2ee20436-cdc1-5be2-814c-20b7f46ca718",
+      "name": "Worker: comparar texto (WER)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3520,
+        40
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.worker_url }}/wer",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $('Lote (1 clip por vuelta)').item.json.text, transcript: $json.DisplayText || '' }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "NEON audio-worker token (X-Worker-Token)"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "4930ec15-103f-5578-b1f9-fac05587ece5",
+      "name": "Armar resultado + WAV",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3740,
+        40
+      ],
+      "parameters": {
+        "jsCode": "\nreturn $input.all().map((i, k) => {\n  const clip = $('Lote (1 clip por vuelta)').itemMatching(k).json;\n  const w = $('Worker: normalizar y medir (FFmpeg)').itemMatching(k).json;\n  const stt = $('Azure STT (verificar texto)').itemMatching(k).json || {};\n  const flags = [...(w.qa.flags || [])];\n  const wer = typeof i.json.wer === 'number' ? i.json.wer : null;\n  if (wer === null) flags.push('stt_no_disponible'); else if (wer > 0.15) flags.push('transcripcion_no_coincide');\n  const row = { ...clip, ssml: undefined, previous: undefined, action: undefined, duration: w.duration,   // duración REAL medida por FFmpeg\n    qa: { ...w.qa, transcript: stt.DisplayText || null, wer, flags }, post_version: w.post_version,\n    generation_status: flags.length ? 'needs_review' : 'generated' };\n  return { json: row, binary: { wav: { data: w.audio_b64, mimeType: 'audio/wav', fileName: clip.output_file } } };\n});"
+      }
+    },
+    {
+      "id": "9130cc44-64ef-5d0b-9eb8-c789924b777b",
+      "name": "Subir WAV a Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        3960,
+        40
+      ],
+      "parameters": {
+        "name": "={{ $json.output_file }}",
+        "inputDataFieldName": "wav",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.drive_folder_id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "",
+          "name": "Google Drive NEON"
+        }
+      },
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "30aa81be-80bc-5d06-aab7-70ed52aa052e",
+      "name": "Fila: generado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4180,
+        0
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map((i, k) => ({ json: { ...$('Armar resultado + WAV').itemMatching(k).json, drive_file_id: i.json.id } }));"
+      }
+    },
+    {
+      "id": "0212a8b6-90f0-5655-8525-33ef8f05b2a9",
+      "name": "Fila: fallido",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4180,
+        240
+      ],
+      "parameters": {
+        "jsCode": "\nreturn $input.all().map((i, k) => {\n  const clip = $('Lote (1 clip por vuelta)').itemMatching(k).json;\n  const err = (i.json.error && (i.json.error.message || i.json.error.description)) || i.json.message || 'error desconocido';\n  return { json: { ...clip, ssml: undefined, previous: undefined, action: undefined, duration: null, generation_status: 'failed', error: String(err).slice(0, 300) } };\n});"
+      }
+    },
+    {
+      "id": "3ea3d2d6-512b-5b3a-9c91-2ca337e51583",
+      "name": "Esperar (límite 20/min del nivel gratuito)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4400,
+        120
+      ],
+      "parameters": {
+        "amount": 3.2
+      },
+      "webhookId": "3f3a2f04-10a5-5b40-8ceb-a2a805568d0d"
+    },
+    {
+      "id": "878ac230-d03b-5a10-9bb0-3d38517661a8",
+      "name": "Armar manifiesto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2420,
+        -160
+      ],
+      "parameters": {
+        "jsCode": "\nconst rows = $input.all().map(i => i.json).filter(r => r.clip_id).sort((a, b) => a.sequence - b.sequence);\nconst summary = {};\nfor (const r of rows) summary[r.generation_status] = (summary[r.generation_status] || 0) + 1;\nconst reg = $('Registro a JSON').first().json.data;\nconst manifest = { episode_id: $('Config').first().json.episode_id, generated_at: new Date().toISOString(), registry_version: reg.registry_version,\n  clips: rows.map(r => ({ episode_id: r.episode_id, scene_id: r.scene_id, clip_id: r.clip_id, sequence: r.sequence, character_id: r.character_id,\n    voice_id: r.voice_id, voice_version: r.voice_version, text: r.text, emotion: r.emotion, intensity: r.intensity, style: r.style, styledegree: r.styledegree,\n    interpretation: r.interpretation, speaking_rate: r.speaking_rate, pitch: r.pitch, volume: r.volume, pause_before_ms: r.pause_before_ms,\n    pause_after_ms: r.pause_after_ms, intent: r.intent, post_fx: r.post_fx, output_file: r.output_file, drive_file_id: r.drive_file_id || null,\n    duration: r.duration ?? null, take: r.take, content_hash: r.content_hash, qa: r.qa || null, generation_status: r.generation_status, error: r.error || null })),\n  summary };\nconst txt = JSON.stringify(manifest, null, 2);\nreturn [{ json: { manifest, summary, failed: manifest.clips.filter(c => c.generation_status === 'failed').map(c => ({ clip_id: c.clip_id, error: c.error })),\n  needs_review: manifest.clips.filter(c => c.generation_status === 'needs_review').map(c => ({ clip_id: c.clip_id, flags: c.qa && c.qa.flags })) },\n  binary: { manifest: { data: Buffer.from(txt, 'utf8').toString('base64'), mimeType: 'application/json', fileName: `${manifest.episode_id}_manifest.json` } } }];\n"
+      }
+    },
+    {
+      "id": "e68502f1-9887-5ece-a19d-4030a5ad90a2",
+      "name": "¿Actualizar manifiesto existente?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        -160
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "m1",
+              "leftValue": "={{ $('Buscar manifiesto').first().json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "3a0dd0cb-9911-5a80-9d8a-bb2fdb2ffd72",
+      "name": "Actualizar manifiesto en Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2860,
+        -260
+      ],
+      "parameters": {
+        "operation": "update",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Buscar manifiesto').first().json.id }}",
+          "mode": "id"
+        },
+        "changeFileContent": true,
+        "inputDataFieldName": "manifest",
+        "updateFields": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "",
+          "name": "Google Drive NEON"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "d539517a-9537-5e50-82a3-b6103ef9c64b",
+      "name": "Crear manifiesto en Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2860,
+        -60
+      ],
+      "parameters": {
+        "name": "={{ $('Config').first().json.episode_id }}_manifest.json",
+        "inputDataFieldName": "manifest",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.drive_folder_id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "",
+          "name": "Google Drive NEON"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "cd131a47-deb4-5b05-a916-a80d08a785b9",
+      "name": "Responder: informe",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3080,
+        -160
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: $('Armar manifiesto').first().json.failed.length === 0, summary: $('Armar manifiesto').first().json.summary, failed: $('Armar manifiesto').first().json.failed, needs_review: $('Armar manifiesto').first().json.needs_review, manifest_file: $('Config').first().json.episode_id + '_manifest.json' } }}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Webhook: recibir guion": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Descargar registro de voces",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar registro de voces": {
+      "main": [
+        [
+          {
+            "node": "Registro a JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registro a JSON": {
+      "main": [
+        [
+          {
+            "node": "Buscar manifiesto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar manifiesto": {
+      "main": [
+        [
+          {
+            "node": "¿Existe manifiesto?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Existe manifiesto?": {
+      "main": [
+        [
+          {
+            "node": "Descargar manifiesto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sin manifiesto previo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar manifiesto": {
+      "main": [
+        [
+          {
+            "node": "Manifiesto a JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manifiesto a JSON": {
+      "main": [
+        [
+          {
+            "node": "Plan: validar, asignar voces y SSML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sin manifiesto previo": {
+      "main": [
+        [
+          {
+            "node": "Plan: validar, asignar voces y SSML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan: validar, asignar voces y SSML": {
+      "main": [
+        [
+          {
+            "node": "¿Guion válido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Guion válido?": {
+      "main": [
+        [
+          {
+            "node": "Lote (1 clip por vuelta)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder: guion inválido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lote (1 clip por vuelta)": {
+      "main": [
+        [
+          {
+            "node": "Armar manifiesto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "¿Generar este clip?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Generar este clip?": {
+      "main": [
+        [
+          {
+            "node": "Azure TTS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fila: omitido (ya existe)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fila: omitido (ya existe)": {
+      "main": [
+        [
+          {
+            "node": "Lote (1 clip por vuelta)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Azure TTS": {
+      "main": [
+        [
+          {
+            "node": "Worker: normalizar y medir (FFmpeg)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fila: fallido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Worker: normalizar y medir (FFmpeg)": {
+      "main": [
+        [
+          {
+            "node": "Preparar audio para STT",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fila: fallido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar audio para STT": {
+      "main": [
+        [
+          {
+            "node": "Azure STT (verificar texto)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Azure STT (verificar texto)": {
+      "main": [
+        [
+          {
+            "node": "Worker: comparar texto (WER)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Worker: comparar texto (WER)": {
+      "main": [
+        [
+          {
+            "node": "Armar resultado + WAV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Armar resultado + WAV": {
+      "main": [
+        [
+          {
+            "node": "Subir WAV a Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subir WAV a Drive": {
+      "main": [
+        [
+          {
+            "node": "Fila: generado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fila: fallido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fila: generado": {
+      "main": [
+        [
+          {
+            "node": "Esperar (límite 20/min del nivel gratuito)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fila: fallido": {
+      "main": [
+        [
+          {
+            "node": "Esperar (límite 20/min del nivel gratuito)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar (límite 20/min del nivel gratuito)": {
+      "main": [
+        [
+          {
+            "node": "Lote (1 clip por vuelta)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Armar manifiesto": {
+      "main": [
+        [
+          {
+            "node": "¿Actualizar manifiesto existente?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Actualizar manifiesto existente?": {
+      "main": [
+        [
+          {
+            "node": "Actualizar manifiesto en Drive",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Crear manifiesto en Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar manifiesto en Drive": {
+      "main": [
+        [
+          {
+            "node": "Responder: informe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear manifiesto en Drive": {
+      "main": [
+        [
+          {
+            "node": "Responder: informe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "timezone": "America/Mexico_City"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

@@ -1,0 +1,4 @@
+output/
+casting/
+__pycache__/
+*.16k.wav
