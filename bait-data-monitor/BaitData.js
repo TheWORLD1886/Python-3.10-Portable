@@ -52,6 +52,15 @@ const C = {
 
 // ───────────────────────────── UTILIDADES ─────────────────────────────────
 const sleep = (ms) => new Promise((r) => Timer.schedule(ms, false, r));
+/** Carga una URL/HTML en un WebView ignorando el error -999 (navegación cancelada),
+ *  que iOS lanza cuando el portal redirige o una carga reemplaza a otra. */
+async function safeLoad(promiseFn) {
+  try {
+    await promiseFn();
+  } catch (e) {
+    if (!/-999|cancel/i.test(String(e && (e.message || e)))) throw e;
+  }
+}
 const num = (v) => {
   const n = typeof v === "string" ? parseFloat(v.replace(",", ".")) : Number(v);
   return Number.isFinite(n) ? n : null;
@@ -284,7 +293,7 @@ const Auth = {
     if ((await intro.presentAlert()) === -1) return null;
 
     const wv = new WebView();
-    await wv.loadURL(CFG.BASE + "/login");
+    await safeLoad(() => wv.loadURL(CFG.BASE + "/login"));
     let closed = false;
     const shown = wv.present(true).then(() => (closed = true));
 
@@ -308,13 +317,13 @@ const Auth = {
         } catch (e) {}
       }
       if (!closed) {
-        await wv.loadHTML(
+        await safeLoad(() => wv.loadHTML(
           `<html><meta name="viewport" content="width=device-width,initial-scale=1">
            <body style="background:#000;color:#fff;font-family:-apple-system;display:flex;
            align-items:center;justify-content:center;height:90vh;text-align:center">
            <div><div style="font-size:64px">✅</div><h2>Línea ${session.number} vinculada</h2>
            <p style="color:#8E8E93">Ya puedes cerrar esta ventana (botón “Cerrar”/“Done”).</p></div></body></html>`
-        );
+        ));
         await shown;
       }
     }
@@ -467,9 +476,10 @@ const Api = {
   /** Respaldo (solo dentro de la app): abre el portal oculto y lee el consumo que él descarga. */
   async fetchViaPortal() {
     const wv = new WebView();
-    await wv.loadURL(CFG.BASE + "/");
+    await safeLoad(() => wv.loadURL(CFG.BASE + "/"));
+    await sleep(1000);
     await wv.evaluateJavaScript("localStorage.removeItem('mibait-consumo'); true");
-    await wv.loadURL(CFG.BASE + "/home");
+    await safeLoad(() => wv.loadURL(CFG.BASE + "/home"));
     const deadline = Date.now() + 30e3;
     while (Date.now() < deadline) {
       await sleep(1500);
@@ -1104,7 +1114,7 @@ async function resetAll() {
   Store.remove("history.json");
   try {
     const wv = new WebView();
-    await wv.loadURL(CFG.BASE + "/");
+    await safeLoad(() => wv.loadURL(CFG.BASE + "/"));
     await wv.evaluateJavaScript("localStorage.clear(); true");
   } catch (e) {}
 }
