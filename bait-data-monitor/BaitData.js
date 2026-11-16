@@ -705,8 +705,8 @@ async function getUsage({ force = false } = {}) {
 
 // ───────────────────────────── DIBUJO (DrawContext) ───────────────────────
 function levelColor(d) {
-  if (!d || d.unlimited) return C.green;
-  if (d.pct == null) return C.sub;
+  if (!d) return C.green;
+  if (d.pct == null) return d.unlimited ? C.green : C.sub;
   const lowData = d.availMB != null && d.availMB < 512;
   if (d.pct >= 0.85 || lowData) return C.red;
   if (d.pct >= 0.6) return C.yellow;
@@ -878,26 +878,113 @@ function emptyState(w, res, family) {
   w.addSpacer();
 }
 
+/** Promedio diario real: historial (si hay ≥2 días) o consumo del ciclo / días transcurridos. */
+function dailyAverageMB(d) {
+  const known = History.daily(14).filter((x) => x.mb != null);
+  if (known.length >= 2) return known.reduce((a, x) => a + x.mb, 0) / known.length;
+  if (d.usedMB != null && d.daysLeft != null) {
+    const elapsed = Math.max(1, 30 - d.daysLeft); // los paquetes BAIT son de 30 días
+    return d.usedMB / elapsed;
+  }
+  return null;
+}
+
+/** Widget pequeño dibujado completo en un lienzo (estilo tablero con medidor en arco). */
+function smallGaugeImage(res, d) {
+  const S = 340; // lienzo 2x de un widget pequeño (~170 pt)
+  const dc = new DrawContext();
+  dc.size = new Size(S, S);
+  dc.opaque = true;
+  dc.respectScreenScale = false;
+  const gray = new Color("#AEAEB2");
+  const lvl = levelColor(d);
+  const rect = (x, y, w, h) => new Rect(x, y, w, h);
+  const text = (t, r, font, color, align = "center") => {
+    dc.setFont(font);
+    dc.setTextColor(color);
+    if (align === "left") dc.setTextAlignedLeft();
+    else if (align === "right") dc.setTextAlignedRight();
+    else dc.setTextAlignedCenter();
+    dc.drawTextInRect(t, r);
+  };
+
+  // Fondo
+  dc.setFillColor(new Color("#1C1C1E"));
+  dc.fillRect(rect(0, 0, S, S));
+
+  // Logo: "bait" + ondas de señal sobre la "t"
+  text("bait", rect(26, 26, 120, 46), Font.heavySystemFont(38), C.text, "left");
+  const ox = 100, oy = 30;
+  dc.setStrokeColor(C.yellow);
+  dc.setLineWidth(2.8);
+  [4, 8.5, 13].forEach((r) => {
+    const p = new Path();
+    for (let a = 225; a <= 315; a += 5) {
+      const pt = new Point(ox + r * Math.cos((a * Math.PI) / 180), oy + r * Math.sin((a * Math.PI) / 180));
+      a === 225 ? p.move(pt) : p.addLine(pt);
+    }
+    dc.addPath(p);
+    dc.strokePath();
+  });
+
+  // Pastilla de días restantes
+  const pill = new Path();
+  pill.addRoundedRect(rect(S - 26 - 104, 32, 104, 36), 18, 18);
+  dc.addPath(pill);
+  dc.setFillColor(new Color("#3A3A3C"));
+  dc.fillPath();
+  const days = d.daysLeft != null ? `${d.daysLeft} ${d.daysLeft === 1 ? "día" : "días"}` : "—";
+  text(days, rect(S - 26 - 104, 39, 104, 26), Font.boldSystemFont(19), d.daysLeft != null && d.daysLeft <= 2 ? C.red : C.text);
+
+  // Vigencia
+  text(`Vigencia: ${d.expire ? fmtDate(new Date(d.expire)) : "—"}`, rect(0, 92, S, 26), Font.regularSystemFont(19), gray);
+
+  // Medidor en arco (220°, abierto abajo)
+  const cx = S / 2, cy = 246, r = 112, lw = 17, a0 = 172, sweep = 196;
+  drawArc(dc, cx, cy, r, a0, a0 + sweep, new Color("#545458"), lw);
+  const pct = d.pct != null ? d.pct : d.unlimited ? 0 : 0;
+  if (pct > 0) drawArc(dc, cx, cy, r, a0, a0 + sweep * pct, lvl, lw);
+
+  // Porcentaje
+  if (d.pct != null) {
+    text(`${Math.round(d.pct * 100)}%`, rect(S - 120, 122, 100, 30), Font.heavySystemFont(26), lvl, "right");
+    text(`de ${fmtData(d.totalMB, d.totalMB % 1024 ? 1 : 0)}`, rect(S - 120, 151, 100, 16), Font.semiboldSystemFont(12), gray, "right");
+  }
+
+  // Centro
+  const label = d.unlimited ? "ILIMITADO" : d.availMB != null ? `${fmtData(d.availMB)} LIBRES` : d.status.toUpperCase();
+  text(label, rect(70, 166, S - 140, 22), Font.boldSystemFont(17), new Color("#E5E5EA"));
+  text(fmtGBnum(d.usedMB), rect(70, 186, S - 140, 64), Font.heavySystemFont(56), lvl);
+  text(`${unitOf(d.usedMB)} CONSUMIDOS`, rect(60, 248, S - 120, 20), Font.boldSystemFont(15), gray);
+
+  // Pie
+  const avg = dailyAverageMB(d);
+  text(avg != null ? `Prom. ${fmtData(avg, 1)}/d` : "Prom. —", rect(26, 280, 150, 20), Font.boldSystemFont(15), lvl, "left");
+  const st =
+    res.state === "ok" ? ["Datos actualizados", gray]
+    : res.state === "auth" ? ["Sesión expirada", C.yellow]
+    : res.state === "network" ? ["Sin conexión", C.yellow]
+    : ["Error de BAIT", C.red];
+  text(st[0], rect(S - 176, 280, 150, 20), Font.semiboldSystemFont(15), st[1], "right");
+  const when = res.cache && res.cache.lastOk ? fmtTime(new Date(res.cache.lastOk)) : "—";
+  const ref = d.unlimited
+    ? `Ref. ${fmtData(d.totalMB, d.totalMB % 1024 ? 1 : 0)} alta vel. · ${when}`
+    : `Paquete ${fmtData(d.totalMB, d.totalMB % 1024 ? 1 : 0)} · ${when}`;
+  text(ref, rect(0, 303, S, 20), Font.semiboldSystemFont(15), gray);
+  return dc.getImage();
+}
+
 function buildSmall(res) {
   const w = newWidget();
-  w.setPadding(12, 12, 12, 12);
-  header(w, res, true);
   const d = res.cache && res.cache.data;
-  if (!d) return emptyState(w, res, "small"), w;
-  w.addSpacer(6);
-  const row = w.addStack();
-  row.addSpacer();
-  const img = row.addImage(ringImage(d, 180, 16));
-  img.imageSize = new Size(84, 84);
-  row.addSpacer();
-  w.addSpacer(6);
-  const l1 = w.addStack();
-  txt(l1, d.unlimited ? "Ilimitado" : d.pct != null ? `${Math.round(d.pct * 100)}% usado` : d.status, Font.semiboldSystemFont(12), levelColor(d));
-  l1.addSpacer();
-  const l2 = w.addStack();
-  txt(l2, d.expire ? `Vence ${fmtDate(new Date(d.expire))}` : "Sin vigencia", Font.mediumSystemFont(11), C.sub);
-  l2.addSpacer();
-  if (res.state !== "ok") txt(l2, "⚠︎", Font.mediumSystemFont(11), C.yellow);
+  if (!d) {
+    w.setPadding(12, 12, 12, 12);
+    header(w, res, true);
+    return emptyState(w, res, "small"), w;
+  }
+  w.setPadding(0, 0, 0, 0);
+  w.backgroundImage = smallGaugeImage(res, d);
+  w.addSpacer();
   return w;
 }
 

@@ -143,7 +143,7 @@ Las cantidades están en **MB**. El portal calcula el total de datos sumando los
 También funciona en la pantalla de bloqueo, con los tamaños circular y rectangular.
 
 **Contenido por tamaño**
-- **Pequeño:** anillo con los GB disponibles, % consumido y fecha de vencimiento.
+- **Pequeño:** tablero con medidor en arco: GB consumidos, % del paquete, días restantes, vigencia, promedio diario, estado y hora de actualización.
 - **Mediano:** disponibles de totales, barra, consumidos, días restantes y última sincronización.
 - **Grande:** anillo, barra, consumidos, % usado, días restantes, renovación, redes sociales, minutos y SMS, gráfica de consumo diario de 10 días con promedio, estado de conexión con BAIT y hora de actualización.
 
