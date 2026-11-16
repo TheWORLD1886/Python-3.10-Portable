@@ -1,0 +1,190 @@
+{
+  "daily_source": "yahoo:GC=F",
+  "daily_range": [
+    "2000-08-30 04:00:00+00:00",
+    "2026-11-13 05:00:00+00:00"
+  ],
+  "split": "2013-01-01",
+  "risk_per_trade": 0.005,
+  "cost_frac_round_trip": 0.0002,
+  "daily": {
+    "donchian": {
+      "chosen_on_in_sample": {
+        "params": {
+          "n_entry": 100,
+          "n_exit": 20,
+          "long_only": true,
+          "stop_atr": 3.0,
+          "trail_atr": 3.0
+        },
+        "in_sample": {
+          "cagr_pct": 1.12,
+          "sharpe": 0.98,
+          "max_dd_pct": -1.1,
+          "return_pct": 14.8,
+          "trades": 36,
+          "win_rate": 0.583,
+          "expectancy_r": 0.772,
+          "expectancy_r_ci95": [
+            0.32,
+            1.305
+          ],
+          "profit_factor": 4.49
+        },
+        "out_of_sample": {
+          "cagr_pct": 0.38,
+          "sharpe": 0.46,
+          "max_dd_pct": -2.2,
+          "return_pct": 5.5,
+          "trades": 30,
+          "win_rate": 0.5,
+          "expectancy_r": 0.375,
+          "expectancy_r_ci95": [
+            -0.019,
+            0.837
+          ],
+          "profit_factor": 2.52
+        }
+      },
+      "all_configs_oos_sharpe": {
+        "min": 0.04,
+        "median": 0.3,
+        "max": 0.58,
+        "n": 20
+      }
+    },
+    "ma_trend": {
+      "chosen_on_in_sample": {
+        "params": {
+          "fast": 50,
+          "slow": 200,
+          "long_only": true,
+          "stop_atr": 3.0,
+          "trail_atr": 3.0
+        },
+        "in_sample": {
+          "cagr_pct": 2.13,
+          "sharpe": 1.06,
+          "max_dd_pct": -2.4,
+          "return_pct": 29.6,
+          "trades": 146,
+          "win_rate": 0.466,
+          "expectancy_r": 0.365,
+          "expectancy_r_ci95": [
+            0.144,
+            0.597
+          ],
+          "profit_factor": 2.22
+        },
+        "out_of_sample": {
+          "cagr_pct": 0.75,
+          "sharpe": 0.54,
+          "max_dd_pct": -3.9,
+          "return_pct": 11.0,
+          "trades": 115,
+          "win_rate": 0.4,
+          "expectancy_r": 0.198,
+          "expectancy_r_ci95": [
+            -0.006,
+            0.417
+          ],
+          "profit_factor": 1.77
+        }
+      },
+      "all_configs_oos_sharpe": {
+        "min": 0.22,
+        "median": 0.37,
+        "max": 0.57,
+        "n": 16
+      }
+    },
+    "buy_and_hold": {
+      "in_sample": {
+        "cagr_pct": 15.81,
+        "sharpe": 0.88,
+        "max_dd_pct": -29.7,
+        "return_pct": 511.5
+      },
+      "out_of_sample": {
+        "cagr_pct": 6.2,
+        "sharpe": 0.44,
+        "max_dd_pct": -37.9,
+        "return_pct": 130.2
+      }
+    }
+  },
+  "asia_breakout_h1": {
+    "rr_1.0": {
+      "trades": 334,
+      "win_rate": 0.5059880239520959,
+      "avg_win_r": 0.7019555095708052,
+      "avg_loss_r": -0.7029305445220709,
+      "expectancy_r": 0.007924973866240595,
+      "expectancy_r_ci95": [
+        -0.07584446965239983,
+        0.09345358661120974
+      ],
+      "t_stat": 0.1824582646115591,
+      "profit_factor": 1.0228216975860167,
+      "max_drawdown_pct": -5.676767688029576,
+      "return_pct": 0.5979355278299847,
+      "max_consecutive_losses": 6,
+      "exit_reasons": {
+        "time": 152,
+        "target": 94,
+        "stop": 88
+      },
+      "verdict": "NOT DISTINGUISHABLE FROM ZERO: no demonstrated edge",
+      "first_half_expectancy_r": -0.03505225139346597,
+      "second_half_expectancy_r": 0.06747912886897679
+    },
+    "rr_1.5": {
+      "trades": 334,
+      "win_rate": 0.49101796407185627,
+      "avg_win_r": 0.7878258410469595,
+      "avg_loss_r": -0.6986819479565354,
+      "expectancy_r": 0.03122008017691719,
+      "expectancy_r_ci95": [
+        -0.06042241328226424,
+        0.12412870630787118
+      ],
+      "t_stat": 0.650004330529531,
+      "profit_factor": 1.0877914126027133,
+      "max_drawdown_pct": -5.610366143635866,
+      "return_pct": 2.558829632323123,
+      "max_consecutive_losses": 6,
+      "exit_reasons": {
+        "time": 194,
+        "stop": 90,
+        "target": 50
+      },
+      "verdict": "NOT DISTINGUISHABLE FROM ZERO: no demonstrated edge",
+      "first_half_expectancy_r": -0.00023705032200069625,
+      "second_half_expectancy_r": 0.07481067529684626
+    },
+    "rr_2.0": {
+      "trades": 334,
+      "win_rate": 0.4820359281437126,
+      "avg_win_r": 0.8360704585849685,
+      "avg_loss_r": -0.6928848554956925,
+      "expectancy_r": 0.04412653841744058,
+      "expectancy_r_ci95": [
+        -0.051698551856573294,
+        0.14344482106265935
+      ],
+      "t_stat": 0.8634230954585662,
+      "profit_factor": 1.1229530069917308,
+      "max_drawdown_pct": -5.460905104767979,
+      "return_pct": 3.659034740433542,
+      "max_consecutive_losses": 6,
+      "exit_reasons": {
+        "time": 214,
+        "stop": 91,
+        "target": 29
+      },
+      "verdict": "NOT DISTINGUISHABLE FROM ZERO: no demonstrated edge",
+      "first_half_expectancy_r": -0.007012583668937086,
+      "second_half_expectancy_r": 0.11499075045142107
+    }
+  }
+}

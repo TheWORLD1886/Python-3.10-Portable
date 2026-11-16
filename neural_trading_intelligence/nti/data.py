@@ -37,7 +37,10 @@ def load_yahoo_chart(path: str | Path) -> pd.DataFrame:
     df = _clean(df)
     # Yahoo appends a partial "live" bar; drop bars not aligned to the interval
     step = df.index.to_series().diff().mode().iloc[0]
-    df = df[df.index.floor(step) == df.index]
+    if step < pd.Timedelta("1D"):   # daily bars are stamped at the exchange session open, not 00:00
+        df = df[df.index.floor(step) == df.index]
+    else:
+        df = df.iloc[:-1] if len(df) > 1 and df.index[-1] - df.index[-2] < step / 2 else df
     return df
 
 
