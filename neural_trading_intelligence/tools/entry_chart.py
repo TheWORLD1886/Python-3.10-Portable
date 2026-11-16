@@ -1,4 +1,4 @@
-"""Long-entry chart: H1 candles + liquidity + planned LONG setups (entry / SL / TP).
+"""Entry chart: H1 candles + liquidity + planned LONG and SHORT setups (entry / SL / TP).
 
 Usage:
   python tools/entry_chart.py [--h1 data/raw/GC=F_60m_730d.json] [--d1 data/raw/GC=F_1d_max.json]
@@ -44,41 +44,50 @@ def daily_trend_state(d1: pd.DataFrame) -> dict:
     s50, s100, s200 = (c.rolling(n).mean().iloc[-1] for n in (50, 100, 200))
     hi55 = d1["high"].rolling(55).max().iloc[-2]
     long_ok = bool(c.iloc[-1] > s100 and s50 > s100)
+    short_ok = bool(c.iloc[-1] < s100 and s50 < s100)
     return {"close": float(c.iloc[-1]), "sma50": float(s50), "sma100": float(s100), "sma200": float(s200),
-            "donchian55_high": float(hi55), "trend_system_long": long_ok,
+            "donchian55_high": float(hi55), "trend_system_long": long_ok, "trend_system_short": short_ok,
+            "daily_label": "ALCISTA" if long_ok else ("BAJISTA" if short_ok else "neutral"),
             "trend_label": "ALCISTA (sistema de tendencia comprado)" if long_ok else
                            "NO ALCISTA (sistema de tendencia fuera: compras = contra tendencia)"}
 
 
-def plan_longs(df: pd.DataFrame, pools, a_h1: float, last: float, max_setups: int = 2) -> list[dict]:
-    below = sorted([p for p in pools if p.side == "sell_side" and p.price < last], key=lambda p: -p.price)
-    above = sorted([p for p in pools if p.side == "buy_side" and p.price > last], key=lambda p: p.price)
+def plan_setups(pools, a_h1: float, last: float, direction: int, max_setups: int = 2) -> list[dict]:
+    """direction +1: buy after a sweep of sell-side liquidity below; -1: sell after a sweep of buy-side above."""
+    if direction == 1:
+        trig = sorted([p for p in pools if p.side == "sell_side" and p.price < last], key=lambda p: -p.price)
+        tgt = sorted([p for p in pools if p.side == "buy_side" and p.price > last], key=lambda p: p.price)
+    else:
+        trig = sorted([p for p in pools if p.side == "buy_side" and p.price > last], key=lambda p: p.price)
+        tgt = sorted([p for p in pools if p.side == "sell_side" and p.price < last], key=lambda p: -p.price)
+    d = direction
     setups = []
-    for p in below[:max_setups]:
-        trigger = p.price
-        entry = trigger + 0.1 * a_h1                       # estimated: close back above the level
-        stop = trigger - 0.6 * a_h1 - 0.15 * a_h1          # estimated sweep wick (~0.6 ATR) + buffer
-        risk = entry - stop
-        tps = [q.price for q in above if q.price - entry >= 1.0 * risk][:2]
-        if not tps:
-            tps = [entry + 2 * risk]
+    for k, p in enumerate(trig[:max_setups], 1):
+        level = p.price
+        entry = level + d * 0.1 * a_h1                     # estimated: close back inside the level
+        stop = level - d * (0.6 + 0.15) * a_h1             # estimated sweep wick (~0.6 ATR) + buffer
+        risk = abs(entry - stop)
+        tps = [q.price for q in tgt if d * (q.price - entry) >= risk][:2] or [entry + d * 2 * risk]
+        side_txt = ("mecha bajo el nivel y CIERRE H1 por encima" if d == 1
+                    else "mecha sobre el nivel y CIERRE H1 por debajo")
         setups.append({
-            "level": round(trigger, 1), "sources": p.sources, "touches": p.touches,
-            "trigger": f"vela H1 barre {trigger:.1f} (mecha por debajo) y CIERRA por encima",
+            "label": f"{'C' if d == 1 else 'V'}{k}", "direction": "COMPRA" if d == 1 else "VENTA",
+            "level": round(level, 1), "sources": p.sources, "touches": p.touches,
+            "trigger": f"vela H1 barre {level:.1f}: {side_txt}",
             "entry_est": round(entry, 1), "stop_est": round(stop, 1),
             "tp1": round(tps[0], 1), "tp2": round(tps[1], 1) if len(tps) > 1 else None,
-            "rr_tp1": round((tps[0] - entry) / risk, 2),
-            "invalidation": f"cierre H1 por debajo de {stop:.1f} o cierre H4 bajo {trigger - a_h1:.1f}",
+            "rr_tp1": round(abs(tps[0] - entry) / risk, 2),
+            "invalidation": f"cierre H1 {'bajo' if d == 1 else 'sobre'} {stop:.1f}",
         })
     return setups
 
 
-def draw(df: pd.DataFrame, n_bars: int, pools, setups, past_longs, trend: dict, h4_trend: int,
+def draw(df: pd.DataFrame, n_bars: int, pools, setups, past_sigs, trend: dict, h4_trend: int,
          h1_trend: int, out: Path, events: list[str]) -> Path:
     v = df.iloc[-n_bars:]
     x = np.arange(len(v))
-    fig = plt.figure(figsize=(11, 6.4), dpi=200)
-    gs = fig.add_gridspec(1, 2, width_ratios=[3.1, 1], wspace=0.02)
+    fig = plt.figure(figsize=(11.5, 6.6), dpi=200)
+    gs = fig.add_gridspec(1, 2, width_ratios=[3.0, 1], wspace=0.02)
     ax, side = fig.add_subplot(gs[0]), fig.add_subplot(gs[1])
     fig.patch.set_facecolor(SURF); ax.set_facecolor(SURF); side.axis("off")
     o, h, l, c = (v[k].to_numpy() for k in ("open", "high", "low", "close"))
@@ -89,12 +98,12 @@ def draw(df: pd.DataFrame, n_bars: int, pools, setups, past_longs, trend: dict, 
 
     lo_y, hi_y = l.min(), h.max()
     for st in setups:
-        lo_y, hi_y = min(lo_y, st["stop_est"]), max(hi_y, st["tp1"])
-    pad = (hi_y - lo_y) * 0.06
+        lo_y = min(lo_y, st["stop_est"], st["tp1"]); hi_y = max(hi_y, st["stop_est"], st["tp1"])
+    pad = (hi_y - lo_y) * 0.05
     lo_y, hi_y = lo_y - pad, hi_y + pad
-    x_end = len(v) + 14
+    width, gap = 5.0, 1.3
+    x_end = len(v) + 1 + len(setups) * (width + gap) + 1
 
-    # liquidity pools (hypothesis) - label at the left edge, only those in view
     for p in pools:
         if lo_y < p.price < hi_y:
             colr = SELLSIDE if p.side == "sell_side" else BUYSIDE
@@ -102,26 +111,27 @@ def draw(df: pd.DataFrame, n_bars: int, pools, setups, past_longs, trend: dict, 
             ax.text(0.5, p.price, f"{'liq. abajo' if p.side == 'sell_side' else 'liq. arriba'} {p.price:.1f}",
                     fontsize=6.3, color=MUTED, va="bottom", ha="left")
 
-    # planned long setups - each in its own column to the right of the last candle
-    tp_drawn = set()
-    for k, st in enumerate(setups, 1):
-        xa, xb = len(v) + 1 + (k - 1) * 6.5, len(v) + 6 + (k - 1) * 6.5
-        ax.fill_between([xa, xb], st["stop_est"], st["entry_est"], color=DOWN, alpha=0.10, zorder=0, linewidth=0)
-        ax.fill_between([xa, xb], st["entry_est"], st["tp1"], color=UP, alpha=0.10, zorder=0, linewidth=0)
+    # each setup in its own column right of the last candle: red = risk zone, green = reward zone
+    for k, st in enumerate(setups):
+        xa = len(v) + 1 + k * (width + gap); xb = xa + width
+        ax.fill_between([xa, xb], st["stop_est"], st["entry_est"], color=DOWN, alpha=0.11, zorder=0, linewidth=0)
+        ax.fill_between([xa, xb], st["entry_est"], st["tp1"], color=UP, alpha=0.11, zorder=0, linewidth=0)
         ax.hlines(st["entry_est"], xa, xb, color=ENTRY, linewidth=2, zorder=4)
         ax.hlines(st["stop_est"], xa, xb, color=DOWN, linewidth=1.2, zorder=4)
         ax.hlines(st["tp1"], xa, xb, color=UP, linewidth=1.2, zorder=4)
-        ax.text((xa + xb) / 2, st["entry_est"], f"C{k}", fontsize=8, weight="bold", color=INK,
-                ha="center", va="bottom", zorder=6)
-        tp_drawn.add(st["tp1"])
+        va = "bottom" if st["direction"] == "COMPRA" else "top"
+        ax.text((xa + xb) / 2, st["entry_est"], st["label"], fontsize=8, weight="bold", color=INK,
+                ha="center", va=va, zorder=6)
 
-    # past long signals generated by the bot (observed sweeps)
     pos = {t: i for i, t in enumerate(v.index)}
-    for sgn in past_longs:
+    off = (hi_y - lo_y) * 0.02
+    for sgn in past_sigs:
         if sgn.time in pos:
             i = pos[sgn.time]
-            ax.scatter(i, l[i] - (hi_y - lo_y) * 0.02, marker="^", s=55, color=ENTRY, edgecolor=SURF,
-                       linewidth=1.5, zorder=5)
+            if sgn.direction == 1:
+                ax.scatter(i, l[i] - off, marker="^", s=55, color=ENTRY, edgecolor=SURF, linewidth=1.5, zorder=5)
+            else:
+                ax.scatter(i, h[i] + off, marker="v", s=55, color=BUYSIDE, edgecolor=SURF, linewidth=1.5, zorder=5)
 
     ticks = [i for i, t in enumerate(v.index) if t.hour == 0]
     ax.set_xticks(ticks, [v.index[i].strftime("%d-%b") for i in ticks], fontsize=7, color=MUTED)
@@ -135,44 +145,42 @@ def draw(df: pd.DataFrame, n_bars: int, pools, setups, past_longs, trend: dict, 
 
     tr = {1: "alcista", -1: "bajista", 0: "neutral"}
     now = datetime.now(timezone.utc).strftime("%d-%b-%Y %H:%M UTC")
-    fig.text(0.01, 0.965, f"Oro (GC=F) H1 · entradas LARGAS planificadas · {now}", fontsize=11,
+    fig.text(0.01, 0.965, f"Oro (GC=F) H1 · entradas planificadas (compra y venta) · {now}", fontsize=11,
              color=INK, weight="bold")
-    fig.text(0.01, 0.935, f"Último {v['close'].iloc[-1]:.1f}  ·  Diario: "
-             f"{'ALCISTA' if trend['trend_system_long'] else 'NO alcista'} (SMA100 {trend['sma100']:.0f})  ·  "
+    fig.text(0.01, 0.935, f"Última vela cerrada {v.index[-1]:%d-%b %H:%M} UTC · {v['close'].iloc[-1]:.1f}  ·  "
+             f"Diario: {trend['daily_label']} (SMA100 {trend['sma100']:.0f})  ·  "
              f"H4 {tr[h4_trend]}  ·  H1 {tr[h1_trend]}", fontsize=8, color=MUTED)
 
-    # side panel with the plan
-    y = 0.98
-    def line(txt, size=7.5, color=INK, weight="normal", gap=0.045):
+    y = 0.99
+    def line(txt, size=7.3, color=INK, weight="normal", gap=0.034):
         nonlocal y
         side.text(0.02, y, txt, fontsize=size, color=color, weight=weight, va="top", transform=side.transAxes)
         y -= gap
-    if not trend["trend_system_long"]:
-        line("AVISO: compras = contra tendencia", 7.5, DOWN, "bold")
-        line("(sistema diario fuera / bajista)", 7, MUTED, gap=0.06)
-    for k, st in enumerate(setups, 1):
-        line(f"C{k} · liquidez {st['level']:.1f}", 8.5, INK, "bold", 0.042)
-        line(f"   {'/'.join(st['sources'])} ({st['touches']} toque{'s' if st['touches'] > 1 else ''})", 6.5, MUTED, gap=0.04)
-        line("   Disparador: mecha bajo el nivel y", 6.8, MUTED, gap=0.033)
-        line("   CIERRE H1 por encima", 6.8, MUTED, gap=0.04)
-        line(f"   Entrada  ~{st['entry_est']:.1f}", 7.5, ENTRY, "bold", 0.036)
-        line(f"   Stop     ~{st['stop_est']:.1f}", 7.5, DOWN, gap=0.036)
+    for st in setups:
+        with_trend = (st["direction"] == "COMPRA" and trend["trend_system_long"]) or \
+                     (st["direction"] == "VENTA" and trend["trend_system_short"])
+        tag = "a favor de tendencia" if with_trend else "CONTRA tendencia"
+        line(f"{st['label']} · {st['direction']} · liq. {st['level']:.1f}", 8.2, INK, "bold", 0.036)
+        line(f"   {tag} · {st['touches']} toque{'s' if st['touches'] > 1 else ''}", 6.6,
+             UP if with_trend else DOWN, gap=0.03)
+        line("   " + ("mecha bajo nivel + CIERRE H1 encima" if st["direction"] == "COMPRA"
+                      else "mecha sobre nivel + CIERRE H1 debajo"), 6.6, MUTED, gap=0.032)
+        line(f"   Entrada ~{st['entry_est']:.1f} · SL ~{st['stop_est']:.1f}", 7.3, ENTRY, "bold", 0.032)
         tp2 = f" / {st['tp2']:.1f}" if st.get("tp2") else ""
-        line(f"   TP {st['tp1']:.1f}{tp2}", 7.5, UP, gap=0.036)
-        line(f"   R:R {st['rr_tp1']}", 7.5, INK, gap=0.06)
-    line("Leyenda", 7.5, INK, "bold", 0.035)
-    line("▲ barrido alcista detectado (pasado)", 6.6, MUTED, gap=0.03)
-    line("··· azul: liquidez abajo (hipótesis)", 6.6, MUTED, gap=0.03)
-    line("··· ocre: liquidez arriba (hipótesis)", 6.6, MUTED, gap=0.03)
+        line(f"   TP {st['tp1']:.1f}{tp2} · R:R {st['rr_tp1']}", 7.3, INK, gap=0.05)
+    line("Leyenda", 7.3, INK, "bold", 0.032)
+    line("▲ / ▼ barrido alcista / bajista detectado", 6.4, MUTED, gap=0.028)
+    line("··· azul: liquidez abajo · ocre: arriba (hipótesis)", 6.4, MUTED, gap=0.028)
+    line("rojo = riesgo (hasta SL) · verde = objetivo", 6.4, MUTED, gap=0.028)
 
-    foot = ("Compras solo si se cumple el disparador. Entrada/SL estimados: recalcula con la mecha real. "
+    foot = ("Entradas solo si se cumple el disparador. Entrada/SL estimados: recalcula con la mecha real. "
             "Precios de futuros: ajusta a GOLD de XM. Sin ventaja estadística demostrada · solo demo.")
     if events:
         foot = "Eventos USD alto impacto (no operar ±30 min): " + " | ".join(events) + "\n" + foot
     fig.text(0.01, 0.01, foot, fontsize=6.4, color=MUTED, va="bottom")
     fig.subplots_adjust(left=0.05, right=0.99, top=0.91, bottom=0.11)
     out.mkdir(parents=True, exist_ok=True)
-    path = out / f"entradas_largas_{datetime.now(timezone.utc):%Y%m%d_%H%M}.png"
+    path = out / f"entradas_{datetime.now(timezone.utc):%Y%m%d_%H%M}.png"
     fig.savefig(path, facecolor=SURF)
     plt.close(fig)
     return path
@@ -210,13 +218,13 @@ def main():
     active = lm.snapshot(len(h1) - 1, allp)
     a = float(atr(h1).iloc[-1])
     last = float(h1["close"].iloc[-1])
-    setups = plan_longs(h1, active, a, last)
-    past_longs = [s for s in generate_signals(h1, Params()) if s.direction == 1]
+    setups = plan_setups(active, a, last, 1) + plan_setups(active, a, last, -1)
+    past_sigs = generate_signals(h1, Params())
     events = upcoming_events(args.calendar)
-    path = draw(h1, args.bars, active, setups, past_longs, trend, h4_trend, h1_trend, Path(args.out), events)
+    path = draw(h1, args.bars, active, setups, past_sigs, trend, h4_trend, h1_trend, Path(args.out), events)
     print(json.dumps({"chart": str(path), "last_bar": str(h1.index[-1]), "last": last, "atr_h1": round(a, 1),
                       "daily": trend, "h4_trend": h4_trend, "h1_trend": h1_trend, "events": events,
-                      "long_setups": setups}, indent=2, default=str))
+                      "setups": setups}, indent=2, default=str))
 
 
 if __name__ == "__main__":
