@@ -41,6 +41,9 @@ def load_yahoo_chart(path: str | Path) -> pd.DataFrame:
         df = df[df.index.floor(step) == df.index]
     else:
         df = df.iloc[:-1] if len(df) > 1 and df.index[-1] - df.index[-2] < step / 2 else df
+    # never treat the still-forming bar as closed (would create false signals)
+    if len(df) and step < pd.Timedelta("1D") and df.index[-1] + step > pd.Timestamp.now(tz="UTC"):
+        df = df.iloc[:-1]
     return df
 
 
