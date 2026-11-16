@@ -7,12 +7,13 @@ Siempre, sin que lo vuelva a pedir:
 1. Descargar datos frescos (desde `neural_trading_intelligence/`):
    ```
    python tools/download_yahoo.py GC=F data/raw/GC=F_60m_730d.json
-   curl -s -A "NTI-research/0.2" -o data/raw/GC=F_1d_max.json "https://query2.finance.yahoo.com/v8/finance/chart/GC=F?interval=1d&period1=946684800&period2=1900000000"
+   python tools/download_yahoo.py GC=F data/raw/GC=F_1d_max.json --interval 1d --since 946684800
    curl -s -A "NTI-research/0.2" -o data/raw/ff_calendar_thisweek.json https://nfs.faireconomy.media/ff_calendar_thisweek.json
+   (download_yahoo.py valida la respuesta y no sobrescribe un archivo bueno si Yahoo da 429)
    ```
 2. Generar la gráfica de velas con las entradas de COMPRA (C1, C2) y VENTA (V1, V2):
    `python tools/entry_chart.py --calendar data/raw/ff_calendar_thisweek.json`
-   Si pide 5 minutos (M5): descargar `...chart/GC=F?interval=5m&range=5d` a `data/raw/GC=F_5m_5d.json` y usar
+   Si pide 5 minutos (M5): `python tools/download_yahoo.py GC=F data/raw/GC=F_5m_5d.json --interval 5m --range 5d` y usar
    `python tools/entry_chart.py --h1 data/raw/GC=F_5m_5d.json --tf M5 --calendar data/raw/ff_calendar_thisweek.json`
 3. Mirar la imagen (comprobar que no hay etiquetas solapadas) y enviarla al usuario con SendUserFile
    (status "normal", display "render"). El usuario la ve en iPhone.
