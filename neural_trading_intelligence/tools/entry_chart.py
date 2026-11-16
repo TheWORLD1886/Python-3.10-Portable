@@ -1,4 +1,4 @@
-"""Entry chart: H1 candles + liquidity + planned LONG and SHORT setups (entry / SL / TP).
+"""Entry chart: H1 (or M5 with --tf M5) candles + liquidity + planned LONG and SHORT setups (entry / SL / TP).
 
 Usage:
   python tools/entry_chart.py [--h1 data/raw/GC=F_60m_730d.json] [--d1 data/raw/GC=F_1d_max.json]
@@ -32,6 +32,8 @@ from nti.analysis.structure import structure_events  # noqa: E402
 from nti.analysis.volatility import atr  # noqa: E402
 from nti.data import load_yahoo_chart, resample  # noqa: E402
 from nti.strategy.liquidity_sweep import Params, generate_signals  # noqa: E402
+
+TF = "H1"  # timeframe label of the base data, set from --tf
 
 # Palette: trading convention for candles (muted), one accent for entries, text in neutral ink
 INK, MUTED, GRID, SURF = "#1f2328", "#6e7781", "#e6e8eb", "#ffffff"
@@ -68,22 +70,22 @@ def plan_setups(pools, a_h1: float, last: float, direction: int, max_setups: int
         stop = level - d * (0.6 + 0.15) * a_h1             # estimated sweep wick (~0.6 ATR) + buffer
         risk = abs(entry - stop)
         tps = [q.price for q in tgt if d * (q.price - entry) >= risk][:2] or [entry + d * 2 * risk]
-        side_txt = ("mecha bajo el nivel y CIERRE H1 por encima" if d == 1
-                    else "mecha sobre el nivel y CIERRE H1 por debajo")
+        side_txt = (f"mecha bajo el nivel y CIERRE {TF} por encima" if d == 1
+                    else f"mecha sobre el nivel y CIERRE {TF} por debajo")
         setups.append({
             "label": f"{'C' if d == 1 else 'V'}{k}", "direction": "COMPRA" if d == 1 else "VENTA",
             "level": round(level, 1), "sources": p.sources, "touches": p.touches,
-            "trigger": f"vela H1 barre {level:.1f}: {side_txt}",
+            "trigger": f"vela {TF} barre {level:.1f}: {side_txt}",
             "entry_est": round(entry, 1), "stop_est": round(stop, 1),
             "tp1": round(tps[0], 1), "tp2": round(tps[1], 1) if len(tps) > 1 else None,
             "rr_tp1": round(abs(tps[0] - entry) / risk, 2),
-            "invalidation": f"cierre H1 {'bajo' if d == 1 else 'sobre'} {stop:.1f}",
+            "invalidation": f"cierre {TF} {'bajo' if d == 1 else 'sobre'} {stop:.1f}",
         })
     return setups
 
 
 def draw(df: pd.DataFrame, n_bars: int, pools, setups, past_sigs, trend: dict, h4_trend: int,
-         h1_trend: int, out: Path, events: list[str]) -> Path:
+         h1_trend: int, out: Path, events: list[str], base_trend: int = 0) -> Path:
     v = df.iloc[-n_bars:]
     x = np.arange(len(v))
     fig = plt.figure(figsize=(11.5, 6.6), dpi=200)
@@ -133,8 +135,12 @@ def draw(df: pd.DataFrame, n_bars: int, pools, setups, past_sigs, trend: dict, h
             else:
                 ax.scatter(i, h[i] + off, marker="v", s=55, color=BUYSIDE, edgecolor=SURF, linewidth=1.5, zorder=5)
 
-    ticks = [i for i, t in enumerate(v.index) if t.hour == 0]
-    ax.set_xticks(ticks, [v.index[i].strftime("%d-%b") for i in ticks], fontsize=7, color=MUTED)
+    if TF == "H1":
+        ticks = [i for i, t in enumerate(v.index) if t.hour == 0]
+        ax.set_xticks(ticks, [v.index[i].strftime("%d-%b") for i in ticks], fontsize=7, color=MUTED)
+    else:
+        ticks = [i for i, t in enumerate(v.index) if t.minute == 0 and t.hour % 2 == 0]
+        ax.set_xticks(ticks, [v.index[i].strftime("%H:%M") for i in ticks], fontsize=7, color=MUTED)
     ax.tick_params(axis="y", labelsize=7, colors=MUTED, length=0)
     ax.tick_params(axis="x", length=0)
     ax.set_xlim(-1, x_end)
@@ -145,11 +151,11 @@ def draw(df: pd.DataFrame, n_bars: int, pools, setups, past_sigs, trend: dict, h
 
     tr = {1: "alcista", -1: "bajista", 0: "neutral"}
     now = datetime.now(timezone.utc).strftime("%d-%b-%Y %H:%M UTC")
-    fig.text(0.01, 0.965, f"Oro (GC=F) H1 · entradas planificadas (compra y venta) · {now}", fontsize=11,
+    fig.text(0.01, 0.965, f"Oro (GC=F) {TF} · entradas planificadas (compra y venta) · {now}", fontsize=11,
              color=INK, weight="bold")
     fig.text(0.01, 0.935, f"Última vela cerrada {v.index[-1]:%d-%b %H:%M} UTC · {v['close'].iloc[-1]:.1f}  ·  "
              f"Diario: {trend['daily_label']} (SMA100 {trend['sma100']:.0f})  ·  "
-             f"H4 {tr[h4_trend]}  ·  H1 {tr[h1_trend]}", fontsize=8, color=MUTED)
+             f"H4 {tr[h4_trend]}  ·  H1 {tr[h1_trend]}" + (f"  ·  {TF} {tr[base_trend]}" if TF != "H1" else ""), fontsize=8, color=MUTED)
 
     y = 0.99
     def line(txt, size=7.3, color=INK, weight="normal", gap=0.034):
@@ -163,8 +169,8 @@ def draw(df: pd.DataFrame, n_bars: int, pools, setups, past_sigs, trend: dict, h
         line(f"{st['label']} · {st['direction']} · liq. {st['level']:.1f}", 8.2, INK, "bold", 0.036)
         line(f"   {tag} · {st['touches']} toque{'s' if st['touches'] > 1 else ''}", 6.6,
              UP if with_trend else DOWN, gap=0.03)
-        line("   " + ("mecha bajo nivel + CIERRE H1 encima" if st["direction"] == "COMPRA"
-                      else "mecha sobre nivel + CIERRE H1 debajo"), 6.6, MUTED, gap=0.032)
+        line("   " + (f"mecha bajo nivel + CIERRE {TF} encima" if st["direction"] == "COMPRA"
+                      else f"mecha sobre nivel + CIERRE {TF} debajo"), 6.6, MUTED, gap=0.032)
         line(f"   Entrada ~{st['entry_est']:.1f} · SL ~{st['stop_est']:.1f}", 7.3, ENTRY, "bold", 0.032)
         tp2 = f" / {st['tp2']:.1f}" if st.get("tp2") else ""
         line(f"   TP {st['tp1']:.1f}{tp2} · R:R {st['rr_tp1']}", 7.3, INK, gap=0.05)
@@ -180,7 +186,7 @@ def draw(df: pd.DataFrame, n_bars: int, pools, setups, past_sigs, trend: dict, h
     fig.text(0.01, 0.01, foot, fontsize=6.4, color=MUTED, va="bottom")
     fig.subplots_adjust(left=0.05, right=0.99, top=0.91, bottom=0.11)
     out.mkdir(parents=True, exist_ok=True)
-    path = out / f"entradas_{datetime.now(timezone.utc):%Y%m%d_%H%M}.png"
+    path = out / f"entradas_{TF}_{datetime.now(timezone.utc):%Y%m%d_%H%M}.png"
     fig.savefig(path, facecolor=SURF)
     plt.close(fig)
     return path
@@ -203,16 +209,21 @@ def main():
     ap.add_argument("--h1", default="data/raw/GC=F_60m_730d.json")
     ap.add_argument("--d1", default="data/raw/GC=F_1d_max.json")
     ap.add_argument("--calendar", default=None)
-    ap.add_argument("--bars", type=int, default=72)
+    ap.add_argument("--bars", type=int, default=None, help="default 72 (H1) / 144 (M5)")
+    ap.add_argument("--tf", default="H1", choices=["H1", "M5"], help="timeframe of --h1 data")
     ap.add_argument("--out", default="reports/charts")
     args = ap.parse_args()
+    global TF
+    TF = args.tf
+    n_bars = args.bars or (72 if TF == "H1" else 144)
 
     h1 = load_yahoo_chart(args.h1)
     d1 = load_yahoo_chart(args.d1)
     d1 = d1[(d1.index.minute == 0) & (d1.index.second == 0)]
     trend = daily_trend_state(d1)
     h4_trend = int(structure_events(resample(h1, "4h"), 3)["trend"].iloc[-1])
-    h1_trend = int(structure_events(h1, 3)["trend"].iloc[-1])
+    h1_trend = int(structure_events(resample(h1, "1h") if TF != "H1" else h1, 3)["trend"].iloc[-1])
+    base_trend = int(structure_events(h1, 3)["trend"].iloc[-1])
     lm = LiquidityMap(h1)
     _, allp = lm.run()
     active = lm.snapshot(len(h1) - 1, allp)
@@ -221,9 +232,10 @@ def main():
     setups = plan_setups(active, a, last, 1) + plan_setups(active, a, last, -1)
     past_sigs = generate_signals(h1, Params())
     events = upcoming_events(args.calendar)
-    path = draw(h1, args.bars, active, setups, past_sigs, trend, h4_trend, h1_trend, Path(args.out), events)
+    path = draw(h1, n_bars, active, setups, past_sigs, trend, h4_trend, h1_trend, Path(args.out), events,
+                base_trend)
     print(json.dumps({"chart": str(path), "last_bar": str(h1.index[-1]), "last": last, "atr_h1": round(a, 1),
-                      "daily": trend, "h4_trend": h4_trend, "h1_trend": h1_trend, "events": events,
+                      "daily": trend, "tf": TF, "h4_trend": h4_trend, "h1_trend": h1_trend, "base_trend": base_trend, "events": events,
                       "setups": setups}, indent=2, default=str))
 
 

@@ -12,6 +12,8 @@ Siempre, sin que lo vuelva a pedir:
    ```
 2. Generar la gráfica de velas con las entradas de COMPRA (C1, C2) y VENTA (V1, V2):
    `python tools/entry_chart.py --calendar data/raw/ff_calendar_thisweek.json`
+   Si pide 5 minutos (M5): descargar `...chart/GC=F?interval=5m&range=5d` a `data/raw/GC=F_5m_5d.json` y usar
+   `python tools/entry_chart.py --h1 data/raw/GC=F_5m_5d.json --tf M5 --calendar data/raw/ff_calendar_thisweek.json`
 3. Mirar la imagen (comprobar que no hay etiquetas solapadas) y enviarla al usuario con SendUserFile
    (status "normal", display "render"). El usuario la ve en iPhone.
 4. Resumir en el chat: contexto (diario/H4/H1), cada entrada C/V con disparador, si va a favor o contra tendencia, entrada, SL, TP, R:R,
