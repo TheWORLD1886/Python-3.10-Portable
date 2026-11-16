@@ -106,12 +106,20 @@ def draw(df: pd.DataFrame, n_bars: int, pools, setups, past_sigs, trend: dict, h
     width, gap = 5.0, 1.3
     x_end = len(v) + 1 + len(setups) * (width + gap) + 1
 
-    for p in pools:
-        if lo_y < p.price < hi_y:
-            colr = SELLSIDE if p.side == "sell_side" else BUYSIDE
-            ax.axhline(p.price, color=colr, linewidth=0.8, linestyle=(0, (2, 3)), alpha=0.75, zorder=1)
-            ax.text(0.5, p.price, f"{'liq. abajo' if p.side == 'sell_side' else 'liq. arriba'} {p.price:.1f}",
-                    fontsize=6.3, color=MUTED, va="bottom", ha="left")
+    # draw every pool line, but merge labels of levels that would overlap (< 2.5 % of the y-range apart)
+    vis = sorted([p for p in pools if lo_y < p.price < hi_y], key=lambda p: p.price)
+    groups: list[list] = []
+    for p in vis:
+        colr = SELLSIDE if p.side == "sell_side" else BUYSIDE
+        ax.axhline(p.price, color=colr, linewidth=0.8, linestyle=(0, (2, 3)), alpha=0.75, zorder=1)
+        if groups and p.price - groups[-1][-1].price < 0.025 * (hi_y - lo_y) and p.side == groups[-1][-1].side:
+            groups[-1].append(p)
+        else:
+            groups.append([p])
+    for g in groups:
+        tag = "liq. abajo" if g[0].side == "sell_side" else "liq. arriba"
+        ax.text(0.5, g[-1].price, f"{tag} " + " / ".join(f"{q.price:.1f}" for q in g),
+                fontsize=6.3, color=MUTED, va="bottom", ha="left")
 
     # each setup in its own column right of the last candle: red = risk zone, green = reward zone
     for k, st in enumerate(setups):
