@@ -34,6 +34,14 @@ from nti.data import load_yahoo_chart, resample  # noqa: E402
 from nti.strategy.liquidity_sweep import Params, generate_signals  # noqa: E402
 
 TF = "H1"  # timeframe label of the base data, set from --tf
+PRICE_LABEL = "Oro (GC=F futuro)"  # changed by --spot
+LOCAL_TZ = "America/Tijuana"
+
+
+def local(t) -> str:
+    """Format a UTC timestamp in the user's local time with a. m./p. m."""
+    lt = pd.Timestamp(t).tz_convert(LOCAL_TZ)
+    return lt.strftime("%I:%M ").lstrip("0") + ("a. m." if lt.hour < 12 else "p. m.")
 
 # Palette: trading convention for candles (muted), one accent for entries, text in neutral ink
 INK, MUTED, GRID, SURF = "#1f2328", "#6e7781", "#e6e8eb", "#ffffff"
@@ -159,9 +167,9 @@ def draw(df: pd.DataFrame, n_bars: int, pools, setups, past_sigs, trend: dict, h
 
     tr = {1: "alcista", -1: "bajista", 0: "neutral"}
     now = datetime.now(timezone.utc).strftime("%d-%b-%Y %H:%M UTC")
-    fig.text(0.01, 0.965, f"Oro (GC=F) {TF} · entradas planificadas (compra y venta) · {now}", fontsize=11,
+    fig.text(0.01, 0.965, f"{PRICE_LABEL} {TF} · entradas (compra y venta) · {now} · {local(datetime.now(timezone.utc))} Tijuana", fontsize=11,
              color=INK, weight="bold")
-    fig.text(0.01, 0.935, f"Última vela cerrada {v.index[-1]:%d-%b %H:%M} UTC · {v['close'].iloc[-1]:.1f}  ·  "
+    fig.text(0.01, 0.935, f"Última vela cerrada {v.index[-1]:%d-%b %H:%M} UTC ({local(v.index[-1])} Tijuana) · {v['close'].iloc[-1]:.1f}  ·  "
              f"Diario: {trend['daily_label']} (SMA100 {trend['sma100']:.0f})  ·  "
              f"H4 {tr[h4_trend]}  ·  H1 {tr[h1_trend]}" + (f"  ·  {TF} {tr[base_trend]}" if TF != "H1" else ""), fontsize=8, color=MUTED)
 
@@ -188,7 +196,7 @@ def draw(df: pd.DataFrame, n_bars: int, pools, setups, past_sigs, trend: dict, h
     line("rojo = riesgo (hasta SL) · verde = objetivo", 6.4, MUTED, gap=0.028)
 
     foot = ("Entradas solo si se cumple el disparador. Entrada/SL estimados: recalcula con la mecha real. "
-            "Precios de futuros: ajusta a GOLD de XM. Sin ventaja estadística demostrada · solo demo.")
+            ("Precios SPOT estimados (pueden diferir unas décimas de XM). " if PRICE_LABEL.startswith("Oro SPOT") else "Precios de FUTUROS: ajusta a GOLD de XM. ") + "Sin ventaja estadística demostrada · solo demo.")
     if events:
         foot = "Eventos USD alto impacto (no operar ±30 min): " + " | ".join(events) + "\n" + foot
     fig.text(0.01, 0.01, foot, fontsize=6.4, color=MUTED, va="bottom")
@@ -208,7 +216,7 @@ def upcoming_events(cal_path: str | None) -> list[str]:
     for e in json.loads(Path(cal_path).read_text()):
         t = pd.Timestamp(e["date"]).tz_convert("UTC")
         if e.get("country") == "USD" and e.get("impact") == "High" and now - pd.Timedelta("1h") <= t <= now + pd.Timedelta("72h"):
-            out.append(f"{t:%a %H:%M} UTC {e['title']}")
+            out.append(f"{t:%a} {local(t)} Tijuana {e['title']}")
     return out[:4]
 
 
@@ -220,14 +228,23 @@ def main():
     ap.add_argument("--bars", type=int, default=None, help="default 72 (H1) / 144 (M5)")
     ap.add_argument("--tf", default="H1", choices=["H1", "M5"], help="timeframe of --h1 data")
     ap.add_argument("--out", default="reports/charts")
+    ap.add_argument("--spot", action="store_true",
+                    help="shift GC=F prices to spot (≈ XM GOLD) using data/raw/basis.json from tools/spot_basis.py")
     args = ap.parse_args()
-    global TF
+    global TF, PRICE_LABEL
     TF = args.tf
     n_bars = args.bars or (72 if TF == "H1" else 144)
 
     h1 = load_yahoo_chart(args.h1)
     d1 = load_yahoo_chart(args.d1)
     d1 = d1[(d1.index.minute == 0) & (d1.index.second == 0)]
+    basis = 0.0
+    if args.spot:
+        b = json.loads((Path(__file__).resolve().parents[1] / "data/raw/basis.json").read_text())
+        basis = float(b["basis"])
+        for df in (h1, d1):
+            df[["open", "high", "low", "close"]] -= basis
+        PRICE_LABEL = f"Oro SPOT ≈ XM GOLD (futuro − {basis:.1f})"
     trend = daily_trend_state(d1)
     h4_trend = int(structure_events(resample(h1, "4h"), 3)["trend"].iloc[-1])
     h1_trend = int(structure_events(resample(h1, "1h") if TF != "H1" else h1, 3)["trend"].iloc[-1])
@@ -243,7 +260,7 @@ def main():
     path = draw(h1, n_bars, active, setups, past_sigs, trend, h4_trend, h1_trend, Path(args.out), events,
                 base_trend)
     print(json.dumps({"chart": str(path), "last_bar": str(h1.index[-1]), "last": last, "atr_h1": round(a, 1),
-                      "daily": trend, "tf": TF, "h4_trend": h4_trend, "h1_trend": h1_trend, "base_trend": base_trend, "events": events,
+                      "daily": trend, "tf": TF, "spot_basis_subtracted": basis, "h4_trend": h4_trend, "h1_trend": h1_trend, "base_trend": base_trend, "events": events,
                       "setups": setups}, indent=2, default=str))
 
 
