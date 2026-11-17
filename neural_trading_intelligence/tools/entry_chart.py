@@ -145,8 +145,9 @@ def draw(df: pd.DataFrame, n_bars: int, pools, setups, past_sigs, trend: dict, h
 
     if live is not None:   # live spot quote (Yahoo candles are ~10-15 min delayed)
         ax.scatter(len(v) + 0.3, live, marker="<", s=70, color=INK, zorder=7)
-        ax.text(len(v) + 0.3, live - (hi_y - lo_y) * 0.012, f"AHORA {live:.1f}", fontsize=7.5,
-                color=INK, weight="bold", ha="left", va="top", zorder=7)
+        ax.text(len(v) - 1, live + (hi_y - lo_y) * 0.012, f"AHORA {live:.1f}", fontsize=7.5,
+                color=INK, weight="bold", ha="right", va="bottom", zorder=7,
+                bbox=dict(boxstyle="round,pad=0.2", fc=SURF, ec="none", alpha=0.85))
     pos = {t: i for i, t in enumerate(v.index)}
     off = (hi_y - lo_y) * 0.02
     for sgn in past_sigs:
