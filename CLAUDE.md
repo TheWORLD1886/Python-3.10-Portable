@@ -1,6 +1,6 @@
 # Instrucciones del proyecto (Neural Trading Intelligence)
 
-Idioma: responder en español.
+Idioma: responder en español. El usuario está en Tijuana (America/Tijuana): dar las horas también en hora de Tijuana con a. m./p. m.
 
 ## Cuando el usuario pida "entradas" (de oro / XAUUSD)
 Siempre, sin que lo vuelva a pedir:
