@@ -93,7 +93,7 @@ def plan_setups(pools, a_h1: float, last: float, direction: int, max_setups: int
 
 
 def draw(df: pd.DataFrame, n_bars: int, pools, setups, past_sigs, trend: dict, h4_trend: int,
-         h1_trend: int, out: Path, events: list[str], base_trend: int = 0) -> Path:
+         h1_trend: int, out: Path, events: list[str], base_trend: int = 0, live: float | None = None) -> Path:
     v = df.iloc[-n_bars:]
     x = np.arange(len(v))
     fig = plt.figure(figsize=(11.5, 6.6), dpi=200)
@@ -107,6 +107,8 @@ def draw(df: pd.DataFrame, n_bars: int, pools, setups, past_sigs, trend: dict, h
            linewidth=0, zorder=3)
 
     lo_y, hi_y = l.min(), h.max()
+    if live is not None:
+        lo_y, hi_y = min(lo_y, live), max(hi_y, live)
     for st in setups:
         lo_y = min(lo_y, st["stop_est"], st["tp1"]); hi_y = max(hi_y, st["stop_est"], st["tp1"])
     pad = (hi_y - lo_y) * 0.05
@@ -141,6 +143,10 @@ def draw(df: pd.DataFrame, n_bars: int, pools, setups, past_sigs, trend: dict, h
         ax.text((xa + xb) / 2, st["entry_est"], st["label"], fontsize=8, weight="bold", color=INK,
                 ha="center", va=va, zorder=6)
 
+    if live is not None:   # live spot quote (Yahoo candles are ~10-15 min delayed)
+        ax.scatter(len(v) + 0.3, live, marker="<", s=70, color=INK, zorder=7)
+        ax.text(len(v) + 0.3, live - (hi_y - lo_y) * 0.012, f"AHORA {live:.1f}", fontsize=7.5,
+                color=INK, weight="bold", ha="left", va="top", zorder=7)
     pos = {t: i for i, t in enumerate(v.index)}
     off = (hi_y - lo_y) * 0.02
     for sgn in past_sigs:
@@ -155,8 +161,10 @@ def draw(df: pd.DataFrame, n_bars: int, pools, setups, past_sigs, trend: dict, h
         ticks = [i for i, t in enumerate(v.index) if t.hour == 0]
         ax.set_xticks(ticks, [v.index[i].strftime("%d-%b") for i in ticks], fontsize=7, color=MUTED)
     else:
-        ticks = [i for i, t in enumerate(v.index) if t.minute == 0 and t.hour % 2 == 0]
-        ax.set_xticks(ticks, [v.index[i].strftime("%H:%M") for i in ticks], fontsize=7, color=MUTED)
+        lt = v.index.tz_convert(LOCAL_TZ)
+        ticks = [i for i, t in enumerate(lt) if t.minute == 0 and t.hour % 2 == 0]
+        ax.set_xticks(ticks, [local(v.index[i]) for i in ticks], fontsize=7, color=MUTED)
+        ax.set_xlabel("hora de Tijuana", fontsize=7, color=MUTED)
     ax.tick_params(axis="y", labelsize=7, colors=MUTED, length=0)
     ax.tick_params(axis="x", length=0)
     ax.set_xlim(-1, x_end)
@@ -195,7 +203,7 @@ def draw(df: pd.DataFrame, n_bars: int, pools, setups, past_sigs, trend: dict, h
     line("··· azul: liquidez abajo · ocre: arriba (hipótesis)", 6.4, MUTED, gap=0.028)
     line("rojo = riesgo (hasta SL) · verde = objetivo", 6.4, MUTED, gap=0.028)
 
-    foot = ("Entradas solo si se cumple el disparador. Entrada/SL estimados: recalcula con la mecha real. "
+    foot = ("Entradas solo si se cumple el disparador. Entrada/SL estimados: recalcula con la mecha real. " +
             ("Precios SPOT estimados (pueden diferir unas décimas de XM). " if PRICE_LABEL.startswith("Oro SPOT") else "Precios de FUTUROS: ajusta a GOLD de XM. ") + "Sin ventaja estadística demostrada · solo demo.")
     if events:
         foot = "Eventos USD alto impacto (no operar ±30 min): " + " | ".join(events) + "\n" + foot
@@ -238,13 +246,14 @@ def main():
     h1 = load_yahoo_chart(args.h1)
     d1 = load_yahoo_chart(args.d1)
     d1 = d1[(d1.index.minute == 0) & (d1.index.second == 0)]
-    basis = 0.0
+    basis, live = 0.0, None
     if args.spot:
         b = json.loads((Path(__file__).resolve().parents[1] / "data/raw/basis.json").read_text())
         basis = float(b["basis"])
         for df in (h1, d1):
             df[["open", "high", "low", "close"]] -= basis
         PRICE_LABEL = f"Oro SPOT ≈ XM GOLD (futuro − {basis:.1f})"
+        live = b.get("spot_now")
     trend = daily_trend_state(d1)
     h4_trend = int(structure_events(resample(h1, "4h"), 3)["trend"].iloc[-1])
     h1_trend = int(structure_events(resample(h1, "1h") if TF != "H1" else h1, 3)["trend"].iloc[-1])
@@ -258,9 +267,9 @@ def main():
     past_sigs = generate_signals(h1, Params())
     events = upcoming_events(args.calendar)
     path = draw(h1, n_bars, active, setups, past_sigs, trend, h4_trend, h1_trend, Path(args.out), events,
-                base_trend)
+                base_trend, live)
     print(json.dumps({"chart": str(path), "last_bar": str(h1.index[-1]), "last": last, "atr_h1": round(a, 1),
-                      "daily": trend, "tf": TF, "spot_basis_subtracted": basis, "h4_trend": h4_trend, "h1_trend": h1_trend, "base_trend": base_trend, "events": events,
+                      "daily": trend, "tf": TF, "spot_basis_subtracted": basis, "live_spot": live, "h4_trend": h4_trend, "h1_trend": h1_trend, "base_trend": base_trend, "events": events,
                       "setups": setups}, indent=2, default=str))
 
 
